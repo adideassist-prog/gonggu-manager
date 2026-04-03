@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저</title>
+<title>공구 매니저 v3</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -11,222 +11,244 @@ body{font-family:'Pretendard',-apple-system,sans-serif;background:#F0F2F8;min-he
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:2px}
 .layout{display:flex;min-height:100vh}
 
-/* SIDEBAR */
-.sidebar{display:none;width:220px;flex-shrink:0;background:linear-gradient(180deg,#4F46E5 0%,#7C3AED 100%);flex-direction:column;padding:28px 0 24px;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
-.sb-logo{display:flex;align-items:center;gap:10px;padding:0 20px 22px;border-bottom:1px solid rgba(255,255,255,.15)}
-.sb-logo-icon{font-size:22px}
+/* ── SIDEBAR ── */
+.sidebar{display:none;width:224px;flex-shrink:0;background:linear-gradient(180deg,#4338CA 0%,#6D28D9 100%);flex-direction:column;padding:26px 0 20px;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:0 18px 20px;border-bottom:1px solid rgba(255,255,255,.15)}
 .sb-logo-text{font-size:17px;font-weight:800;color:white}
-.sb-logo-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:1px}
-.sb-stats{display:flex;flex-direction:column;gap:7px;padding:16px 16px;border-bottom:1px solid rgba(255,255,255,.15)}
-.sb-stat{background:rgba(255,255,255,.12);border-radius:10px;padding:9px 13px;display:flex;align-items:center;justify-content:space-between}
-.sb-stat-label{font-size:12px;color:rgba(255,255,255,.7);font-weight:600}
-.sb-stat-num{font-size:20px;font-weight:900;color:white}
-.sb-nav{display:flex;flex-direction:column;gap:4px;padding:14px 12px;flex:1}
-.sb-nav-btn{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;border:none;background:none;cursor:pointer;font-family:inherit;color:rgba(255,255,255,.7);font-size:14px;font-weight:600;transition:all .15s;text-align:left;width:100%;position:relative}
+.sb-logo-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:1px}
+.sb-stats{display:flex;flex-direction:column;gap:6px;padding:14px 14px;border-bottom:1px solid rgba(255,255,255,.12)}
+.sb-stat{background:rgba(255,255,255,.11);border-radius:9px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between}
+.sb-stat-label{font-size:11px;color:rgba(255,255,255,.65);font-weight:600}
+.sb-stat-num{font-size:19px;font-weight:900;color:white}
+.sb-nav{display:flex;flex-direction:column;gap:3px;padding:12px 10px;flex:1}
+.sb-nav-btn{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:11px;border:none;background:none;cursor:pointer;font-family:inherit;color:rgba(255,255,255,.65);font-size:13px;font-weight:600;transition:all .15s;text-align:left;width:100%;position:relative}
 .sb-nav-btn:hover{background:rgba(255,255,255,.1);color:white}
 .sb-nav-btn.active{background:rgba(255,255,255,.2);color:white}
-.sb-nav-icon{font-size:18px;width:24px;text-align:center}
-.sb-badge{background:#EF4444;color:white;border-radius:10px;font-size:10px;font-weight:800;padding:1px 6px;margin-left:auto}
-.sb-bottom{padding:0 12px;display:flex;flex-direction:column;gap:7px}
-.sb-add-btn{padding:12px;border-radius:12px;border:2px solid rgba(255,255,255,.3);background:transparent;color:white;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
-.sb-add-btn:hover{background:rgba(255,255,255,.15)}
-.sb-tool-btn{padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.75);font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;text-align:left;display:flex;align-items:center;gap:8px;transition:all .15s}
+.sb-nav-icon{font-size:17px;width:22px;text-align:center}
+.sb-badge{background:#EF4444;color:white;border-radius:10px;font-size:9px;font-weight:800;padding:1px 6px;margin-left:auto}
+.sb-bottom{padding:0 10px;display:flex;flex-direction:column;gap:6px}
+.sb-add-btn{padding:11px;border-radius:11px;border:2px solid rgba(255,255,255,.3);background:transparent;color:white;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
+.sb-add-btn:hover{background:rgba(255,255,255,.12)}
+.sb-tool-btn{padding:8px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.7);font-weight:600;font-size:11px;cursor:pointer;font-family:inherit;text-align:left;display:flex;align-items:center;gap:7px;transition:all .15s}
 .sb-tool-btn:hover{background:rgba(255,255,255,.1);color:white}
-.sb-gd-btn{border-color:rgba(255,255,255,.35);color:white;font-weight:700}
+.sb-gd-btn{border-color:rgba(255,255,255,.35);color:white;font-weight:700;font-size:12px}
 .sb-gd-btn.connected{border-color:#4ADE8060;background:rgba(74,222,128,.1);color:#4ADE80}
-.sb-divider{height:1px;background:rgba(255,255,255,.1);margin:2px 0}
-.sb-info{font-size:10px;color:rgba(255,255,255,.3);text-align:center;padding:4px 0}
+.sb-divider{height:1px;background:rgba(255,255,255,.1);margin:1px 0}
+.sb-info{font-size:10px;color:rgba(255,255,255,.3);text-align:center;padding:3px 0}
 
-/* MAIN */
+/* ── MAIN ── */
 .main{flex:1;display:flex;flex-direction:column;min-width:0}
 
 /* MOBILE HEADER */
-.mobile-header{background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;padding:14px 14px 18px;position:sticky;top:0;z-index:50}
-.mh-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.mobile-header{background:linear-gradient(135deg,#4338CA,#6D28D9);color:white;padding:14px 14px 18px;position:sticky;top:0;z-index:50}
+.mh-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
 .mh-title{font-size:19px;font-weight:800}
 .mh-actions{display:flex;gap:5px}
-.mh-btn{background:rgba(255,255,255,.2);border:none;border-radius:8px;padding:6px 9px;color:white;font-size:11px;font-weight:700;cursor:pointer}
-.mh-gd-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35)}
-.mh-gd-btn.connected{background:rgba(74,222,128,.2);border-color:#4ADE8060;color:#4ADE80}
-.mh-pills{display:flex;gap:8px}
-.mh-pill{background:rgba(255,255,255,.15);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700}
-.mh-pill b{font-size:15px;display:block;font-weight:900}
+.mh-btn{background:rgba(255,255,255,.2);border:none;border-radius:7px;padding:5px 9px;color:white;font-size:11px;font-weight:700;cursor:pointer}
+.mh-gd-btn.connected{background:rgba(74,222,128,.2);border:1px solid #4ADE8060;color:#4ADE80}
+.mh-pills{display:flex;gap:7px;flex-wrap:wrap}
+.mh-pill{background:rgba(255,255,255,.15);border-radius:18px;padding:4px 11px;font-size:11px;font-weight:700}
+.mh-pill b{font-size:14px;display:block;font-weight:900}
 
 /* PC TOPBAR */
-.pc-topbar{display:none;padding:18px 28px 0;align-items:center;justify-content:space-between;margin-bottom:4px}
-.pc-topbar-title{font-size:22px;font-weight:800;color:#1E293B}
+.pc-topbar{display:none;padding:18px 26px 0;align-items:center;justify-content:space-between;margin-bottom:4px}
+.pc-topbar-title{font-size:21px;font-weight:800}
 .pc-topbar-date{font-size:13px;color:#64748B;margin-top:2px}
-.pc-topbar-right{display:flex;align-items:center;gap:12px}
-.pc-topbar-stats{display:flex;gap:10px}
-.pc-stat-chip{background:white;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;color:#64748B;box-shadow:0 1px 4px rgba(0,0,0,.07)}
-.pc-stat-chip span{font-size:18px;font-weight:900;display:block;color:#4F46E5}
+.pc-topbar-right{display:flex;align-items:center;gap:10px}
+.pc-topbar-stats{display:flex;gap:8px}
+.pc-stat-chip{background:white;border-radius:9px;padding:7px 13px;font-size:11px;font-weight:700;color:#64748B;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.pc-stat-chip span{font-size:17px;font-weight:900;display:block;color:#4F46E5}
 .pc-stat-chip.red span{color:#EF4444}
-.pc-tool-btns{display:flex;gap:8px}
-.pc-tool-btn{padding:8px 14px;border-radius:10px;border:1.5px solid #E2E8F0;background:white;color:#64748B;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px}
+.pc-tool-btns{display:flex;gap:7px}
+.pc-tool-btn{padding:8px 12px;border-radius:9px;border:1.5px solid #E2E8F0;background:white;color:#64748B;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px}
 .pc-tool-btn:hover{border-color:#C7D2FE;color:#4F46E5}
 
-/* CONTENT */
 .content{padding:14px 14px 90px;flex:1}
 
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #E8EDF5;display:flex;padding:8px 0 max(8px,env(safe-area-inset-bottom));z-index:100;box-shadow:0 -4px 20px rgba(79,70,229,.1)}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:none;cursor:pointer;padding:4px 0;position:relative}
-.nav-icon{font-size:20px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #E8EDF5;display:flex;padding:7px 0 max(7px,env(safe-area-inset-bottom));z-index:100;box-shadow:0 -3px 16px rgba(79,70,229,.09)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:none;cursor:pointer;padding:3px 0;position:relative}
+.nav-icon{font-size:19px}
 .nav-label{font-size:10px;font-weight:700;color:#94A3B8}
 .nav-btn.active .nav-label{color:#4F46E5}
-.nav-badge{position:absolute;top:-2px;right:calc(50% - 18px);background:#EF4444;color:white;border-radius:10px;font-size:9px;font-weight:800;padding:1px 5px}
+.nav-badge{position:absolute;top:-1px;right:calc(50% - 16px);background:#EF4444;color:white;border-radius:10px;font-size:9px;font-weight:800;padding:1px 5px}
 
-/* TOAST */
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1E293B;color:white;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
+.sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
-/* SYNC INDICATOR */
-.sync-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* ── DASHBOARD ── */
+.briefing-card{background:linear-gradient(135deg,#4338CA,#6D28D9);border-radius:14px;padding:14px 16px;margin-bottom:14px;color:white}
+.briefing-title{font-size:12px;opacity:.7;font-weight:600;margin-bottom:8px}
+.briefing-item{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;font-weight:700;cursor:pointer}
+.briefing-item:hover{opacity:.85}
+.briefing-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.briefing-empty{font-size:13px;opacity:.7;font-weight:600}
 
-/* DASHBOARD */
 .dtab-row{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px}
 .dtab-row::-webkit-scrollbar{display:none}
-.dtab{padding:7px 16px;border-radius:20px;border:none;background:white;font-size:13px;font-weight:700;color:#94A3B8;cursor:pointer;white-space:nowrap;font-family:inherit;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.dtab.active{background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white}
-.sum-row{display:flex;gap:8px;margin-bottom:16px}
-.sum-card{flex:1;background:white;border-radius:14px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-.sum-num{font-size:22px;font-weight:900}
-.sum-lbl{font-size:11px;font-weight:600;color:#94A3B8;margin-top:1px}
-.task{background:white;border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1.5px solid transparent;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:transform .1s}
+.dtab{padding:7px 14px;border-radius:18px;border:none;background:white;font-size:12px;font-weight:700;color:#94A3B8;cursor:pointer;white-space:nowrap;font-family:inherit;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.dtab.active{background:linear-gradient(135deg,#4338CA,#6D28D9);color:white}
+.sum-row{display:flex;gap:7px;margin-bottom:14px}
+.sum-card{flex:1;background:white;border-radius:12px;padding:10px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+.sum-num{font-size:20px;font-weight:900}
+.sum-lbl{font-size:10px;font-weight:600;color:#94A3B8;margin-top:1px}
+.task{background:white;border-radius:13px;padding:13px;margin-bottom:7px;display:flex;align-items:center;gap:11px;cursor:pointer;border:1.5px solid transparent;box-shadow:0 2px 7px rgba(0,0,0,.05);transition:transform .1s}
 .task:hover{transform:scale(.99)}
 .task.urgent{border-color:#FECACA}
-.t-ico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.t-ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
 .t-body{flex:1;min-width:0}
-.t-action{font-size:14px;font-weight:700;margin-bottom:2px}
-.t-name{font-size:12px;color:#64748B;font-weight:600}
+.t-action{font-size:13px;font-weight:700;margin-bottom:2px}
+.t-name{font-size:11px;color:#64748B;font-weight:600}
 .t-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
-.t-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px}
+.t-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:7px}
 .t-urgent{font-size:9px;color:#EF4444;font-weight:800}
-.empty{text-align:center;padding:50px 20px;color:#94A3B8}
-.empty-ico{font-size:44px;margin-bottom:10px}
+.empty{text-align:center;padding:48px 20px;color:#94A3B8}
+.empty-ico{font-size:42px;margin-bottom:10px}
 .empty-tit{font-size:15px;font-weight:700}
-.sec-title{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.sec-badge{background:#EEF2FF;color:#4F46E5;border-radius:10px;font-size:11px;font-weight:800;padding:2px 8px}
-.upcoming-card{background:white;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:14px}
+.sec-title{font-size:13px;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.sec-badge{background:#EEF2FF;color:#4F46E5;border-radius:9px;font-size:11px;font-weight:800;padding:2px 7px}
+.upcoming-card{background:white;border-radius:14px;padding:14px;box-shadow:0 2px 9px rgba(0,0,0,.06);margin-bottom:12px}
 
-/* CALENDAR */
-.legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.leg-item{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#64748B}
-.leg-dot{width:12px;height:8px;border-radius:3px}
-.cal-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.cal-arrow{width:36px;height:36px;border-radius:10px;border:none;background:white;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;font-size:18px;color:#4F46E5;font-weight:700;display:flex;align-items:center;justify-content:center}
-.cal-month-title{font-size:18px;font-weight:800}
-.cal-wrap{background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px}
+/* ── CALENDAR ── */
+.legend{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px}
+.leg-item{display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#64748B}
+.leg-dot{width:11px;height:7px;border-radius:3px}
+.cal-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.cal-arrow{width:34px;height:34px;border-radius:9px;border:none;background:white;box-shadow:0 2px 7px rgba(0,0,0,.08);cursor:pointer;font-size:17px;color:#4F46E5;font-weight:700;display:flex;align-items:center;justify-content:center}
+.cal-month-title{font-size:17px;font-weight:800}
+.cal-wrap{background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 9px rgba(0,0,0,.06);margin-bottom:12px}
 .cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);background:#F8FAFC;border-bottom:1px solid #F1F5F9}
-.cal-dow-cell{text-align:center;font-size:11px;font-weight:700;color:#94A3B8;padding:8px 0}
+.cal-dow-cell{text-align:center;font-size:10px;font-weight:700;color:#94A3B8;padding:7px 0}
 .cal-dow-cell:first-child{color:#EF4444}
 .cal-dow-cell:last-child{color:#6366F1}
 .cal-week-row{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #F1F5F9;position:relative;min-height:72px}
-.cal-day-cell{padding:4px 2px 2px;min-height:72px;cursor:pointer}
+.cal-day-cell{padding:3px 1px 2px;min-height:72px;cursor:pointer}
 .cal-day-cell:hover{background:#FAFBFF}
-.cal-day-num{font-size:12px;font-weight:700;text-align:center;width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 2px;color:#1E293B;border-radius:50%}
-.cal-day-cell.today .cal-day-num{background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white}
+.cal-day-num{font-size:11px;font-weight:700;text-align:center;width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 2px;color:#1E293B;border-radius:50%}
+.cal-day-cell.today .cal-day-num{background:linear-gradient(135deg,#4338CA,#6D28D9);color:white}
 .cal-day-cell.selected{background:#EEF2FF}
 .cal-day-cell.dim .cal-day-num{color:#D1D5DB}
-.week-events-layer{position:absolute;top:30px;left:0;right:0;pointer-events:none}
-.ev-bar{position:absolute;height:17px;display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:all;cursor:pointer}
-.ev-bar:hover{opacity:.85}
-.day-detail{background:white;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.dd-title{font-size:14px;font-weight:800;margin-bottom:10px}
-.dd-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:6px;cursor:pointer}
-.dd-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
-.dd-body{flex:1}
-.dd-action{font-size:13px;font-weight:800;margin-bottom:1px}
-.dd-name{font-size:12px;font-weight:600;margin-top:2px}
-.dd-meta{font-size:11px;color:#94A3B8}
+.week-events-layer{position:absolute;top:28px;left:0;right:0;pointer-events:none}
+.ev-bar{position:absolute;height:16px;display:flex;align-items:center;padding:0 5px;font-size:9px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:all;cursor:pointer}
+.ev-bar:hover{opacity:.82}
+.day-detail{background:white;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 7px rgba(0,0,0,.06)}
+.dd-title{font-size:13px;font-weight:800;margin-bottom:9px}
+.dd-item{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border-radius:9px;margin-bottom:5px;cursor:pointer}
+.dd-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.dd-action{font-size:12px;font-weight:800;margin-bottom:1px}
+.dd-name{font-size:11px;font-weight:600;margin-top:1px}
+.dd-meta{font-size:10px;color:#94A3B8}
 
-/* INF LIST */
-.search-box{width:100%;padding:11px 16px;border-radius:12px;border:1.5px solid #E2E8F0;font-size:14px;font-family:inherit;background:white;outline:none;margin-bottom:12px}
+/* ── INF LIST ── */
+.search-box{width:100%;padding:10px 14px;border-radius:11px;border:1.5px solid #E2E8F0;font-size:13px;font-family:inherit;background:white;outline:none;margin-bottom:11px}
 .search-box:focus{border-color:#4F46E5}
-.filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px}
+.filter-row{display:flex;gap:5px;overflow-x:auto;padding-bottom:7px;margin-bottom:11px}
 .filter-row::-webkit-scrollbar{display:none}
-.fchip{padding:6px 12px;border-radius:20px;border:none;background:#F1F5F9;color:#64748B;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
+.fchip{padding:5px 11px;border-radius:18px;border:none;background:#F1F5F9;color:#64748B;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
 .fchip.active{background:#4F46E5;color:white}
 .inf-grid{display:block}
-.inf-card{background:white;border-radius:16px;padding:14px 16px;margin-bottom:8px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.05);transition:transform .1s}
+.inf-card{background:white;border-radius:14px;padding:13px 14px;margin-bottom:8px;cursor:pointer;box-shadow:0 2px 9px rgba(0,0,0,.05);transition:transform .1s;border-left:4px solid transparent}
 .inf-card:hover{transform:scale(.99)}
-.inf-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.inf-name{font-size:16px;font-weight:800}
-.inf-handle{font-size:12px;color:#94A3B8;margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.stage-pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
-.prog-bar{height:5px;background:#F1F5F9;border-radius:4px;margin-bottom:10px;overflow:hidden}
-.prog-fill{height:100%;border-radius:4px}
-.next-box{display:flex;align-items:center;gap:6px;border-radius:8px;padding:7px 10px}
-.next-txt{font-size:12px;font-weight:700}
-.date-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.dtag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px}
-.fab{position:fixed;bottom:76px;right:16px;background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;border:none;border-radius:16px;width:52px;height:52px;font-size:26px;cursor:pointer;box-shadow:0 4px 20px rgba(79,70,229,.45);display:flex;align-items:center;justify-content:center;z-index:99}
+.inf-card.phase-1{border-left-color:#6366F1}
+.inf-card.phase-2{border-left-color:#F59E0B}
+.inf-card.phase-3{border-left-color:#2563EB}
+.inf-card.phase-4{border-left-color:#10B981}
+.inf-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.inf-name{font-size:15px;font-weight:800}
+.inf-handle{font-size:11px;color:#94A3B8;margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.phase-badge{font-size:10px;font-weight:800;padding:3px 9px;border-radius:18px;white-space:nowrap;flex-shrink:0}
+.check-prog-bar{height:4px;background:#F1F5F9;border-radius:3px;margin-bottom:8px;overflow:hidden}
+.check-prog-fill{height:100%;border-radius:3px}
+.check-prog-text{font-size:10px;font-weight:700;color:#94A3B8;margin-bottom:5px;text-align:right}
+.next-box{display:flex;align-items:center;gap:5px;border-radius:7px;padding:6px 9px;margin-bottom:5px}
+.next-txt{font-size:11px;font-weight:700}
+.date-row{display:flex;gap:5px;flex-wrap:wrap}
+.dtag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px}
+.fab{position:fixed;bottom:74px;right:14px;background:linear-gradient(135deg,#4338CA,#6D28D9);color:white;border:none;border-radius:14px;width:50px;height:50px;font-size:24px;cursor:pointer;box-shadow:0 4px 18px rgba(79,70,229,.42);display:flex;align-items:center;justify-content:center;z-index:99}
 
-/* MODAL */
+/* ── MODAL ── */
 .overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;display:flex;align-items:flex-end;justify-content:center}
-.modal{background:white;border-radius:28px 28px 0 0;width:100%;max-width:640px;max-height:93vh;overflow-y:auto;padding:20px 20px 40px}
-.m-handle{width:36px;height:4px;background:#E2E8F0;border-radius:2px;margin:0 auto 18px}
-.m-title{font-size:18px;font-weight:800;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
-.m-close{width:32px;height:32px;border-radius:8px;border:none;background:#F1F5F9;color:#94A3B8;cursor:pointer;font-size:16px}
-.m-sub{font-size:13px;color:#94A3B8;margin-bottom:16px}
-.step-section{background:#F8FAFC;border-radius:16px;padding:16px;margin-bottom:12px;border:1.5px solid #EEF2FF}
-.step-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.step-num{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.step-label{font-size:14px;font-weight:800}
-.step-desc{font-size:12px;color:#94A3B8;margin-top:1px}
-.field{margin-bottom:10px}
-.field:last-child{margin-bottom:0}
-.field label{font-size:11px;font-weight:700;color:#64748B;display:block;margin-bottom:4px}
-.field input,.field select,.field textarea{width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid #E2E8F0;font-size:14px;font-family:inherit;color:#1E293B;background:white;outline:none;transition:border-color .15s}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:#4F46E5}
-.field textarea{resize:vertical;min-height:70px}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.stage-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px}
-.stage-scroll::-webkit-scrollbar{display:none}
-.stage-chip{padding:7px 12px;border-radius:20px;border:2px solid #E2E8F0;background:white;cursor:pointer;font-size:12px;font-weight:700;color:#64748B;white-space:nowrap;font-family:inherit;flex-shrink:0}
-.stage-chip.active{background:#4F46E5;border-color:#4F46E5;color:white}
-.btn-row{display:flex;gap:8px;margin-top:20px}
-.btn-cancel{flex:1;padding:13px;border-radius:14px;border:2px solid #E2E8F0;background:white;color:#64748B;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}
-.btn-save{flex:2;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit}
-.btn-del{padding:13px 14px;border-radius:14px;border:none;background:#FEF2F2;color:#EF4444;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}
+.modal{background:white;border-radius:26px 26px 0 0;width:100%;max-width:660px;max-height:93vh;overflow-y:auto;padding:18px 18px 40px}
+.m-handle{width:34px;height:4px;background:#E2E8F0;border-radius:2px;margin:0 auto 16px}
+.m-title{font-size:17px;font-weight:800;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center}
+.m-close{width:30px;height:30px;border-radius:7px;border:none;background:#F1F5F9;color:#94A3B8;cursor:pointer;font-size:15px}
+.m-sub{font-size:12px;color:#94A3B8;margin-bottom:14px}
 
-/* GUIDE BOXES */
-.guide-box{background:#F8FAFC;border-radius:14px;padding:14px;border:1.5px solid #EEF2FF;margin-bottom:12px}
-.guide-step{font-size:12px;color:#475569;line-height:2;background:white;border-radius:10px;padding:12px;border:1px solid #E2E8F0}
+/* Phase tabs in modal */
+.phase-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.phase-tab{padding:10px 4px;border-radius:11px;border:2px solid #E2E8F0;background:white;cursor:pointer;text-align:center;font-family:inherit;transition:all .15s}
+.phase-tab:hover{border-color:#C7D2FE}
+.phase-tab.active{border-color:var(--pc);background:var(--pb)}
+.phase-tab-ico{font-size:18px;margin-bottom:2px}
+.phase-tab-label{font-size:11px;font-weight:800;color:#94A3B8;display:block}
+.phase-tab.active .phase-tab-label{color:var(--pc)}
+.phase-tab-check{font-size:10px;color:#94A3B8;margin-top:1px;display:block}
+
+/* Checklist in modal */
+.checklist-section{background:#F8FAFC;border-radius:13px;padding:12px;margin-bottom:12px;border:1.5px solid #EEF2FF}
+.checklist-title{font-size:11px;font-weight:800;color:#4F46E5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.check-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:9px;cursor:pointer;transition:background .1s;margin-bottom:2px}
+.check-item:hover{background:rgba(79,70,229,.05)}
+.check-item.is-next{background:#EEF2FF}
+.check-item input[type=checkbox]{width:16px;height:16px;accent-color:#4F46E5;cursor:pointer;flex-shrink:0}
+.check-item-label{font-size:13px;font-weight:600;color:#1E293B;flex:1}
+.check-item.checked .check-item-label{text-decoration:line-through;color:#94A3B8}
+.next-pill{font-size:9px;font-weight:800;background:#4F46E5;color:white;padding:2px 6px;border-radius:6px;margin-left:auto;flex-shrink:0}
+
+/* Form sections */
+.step-section{background:#F8FAFC;border-radius:13px;padding:14px;margin-bottom:10px;border:1.5px solid #EEF2FF}
+.step-header{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.step-num{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#4338CA,#6D28D9);color:white;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-label{font-size:13px;font-weight:800}
+.step-desc{font-size:11px;color:#94A3B8;margin-top:1px}
+.field{margin-bottom:9px}
+.field:last-child{margin-bottom:0}
+.field label{font-size:11px;font-weight:700;color:#64748B;display:block;margin-bottom:3px}
+.field input,.field select,.field textarea{width:100%;padding:10px 13px;border-radius:11px;border:1.5px solid #E2E8F0;font-size:13px;font-family:inherit;color:#1E293B;background:white;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#4F46E5}
+.field input[readonly]{background:#F8FAFC;color:#94A3B8}
+.field textarea{resize:vertical;min-height:68px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field-note{font-size:10px;color:#94A3B8;margin-top:3px}
+.btn-row{display:flex;gap:7px;margin-top:18px}
+.btn-cancel{flex:1;padding:12px;border-radius:13px;border:2px solid #E2E8F0;background:white;color:#64748B;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+.btn-save{flex:2;padding:12px;border-radius:13px;border:none;background:linear-gradient(135deg,#4338CA,#6D28D9);color:white;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+.btn-del{padding:12px 13px;border-radius:13px;border:none;background:#FEF2F2;color:#EF4444;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+
+/* Guide boxes */
+.guide-box{background:#F8FAFC;border-radius:13px;padding:13px;border:1.5px solid #EEF2FF;margin-bottom:11px}
+.guide-step{font-size:12px;color:#475569;line-height:2;background:white;border-radius:9px;padding:11px;border:1px solid #E2E8F0}
 .guide-step a{color:#4F46E5;font-weight:700}
 .guide-step code{background:#F1F5F9;padding:1px 5px;border-radius:4px;font-size:11px}
-.warn-box{background:#FEF2F2;border-radius:14px;padding:14px;border:1.5px solid #FECACA;margin-bottom:12px}
-.info-box{background:#EEF2FF;border-radius:12px;padding:12px;font-size:12px;color:#4F46E5;font-weight:600;margin-top:4px}
+.warn-box{background:#FEF2F2;border-radius:13px;padding:13px;border:1.5px solid #FECACA;margin-bottom:11px}
+.info-box{background:#EEF2FF;border-radius:11px;padding:11px;font-size:12px;color:#4F46E5;font-weight:600;margin-top:4px}
 
-/* PC RESPONSIVE */
 @media(min-width:860px){
   .sidebar{display:flex}
-  .main{margin-left:220px}
+  .main{margin-left:224px}
   .mobile-header{display:none}
   .bottom-nav{display:none}
   .fab{display:none}
   .pc-topbar{display:flex}
-  .content{padding:16px 28px 40px}
-  .pc-grid{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start}
-  .cal-week-row{min-height:90px}
-  .cal-day-cell{min-height:90px}
-  .ev-bar{height:19px;font-size:10px}
-  .week-events-layer{top:32px}
-  .inf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .content{padding:16px 26px 40px}
+  .pc-grid{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+  .cal-week-row{min-height:88px}
+  .cal-day-cell{min-height:88px}
+  .ev-bar{height:18px;font-size:10px}
+  .week-events-layer{top:30px}
+  .inf-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
   .inf-grid .inf-card{margin-bottom:0}
 }
 </style>
 </head>
 <body>
-
 <div class="toast" id="toast"></div>
-
 <div class="layout">
-  <!-- SIDEBAR -->
   <nav class="sidebar" id="sidebar">
     <div class="sb-logo">
-      <div class="sb-logo-icon">🛍️</div>
+      <div style="font-size:20px">🛍️</div>
       <div>
         <div class="sb-logo-text">공구 매니저</div>
         <div class="sb-logo-sub" id="sb-date"></div>
@@ -234,23 +256,14 @@ body{font-family:'Pretendard',-apple-system,sans-serif;background:#F0F2F8;min-he
     </div>
     <div class="sb-stats" id="sb-stats"></div>
     <div class="sb-nav">
-      <button class="sb-nav-btn" id="sbn-dash" onclick="setTab('dash')">
-        <span class="sb-nav-icon">📊</span>대시보드
-        <span class="sb-badge" id="sb-ub" style="display:none"></span>
-      </button>
-      <button class="sb-nav-btn" id="sbn-cal" onclick="setTab('cal')">
-        <span class="sb-nav-icon">📅</span>캘린더
-      </button>
-      <button class="sb-nav-btn" id="sbn-list" onclick="setTab('list')">
-        <span class="sb-nav-icon">👥</span>인플루언서
-      </button>
+      <button class="sb-nav-btn" id="sbn-dash" onclick="setTab('dash')"><span class="sb-nav-icon">📊</span>대시보드<span class="sb-badge" id="sb-ub" style="display:none"></span></button>
+      <button class="sb-nav-btn" id="sbn-cal"  onclick="setTab('cal')"><span class="sb-nav-icon">📅</span>캘린더</button>
+      <button class="sb-nav-btn" id="sbn-list" onclick="setTab('list')"><span class="sb-nav-icon">👥</span>인플루언서</button>
     </div>
     <div class="sb-bottom">
       <button class="sb-add-btn" onclick="openAdd()">＋ 인플루언서 추가</button>
       <div class="sb-divider"></div>
-      <button class="sb-tool-btn sb-gd-btn" id="sb-gd-btn" onclick="gdConnect()">
-        ☁️ 구글드라이브 연동
-      </button>
+      <button class="sb-tool-btn sb-gd-btn" id="sb-gd-btn" onclick="gdConnect()">☁️ 구글드라이브 연동</button>
       <div class="sb-divider"></div>
       <button class="sb-tool-btn" onclick="exportData()">📤 백업 내보내기</button>
       <button class="sb-tool-btn" onclick="document.getElementById('import-file').click()">📥 백업 불러오기</button>
@@ -260,25 +273,19 @@ body{font-family:'Pretendard',-apple-system,sans-serif;background:#F0F2F8;min-he
   </nav>
 
   <div class="main">
-    <!-- MOBILE HEADER -->
     <div class="mobile-header">
       <div class="mh-row">
         <div class="mh-title">공구 매니저 🛍️</div>
         <div class="mh-actions">
-          <button class="mh-btn mh-gd-btn" id="m-gd-btn" onclick="gdConnect()">☁️ 연동</button>
+          <button class="mh-btn mh-gd-btn" id="m-gd-btn" onclick="gdConnect()">☁️</button>
           <button class="mh-btn" onclick="exportData()">📤</button>
           <button class="mh-btn" onclick="document.getElementById('import-file').click()">📥</button>
         </div>
       </div>
       <div class="mh-pills" id="mh-pills"></div>
     </div>
-
-    <!-- PC TOPBAR -->
     <div class="pc-topbar" id="pc-topbar">
-      <div>
-        <div class="pc-topbar-title" id="pc-tab-title">대시보드</div>
-        <div class="pc-topbar-date" id="pc-date"></div>
-      </div>
+      <div><div class="pc-topbar-title" id="pc-tab-title">대시보드</div><div class="pc-topbar-date" id="pc-date"></div></div>
       <div class="pc-topbar-right">
         <div class="pc-topbar-stats" id="pc-stats"></div>
         <div class="pc-tool-btns">
@@ -287,109 +294,204 @@ body{font-family:'Pretendard',-apple-system,sans-serif;background:#F0F2F8;min-he
         </div>
       </div>
     </div>
-
     <div class="content" id="content"></div>
-
     <div class="bottom-nav">
-      <button class="nav-btn" id="mbn-dash" onclick="setTab('dash')">
-        <span class="nav-icon">📊</span><span class="nav-label">대시보드</span>
-      </button>
-      <button class="nav-btn" id="mbn-cal" onclick="setTab('cal')">
-        <span class="nav-icon">📅</span><span class="nav-label">캘린더</span>
-      </button>
-      <button class="nav-btn" id="mbn-list" onclick="setTab('list')">
-        <span class="nav-icon">👥</span><span class="nav-label">인플루언서</span>
-      </button>
+      <button class="nav-btn" id="mbn-dash" onclick="setTab('dash')"><span class="nav-icon">📊</span><span class="nav-label">대시보드</span></button>
+      <button class="nav-btn" id="mbn-cal"  onclick="setTab('cal')"><span class="nav-icon">📅</span><span class="nav-label">캘린더</span></button>
+      <button class="nav-btn" id="mbn-list" onclick="setTab('list')"><span class="nav-icon">👥</span><span class="nav-label">인플루언서</span></button>
     </div>
     <button class="fab" onclick="openAdd()">＋</button>
   </div>
 </div>
 
-
-
+<script src="https://apis.google.com/js/api.js" onload="onGapiLoad()"></script>
+<script src="https://accounts.google.com/gsi/client" onload="onGisLoad()" async defer></script>
 <script>
+// ══════════════════════════════════════════════════
+// CONSTANTS — 4단계 Phase 시스템
+// ══════════════════════════════════════════════════
+const PHASES = [
+  { id:1, key:'contact', label:'컨택', icon:'📨', color:'#6366F1', bg:'#EEF2FF',
+    checks:[
+      {key:'dm',       label:'DM 발송',   cat:'contact', urgent:false},
+      {key:'reply',    label:'답장 확인', cat:'contact', urgent:true},
+      {key:'proposal', label:'제품 제안', cat:'contact', urgent:true},
+      {key:'kakao',    label:'카톡 연결', cat:'contact', urgent:true},
+    ]
+  },
+  { id:2, key:'sample', label:'샘플', icon:'📦', color:'#F59E0B', bg:'#FFFBEB',
+    checks:[
+      {key:'decided',  label:'공구 결정',      cat:'sample', urgent:true},
+      {key:'info',     label:'샘플 정보 수집', cat:'sample', urgent:true},
+      {key:'sent',     label:'샘플 발송',      cat:'sample', urgent:true},
+      {key:'tracking', label:'송장번호 전달',  cat:'sample', urgent:false},
+      {key:'received', label:'수령 확인',      cat:'sample', urgent:false},
+    ]
+  },
+  { id:3, key:'operation', label:'운영', icon:'🛍️', color:'#2563EB', bg:'#EFF6FF',
+    checks:[
+      {key:'schedule', label:'공구 일정 확정',     cat:'groupbuy', urgent:false},
+      {key:'link',     label:'결제링크 전달 (D-3)', cat:'groupbuy', urgent:true},
+      {key:'ongoing',  label:'공구 진행 중',        cat:'groupbuy', urgent:false},
+    ]
+  },
+  { id:4, key:'closing', label:'마감', icon:'💰', color:'#10B981', bg:'#ECFDF5',
+    checks:[
+      {key:'done',             label:'공구 완료',      cat:'settlement', urgent:false},
+      {key:'settlement_info',  label:'정산 일정 안내', cat:'settlement', urgent:false},
+      {key:'settled',          label:'정산 완료',      cat:'settlement', urgent:true},
+      {key:'next_recommend',   label:'다음 제품 추천', cat:'contact',    urgent:false},
+    ]
+  },
+];
+const PHASE_MAP = Object.fromEntries(PHASES.map(p=>[p.id,p]));
+const TC = {
+  contact:    {label:'소통', icon:'💬', color:'#6366F1', bg:'#EEF2FF'},
+  sample:     {label:'샘플', icon:'📦', color:'#F59E0B', bg:'#FFFBEB'},
+  groupbuy:   {label:'공구', icon:'🛍️', color:'#2563EB', bg:'#EFF6FF'},
+  settlement: {label:'정산', icon:'💰', color:'#10B981', bg:'#ECFDF5'},
+};
+const DAYS_   = ['일','월','화','수','목','금','토'];
+const MONTHS_ = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+// ══════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════
+const uid   = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today = ()=>new Date().toISOString().split('T')[0];
+const addD  = (n,b)=>{const d=new Date((b||today())+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]};
+const subD  = (n,b)=>{const d=new Date((b||today())+'T00:00:00');d.setDate(d.getDate()-n);return d.toISOString().split('T')[0]};
+const fmt   = s=>{if(!s)return'';const d=new Date(s+'T00:00:00');return`${d.getMonth()+1}/${d.getDate()}`};
+const diff  = s=>{if(!s)return null;const d=new Date(s+'T00:00:00');const t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/86400000)};
+const fmtF  = n=>{if(!n)return'';const x=parseInt(n);return x>=10000?`${(x/10000).toFixed(1)}만명`:`${x.toLocaleString()}명`};
+const autoLinkDate       = inf=>inf.scheduleDate?subD(3,inf.scheduleDate):'';
+const autoSettlementDate = inf=>inf.scheduleEndDate?addD(30,inf.scheduleEndDate):'';
+const getChecklist = inf=>{
+  const cl=inf.checklist||{};
+  return{
+    contact:   {dm:false,reply:false,proposal:false,kakao:false,...(cl.contact||{})},
+    sample:    {decided:false,info:false,sent:false,tracking:false,received:false,...(cl.sample||{})},
+    operation: {schedule:false,link:false,ongoing:false,...(cl.operation||{})},
+    closing:   {done:false,settlement_info:false,settled:false,next_recommend:false,...(cl.closing||{})},
+  };
+};
+const getPhaseProgress = inf=>{
+  const ph=PHASE_MAP[inf.phase||1];
+  const cl=getChecklist(inf);
+  const checks=ph.checks;
+  const done=checks.filter(c=>cl[ph.key][c.key]).length;
+  return{done,total:checks.length};
+};
+const getTotalProgress = inf=>{
+  const cl=getChecklist(inf);
+  let done=0,total=0;
+  PHASES.forEach(ph=>{ph.checks.forEach(c=>{total++;if(cl[ph.key][c.key])done++;});});
+  return{done,total};
+};
+
+function getNextAction(inf){
+  const phase=inf.phase||1;
+  const ph=PHASE_MAP[phase];
+  const cl=getChecklist(inf);
+  const phCl=cl[ph.key];
+  for(const c of ph.checks){
+    if(!phCl[c.key]){
+      let action=c.label;
+      // Special urgency for link delivery
+      if(c.key==='link'&&inf.scheduleDate){
+        const ld=autoLinkDate(inf);
+        const d=diff(ld);
+        const urgent=d!==null&&d<=1;
+        return{cat:c.cat,action:`${c.label} (${fmt(ld)})`,urgent};
+      }
+      // Special urgency for settlement
+      if(c.key==='settled'&&(inf.settlement_date||autoSettlementDate(inf))){
+        const sd=inf.settlement_date||autoSettlementDate(inf);
+        const d=diff(sd);
+        const urgent=d!==null&&d<=3;
+        return{cat:c.cat,action:`정산 진행 (${fmt(sd)})`,urgent};
+      }
+      return{cat:c.cat,action,urgent:c.urgent};
+    }
+  }
+  if(phase<4)return{cat:'contact',action:`${phase+1}단계(${PHASE_MAP[phase+1].label})로 이동`,urgent:false};
+  return null;
+}
+
+// ══════════════════════════════════════════════════
+// DATA MIGRATION (old stage → new phase+checklist)
+// ══════════════════════════════════════════════════
+function migrateInf(inf){
+  if(inf.phase)return inf; // already migrated
+  const stageToPhase={
+    dm_sent:{phase:1,contact:{dm:true}},
+    replied:{phase:1,contact:{dm:true,reply:true}},
+    kakao_req:{phase:1,contact:{dm:true,reply:true,proposal:true}},
+    proposal:{phase:1,contact:{dm:true,reply:true,proposal:true}},
+    decided:{phase:2,sample:{decided:true}},
+    delivery_info:{phase:2,sample:{decided:true,info:true}},
+    sample_req:{phase:2,sample:{decided:true,info:true}},
+    tracking:{phase:2,sample:{decided:true,info:true,sent:true,tracking:true}},
+    delivery_ok:{phase:2,sample:{decided:true,info:true,sent:true,tracking:true,received:true}},
+    sch_set:{phase:3,operation:{schedule:true}},
+    link_sent:{phase:3,operation:{schedule:true,link:true}},
+    ongoing:{phase:3,operation:{schedule:true,link:true,ongoing:true}},
+    done:{phase:4,closing:{done:true}},
+    settle_soon:{phase:4,closing:{done:true,settlement_info:true}},
+    settled:{phase:4,closing:{done:true,settlement_info:true,settled:true}},
+  };
+  const mapping=stageToPhase[inf.stage];
+  if(!mapping)return{...inf,phase:1,checklist:{contact:{},sample:{},operation:{},closing:{}}};
+  const cl={contact:{},sample:{},operation:{},closing:{}};
+  Object.assign(cl[PHASE_MAP[mapping.phase].key],mapping[PHASE_MAP[mapping.phase].key]||{});
+  return{
+    ...inf,
+    phase:mapping.phase,
+    checklist:cl,
+    // migrate old field names
+    recipient_name: inf.sampleRecipient||inf.recipient_name||'',
+    recipient_phone:inf.samplePhone||inf.recipient_phone||'',
+    recipient_address:inf.sampleAddress||inf.recipient_address||'',
+    sample_detail:inf.sampleProduct||inf.sample_detail||'',
+    instagramUrl:inf.instagramUrl||inf.channel_url||'',
+  };
+}
+
 // ══════════════════════════════════════════════════
 // IndexedDB
 // ══════════════════════════════════════════════════
-const DB_NAME = '공구매니저DB';
-const DB_VER = 1;
-const STORE = 'influencers';
-let db = null;
-
-function openDB() {
-  return new Promise((res, rej) => {
-    const req = indexedDB.open(DB_NAME, DB_VER);
-    req.onupgradeneeded = e => {
-      const d = e.target.result;
-      if (!d.objectStoreNames.contains(STORE)) {
-        d.createObjectStore(STORE, {keyPath:'id'});
-      }
-    };
-    req.onsuccess = e => { db = e.target.result; res(db); };
-    req.onerror = e => rej(e.target.error);
-  });
-}
-const dbGetAll = () => new Promise((res,rej) => {
-  const tx = db.transaction(STORE,'readonly');
-  const req = tx.objectStore(STORE).getAll();
-  req.onsuccess = () => res(req.result);
-  req.onerror = () => rej(req.error);
-});
-const dbPut = item => new Promise((res,rej) => {
-  const tx = db.transaction(STORE,'readwrite');
-  const req = tx.objectStore(STORE).put(item);
-  req.onsuccess = () => res();
-  req.onerror = () => rej(req.error);
-});
-const dbDelete = id => new Promise((res,rej) => {
-  const tx = db.transaction(STORE,'readwrite');
-  const req = tx.objectStore(STORE).delete(id);
-  req.onsuccess = () => res();
-  req.onerror = () => rej(req.error);
-});
-const dbClear = () => new Promise((res,rej) => {
-  const tx = db.transaction(STORE,'readwrite');
-  const req = tx.objectStore(STORE).clear();
-  req.onsuccess = () => res();
-  req.onerror = () => rej(req.error);
-});
-const dbCount = () => new Promise(res => {
-  const tx = db.transaction(STORE,'readonly');
-  const req = tx.objectStore(STORE).count();
-  req.onsuccess = () => res(req.result);
-  req.onerror = () => res(0);
-});
+const DB_NAME='공구매니저DB_v3';const DB_VER=1;const STORE='influencers';
+let db=null;
+function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB_NAME,DB_VER);req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id'});};req.onsuccess=e=>{db=e.target.result;res(db);};req.onerror=e=>rej(e.target.error);});}
+const dbGetAll=()=>new Promise((res,rej)=>{const tx=db.transaction(STORE,'readonly');const req=tx.objectStore(STORE).getAll();req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error);});
+const dbPut=item=>new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');const req=tx.objectStore(STORE).put(item);req.onsuccess=()=>res();req.onerror=()=>rej(req.error);});
+const dbDelete=id=>new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');const req=tx.objectStore(STORE).delete(id);req.onsuccess=()=>res();req.onerror=()=>rej(req.error);});
+const dbClear=()=>new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');const req=tx.objectStore(STORE).clear();req.onsuccess=()=>res();req.onerror=()=>rej(req.error);});
+const dbCount=()=>new Promise(res=>{const tx=db.transaction(STORE,'readonly');const req=tx.objectStore(STORE).count();req.onsuccess=()=>res(req.result);req.onerror=()=>res(0);});
 
 // ══════════════════════════════════════════════════
 // BACKUP / RESTORE
 // ══════════════════════════════════════════════════
-async function exportData() {
-  const all = await dbGetAll();
-  const blob = new Blob([JSON.stringify({version:1, exportDate:new Date().toISOString(), data:all}, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const d = new Date();
-  a.href = url;
-  a.download = `공구매니저_백업_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast(`✅ ${all.length}명 백업 완료!`);
+async function exportData(){
+  const all=await dbGetAll();
+  const blob=new Blob([JSON.stringify({version:3,exportDate:new Date().toISOString(),data:all},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  const d=new Date();a.href=url;a.download=`공구매니저_백업_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  a.click();URL.revokeObjectURL(url);showToast(`✅ ${all.length}명 백업 완료!`);
 }
-async function importData(event) {
-  const file = event.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async e => {
-    try {
-      const json = JSON.parse(e.target.result);
-      const items = json.data || json;
-      if (!Array.isArray(items)) throw new Error('bad format');
-      if (!confirm(`${items.length}명 데이터를 불러올까요?\n같은 ID는 덮어씁니다.`)) return;
-      for (const item of items) await dbPut(item);
-      data = await dbGetAll();
-      render();
-      showToast(`✅ ${items.length}명 불러오기 완료!`);
-    } catch { alert('파일 형식이 올바르지 않아요.'); }
-    event.target.value = '';
+async function importData(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    try{
+      const json=JSON.parse(e.target.result);
+      const items=(json.data||json).map(migrateInf);
+      if(!Array.isArray(items))throw new Error();
+      if(!confirm(`${items.length}명 데이터를 불러올까요?\n같은 ID는 덮어씁니다.`))return;
+      for(const item of items)await dbPut(item);
+      data=await dbGetAll();render();showToast(`✅ ${items.length}명 불러오기 완료!`);
+    }catch{alert('파일 형식이 올바르지 않아요.');}
+    event.target.value='';
   };
   reader.readAsText(file);
 }
@@ -397,761 +499,483 @@ async function importData(event) {
 // ══════════════════════════════════════════════════
 // GOOGLE DRIVE SYNC
 // ══════════════════════════════════════════════════
-const GD_FILE = '공구매니저_데이터.json';
-const GD_SCOPE = 'https://www.googleapis.com/auth/drive.file';
-
-let gdClientId = localStorage.getItem('gd_client_id') || '';
-let gdFileId   = localStorage.getItem('gd_file_id')   || '';
-let isGDConnected = false;
-let isSyncing     = false;
-let tokenClient   = null;
-let gapiReady = false;
-let gisReady  = false;
-
-// Called when apis.google.com/js/api.js loads
-function onGapiLoad() {
-  gapi.load('client', async () => {
-    await gapi.client.init({});
-    // Load Drive v3 discovery
-    await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
-    gapiReady = true;
-    maybeAutoConnect();
-  });
+const GD_FILE='공구매니저_데이터.json';const GD_SCOPE='https://www.googleapis.com/auth/drive.file';
+let gdClientId=localStorage.getItem('gd_client_id')||'';
+let gdFileId=localStorage.getItem('gd_file_id')||'';
+let isGDConnected=false,isSyncing=false,tokenClient=null,gapiReady=false,gisReady=false;
+function onGapiLoad(){gapi.load('client',async()=>{await gapi.client.init({});await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');gapiReady=true;maybeAutoConnect();});}
+function onGisLoad(){gisReady=true;maybeAutoConnect();}
+function maybeAutoConnect(){if(!gapiReady||!gisReady||!gdClientId)return;setupTokenClient();tokenClient.requestAccessToken({prompt:''});}
+function setupTokenClient(){if(!window.google?.accounts?.oauth2)return;tokenClient=google.accounts.oauth2.initTokenClient({client_id:gdClientId,scope:GD_SCOPE,callback:handleGDToken,error_callback:err=>{if(err.type==='popup_closed'||err.type==='popup_failed_to_open')return;isGDConnected=false;updateGDStatus();}});}
+async function handleGDToken(resp){if(resp.error){isGDConnected=false;updateGDStatus();return;}isGDConnected=true;gapi.client.setToken({access_token:resp.access_token});updateGDStatus();await gdLoad();render();showToast('☁️ 구글드라이브 연동 완료!',3000);}
+function gdConnect(){if(isGDConnected){gdDisconnect();return;}if(!gdClientId){showGDSetupModal();return;}if(!gapiReady||!gisReady){showToast('⏳ API 로딩 중... 잠시 후 다시 눌러주세요');return;}setupTokenClient();tokenClient.requestAccessToken({prompt:'consent'});}
+async function gdDisconnect(){if(!confirm('구글드라이브 연동을 해제할까요?'))return;const token=gapi.client.getToken();if(token)google.accounts.oauth2.revoke(token.access_token,()=>{});gapi.client.setToken(null);isGDConnected=false;updateGDStatus();render();showToast('🔌 드라이브 연동 해제됨');}
+async function gdLoad(){
+  if(!isGDConnected)return;isSyncing=true;updateGDStatus();
+  try{
+    if(!gdFileId){const r=await gapi.client.drive.files.list({q:`name='${GD_FILE}' and trashed=false`,fields:'files(id,name)',spaces:'drive',pageSize:1});const files=r.result.files;if(files&&files.length>0){gdFileId=files[0].id;localStorage.setItem('gd_file_id',gdFileId);}}
+    if(gdFileId){const r=await gapi.client.drive.files.get({fileId:gdFileId,alt:'media'});const driveData=JSON.parse(r.body).map(migrateInf);const local=await dbGetAll();const merged=mergeData(local,driveData);await dbClear();for(const item of merged)await dbPut(item);data=merged;}
+    else await gdSaveNow();
+  }catch(e){console.error('GDrive load:',e);showToast('⚠️ 드라이브 동기화 실패 (로컬 사용)');}
+  isSyncing=false;updateGDStatus();
 }
-
-// Called when accounts.google.com/gsi/client loads
-function onGisLoad() {
-  gisReady = true;
-  maybeAutoConnect();
+let _gdTimer=null;
+function gdSave(){if(!isGDConnected)return;clearTimeout(_gdTimer);_gdTimer=setTimeout(gdSaveNow,1200);}
+async function gdSaveNow(){
+  if(!isGDConnected)return;isSyncing=true;updateGDStatus();
+  try{
+    const content=JSON.stringify(data);const b='gd_boundary_xyz';
+    const body=[`--${b}`,'Content-Type: application/json; charset=UTF-8','',JSON.stringify({name:GD_FILE,mimeType:'application/json'}),`--${b}`,'Content-Type: application/json','',content,`--${b}--`].join('\r\n');
+    if(gdFileId){await gapi.client.request({path:`/upload/drive/v3/files/${gdFileId}`,method:'PATCH',params:{uploadType:'multipart'},headers:{'Content-Type':`multipart/related; boundary=${b}`},body});}
+    else{const r=await gapi.client.request({path:'/upload/drive/v3/files',method:'POST',params:{uploadType:'multipart'},headers:{'Content-Type':`multipart/related; boundary=${b}`},body});gdFileId=r.result.id;localStorage.setItem('gd_file_id',gdFileId);}
+  }catch(e){console.error('GDrive save:',e);showToast('⚠️ 드라이브 저장 실패 (로컬에는 저장됨)');}
+  isSyncing=false;updateGDStatus();
 }
-
-function maybeAutoConnect() {
-  if (!gapiReady || !gisReady || !gdClientId) return;
-  setupTokenClient();
-  // Silent auto-reconnect (no popup if token is cached by Google)
-  tokenClient.requestAccessToken({ prompt: '' });
+function mergeData(local,remote){const map={};[...remote,...local].forEach(item=>{const ex=map[item.id];if(!ex){map[item.id]=item;return;}const et=new Date(ex.updatedAt||ex.createdAt||0).getTime();const nt=new Date(item.updatedAt||item.createdAt||0).getTime();if(nt>=et)map[item.id]=item;});return Object.values(map);}
+function updateGDStatus(){
+  const sb=document.getElementById('sb-gd-btn'),mb=document.getElementById('m-gd-btn');
+  if(isSyncing){const t='<span class="sync-dot" style="background:#60A5FA"></span>동기화 중...';if(sb)sb.innerHTML=t;if(mb)mb.innerHTML='🔄';}
+  else if(isGDConnected){if(sb){sb.innerHTML='☁️ 드라이브 연동됨 ✓';sb.classList.add('connected');}if(mb){mb.innerHTML='☁️연동됨';mb.classList.add('connected');}}
+  else{if(sb){sb.innerHTML='☁️ 구글드라이브 연동';sb.classList.remove('connected');}if(mb){mb.innerHTML='☁️';mb.classList.remove('connected');}}
 }
-
-function setupTokenClient() {
-  if (!window.google?.accounts?.oauth2) return;
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: gdClientId,
-    scope: GD_SCOPE,
-    callback: handleGDToken,
-    error_callback: err => {
-      if (err.type === 'popup_closed' || err.type === 'popup_failed_to_open') return;
-      isGDConnected = false;
-      updateGDStatus();
-    },
-  });
+function showGDSetupModal(){
+  const isFile=window.location.protocol==='file:';
+  const ov=document.createElement('div');ov.className='overlay';ov.id='gd-modal';ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  ov.innerHTML=`<div class="modal" onclick="event.stopPropagation()"><div class="m-handle"></div>
+    <div class="m-title">☁️ 구글드라이브 연동<button class="m-close" onclick="document.getElementById('gd-modal').remove()">✕</button></div>
+    <div class="m-sub">PC·모바일 어디서든 자동으로 데이터 동기화!</div>
+    ${isFile?`<div class="warn-box"><div style="font-size:14px;font-weight:800;color:#EF4444;margin-bottom:8px">⚠️ 파일로 열면 드라이브 연동이 안 돼요</div>
+    <div style="font-size:13px;color:#64748B;line-height:1.7">GitHub Pages에 올린 후 연동해주세요.</div>
+    <button onclick="showGithubGuide()" style="margin-top:10px;background:#4F46E5;color:white;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer">📖 GitHub Pages 가이드 →</button></div>`:''}
+    <div class="guide-box"><div style="font-size:13px;font-weight:800;color:#4F46E5;margin-bottom:10px">⚙️ Google Cloud 설정 (처음 한 번만)</div>
+    <div class="guide-step">① <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> 접속<br>② 새 프로젝트 만들기<br>③ Google Drive API 사용 설정<br>④ 사용자 인증 정보 → OAuth 클라이언트 ID<br>⑤ 애플리케이션 유형: <b>웹 애플리케이션</b><br>⑥ 승인된 JavaScript 원본에 앱 URL 추가<br>&nbsp;&nbsp;&nbsp;예: <code>https://내아이디.github.io</code><br>⑦ 클라이언트 ID 복사</div></div>
+    <div class="guide-box"><div style="font-size:13px;font-weight:800;color:#4F46E5;margin-bottom:10px">🔑 클라이언트 ID 입력</div>
+    <div class="field"><label>Google OAuth 클라이언트 ID</label><input id="gd-cid-input" value="${gdClientId}" placeholder="000000000000-xxxxx.apps.googleusercontent.com" style="font-size:12px"></div></div>
+    <div class="btn-row"><button class="btn-cancel" onclick="document.getElementById('gd-modal').remove()">취소</button><button class="btn-save" onclick="gdSaveClientId()">연동 시작 ☁️</button></div>
+  </div>`;
+  document.body.appendChild(ov);
 }
-
-async function handleGDToken(resp) {
-  if (resp.error) { isGDConnected = false; updateGDStatus(); return; }
-  isGDConnected = true;
-  gapi.client.setToken({access_token: resp.access_token});
-  updateGDStatus();
-  await gdLoad();
-  render();
-  showToast('☁️ 구글드라이브 연동 완료!', 3000);
-}
-
-// Connect button handler
-function gdConnect() {
-  if (isGDConnected) { gdDisconnect(); return; }
-  if (!gdClientId)   { showGDSetupModal(); return; }
-  if (!gapiReady || !gisReady) { showToast('⏳ API 로딩 중... 잠시만요'); return; }
-  setupTokenClient();
-  tokenClient.requestAccessToken({prompt: 'consent'});
-}
-
-async function gdDisconnect() {
-  if (!confirm('구글드라이브 연동을 해제할까요?\n로컬 데이터는 유지됩니다.')) return;
-  const token = gapi.client.getToken();
-  if (token) google.accounts.oauth2.revoke(token.access_token, () => {});
-  gapi.client.setToken(null);
-  isGDConnected = false;
-  updateGDStatus();
-  render();
-  showToast('🔌 드라이브 연동 해제됨');
-}
-
-// Load + merge data from Drive
-async function gdLoad() {
-  if (!isGDConnected) return;
-  isSyncing = true; updateGDStatus();
-  try {
-    // Find file in Drive
-    if (!gdFileId) {
-      const listRes = await gapi.client.drive.files.list({
-        q: `name='${GD_FILE}' and trashed=false`,
-        fields: 'files(id,name)',
-        spaces: 'drive',
-        pageSize: 1,
-      });
-      const files = listRes.result.files;
-      if (files && files.length > 0) {
-        gdFileId = files[0].id;
-        localStorage.setItem('gd_file_id', gdFileId);
-      }
-    }
-
-    if (gdFileId) {
-      const getRes = await gapi.client.drive.files.get({fileId:gdFileId, alt:'media'});
-      const driveData = JSON.parse(getRes.body);
-      if (Array.isArray(driveData)) {
-        const localData = await dbGetAll();
-        const merged = mergeData(localData, driveData);
-        await dbClear();
-        for (const item of merged) await dbPut(item);
-        data = merged;
-      }
-    } else {
-      // No file yet → push local data to Drive
-      await gdSaveNow();
-    }
-  } catch(e) {
-    console.error('GDrive load:', e);
-    showToast('⚠️ 드라이브 동기화 실패 (로컬 데이터 사용)');
-  }
-  isSyncing = false; updateGDStatus();
-}
-
-// Debounced save
-let _gdTimer = null;
-function gdSave() {
-  if (!isGDConnected) return;
-  clearTimeout(_gdTimer);
-  _gdTimer = setTimeout(gdSaveNow, 1200);
-}
-
-async function gdSaveNow() {
-  if (!isGDConnected) return;
-  isSyncing = true; updateGDStatus();
-  try {
-    const content = JSON.stringify(data);
-    const boundary = 'gd_boundary_xyz';
-    const body = [
-      `--${boundary}`,
-      'Content-Type: application/json; charset=UTF-8',
-      '',
-      JSON.stringify({name: GD_FILE, mimeType: 'application/json'}),
-      `--${boundary}`,
-      'Content-Type: application/json',
-      '',
-      content,
-      `--${boundary}--`,
-    ].join('\r\n');
-
-    if (gdFileId) {
-      await gapi.client.request({
-        path: `/upload/drive/v3/files/${gdFileId}`,
-        method: 'PATCH',
-        params: {uploadType: 'multipart'},
-        headers: {'Content-Type': `multipart/related; boundary=${boundary}`},
-        body,
-      });
-    } else {
-      const res = await gapi.client.request({
-        path: '/upload/drive/v3/files',
-        method: 'POST',
-        params: {uploadType: 'multipart'},
-        headers: {'Content-Type': `multipart/related; boundary=${boundary}`},
-        body,
-      });
-      gdFileId = res.result.id;
-      localStorage.setItem('gd_file_id', gdFileId);
-    }
-  } catch(e) {
-    console.error('GDrive save:', e);
-    showToast('⚠️ 드라이브 저장 실패 (로컬에는 저장됨)');
-  }
-  isSyncing = false; updateGDStatus();
-}
-
-// Merge: newer updatedAt wins per record
-function mergeData(local, remote) {
-  const map = {};
-  [...remote, ...local].forEach(item => {
-    const ex = map[item.id];
-    if (!ex) { map[item.id] = item; return; }
-    const et = new Date(ex.updatedAt || ex.createdAt || 0).getTime();
-    const nt = new Date(item.updatedAt || item.createdAt || 0).getTime();
-    if (nt >= et) map[item.id] = item;
-  });
-  return Object.values(map);
-}
-
-// Update GDrive UI elements
-function updateGDStatus() {
-  const sbBtn = document.getElementById('sb-gd-btn');
-  const mBtn  = document.getElementById('m-gd-btn');
-  if (isSyncing) {
-    const txt = '<span class="sync-dot" style="background:#60A5FA"></span>동기화 중...';
-    if (sbBtn) sbBtn.innerHTML = txt;
-    if (mBtn)  mBtn.innerHTML  = '🔄';
-  } else if (isGDConnected) {
-    if (sbBtn) { sbBtn.innerHTML = '☁️ 드라이브 연동됨 ✓'; sbBtn.classList.add('connected'); }
-    if (mBtn)  { mBtn.innerHTML  = '☁️ 연동됨'; mBtn.classList.add('connected'); }
-  } else {
-    if (sbBtn) { sbBtn.innerHTML = '☁️ 구글드라이브 연동'; sbBtn.classList.remove('connected'); }
-    if (mBtn)  { mBtn.innerHTML  = '☁️ 연동'; mBtn.classList.remove('connected'); }
-  }
-}
-
-// Setup modal
-function showGDSetupModal() {
-  const isFile = window.location.protocol === 'file:';
-  const overlay = document.createElement('div');
-  overlay.className = 'overlay';
-  overlay.id = 'gd-modal';
-  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
-  overlay.innerHTML = `
-    <div class="modal" onclick="event.stopPropagation()">
-      <div class="m-handle"></div>
-      <div class="m-title">☁️ 구글드라이브 연동<button class="m-close" onclick="document.getElementById('gd-modal').remove()">✕</button></div>
-      <div class="m-sub">PC·모바일 어디서든 자동으로 데이터 동기화!</div>
-
-      ${isFile ? `
-      <div class="warn-box">
-        <div style="font-size:14px;font-weight:800;color:#EF4444;margin-bottom:8px">⚠️ 파일로 열면 드라이브 연동이 안 돼요</div>
-        <div style="font-size:13px;color:#64748B;line-height:1.7">
-          구글 보안 정책상 파일을 <b>웹에 올려야</b> 드라이브 연동이 됩니다.<br>
-          <b>GitHub Pages (무료)</b>에 올리는 게 가장 쉬워요. 아래 가이드를 따라하면 5~10분이면 돼요!
-        </div>
-        <button onclick="showGithubGuide()" style="margin-top:10px;background:#4F46E5;color:white;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer">📖 GitHub Pages 올리기 가이드 →</button>
-      </div>
-      ` : ''}
-
-      <div class="guide-box">
-        <div style="font-size:13px;font-weight:800;color:#4F46E5;margin-bottom:10px">⚙️ 1단계: Google Cloud 설정 (처음 한 번만)</div>
-        <div class="guide-step">
-          ① <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> 접속<br>
-          ② 상단 프로젝트 선택 → <b>새 프로젝트</b> → 이름 입력 후 만들기<br>
-          ③ 검색창에 <b>Google Drive API</b> → 사용 설정<br>
-          ④ 왼쪽 메뉴 <b>사용자 인증 정보</b> → 인증 정보 만들기 → <b>OAuth 클라이언트 ID</b><br>
-          ⑤ 동의 화면 구성 → 외부 → 앱 이름 입력 → 저장<br>
-          ⑥ 애플리케이션 유형: <b>웹 애플리케이션</b><br>
-          ⑦ 승인된 JavaScript 원본에 앱 URL 추가<br>
-          &nbsp;&nbsp;&nbsp;예: <code>https://내아이디.github.io</code><br>
-          ⑧ 만들기 → <b>클라이언트 ID 복사</b>
-        </div>
-      </div>
-
-      <div class="guide-box">
-        <div style="font-size:13px;font-weight:800;color:#4F46E5;margin-bottom:10px">🔑 2단계: 클라이언트 ID 입력</div>
-        <div class="field">
-          <label>Google OAuth 클라이언트 ID</label>
-          <input id="gd-cid-input" value="${gdClientId}" placeholder="000000000000-xxxxx.apps.googleusercontent.com" style="font-size:12px">
-        </div>
-      </div>
-
-      <div class="info-box">💡 연동 후에는 저장할 때마다 드라이브에 자동으로 백업돼요!</div>
-
-      <div class="btn-row">
-        <button class="btn-cancel" onclick="document.getElementById('gd-modal').remove()">취소</button>
-        <button class="btn-save" onclick="gdSaveClientId()">연동 시작 ☁️</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-}
-
-// GitHub Pages guide
-function showGithubGuide() {
-  document.getElementById('gd-modal')?.remove();
-  const overlay = document.createElement('div');
-  overlay.className = 'overlay';
-  overlay.id = 'gh-modal';
-  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
-  overlay.innerHTML = `
-    <div class="modal" onclick="event.stopPropagation()">
-      <div class="m-handle"></div>
-      <div class="m-title">📖 GitHub Pages 올리기<button class="m-close" onclick="document.getElementById('gh-modal').remove()">✕</button></div>
-      <div class="m-sub">무료로 앱을 웹에 올려서 PC·모바일 어디서든 접속!</div>
-
-      <div class="guide-box">
-        <div class="guide-step">
-          ① <a href="https://github.com" target="_blank">github.com</a> 무료 회원가입<br>
-          ② 오른쪽 상단 <b>+</b> → <b>New repository</b><br>
-          ③ Repository name에 <code>gonggu-manager</code> 입력<br>
-          ④ <b>Public</b> 선택 → <b>Create repository</b><br>
-          ⑤ <b>uploading an existing file</b> 클릭<br>
-          ⑥ <b>공구매니저_드라이브.html</b> 파일 드래그해서 올리기<br>
-          ⑦ 파일명을 <b>index.html</b>로 바꾸기<br>
-          ⑧ <b>Commit changes</b> 클릭<br>
-          ⑨ Settings → Pages → Branch: <b>main</b> → Save<br>
-          ⑩ 1~2분 후 아래 URL로 접속 가능!
-        </div>
-      </div>
-
-      <div style="background:white;border-radius:12px;padding:14px;border:2px solid #C7D2FE;margin-bottom:12px">
-        <div style="font-size:12px;color:#94A3B8;margin-bottom:4px">내 앱 URL (북마크 해두세요!)</div>
-        <div style="font-size:15px;font-weight:800;color:#4F46E5">https://내아이디.github.io/gonggu-manager</div>
-        <div style="font-size:11px;color:#94A3B8;margin-top:6px">* '내아이디' 부분을 GitHub 사용자명으로 바꿔주세요</div>
-      </div>
-
-      <div class="info-box">💡 이 URL을 Google Cloud의 '승인된 JavaScript 원본'에 추가하면 드라이브 연동까지 완성!</div>
-
-      <div class="btn-row">
-        <button class="btn-save" style="flex:1" onclick="document.getElementById('gh-modal').remove();showGDSetupModal()">← 클라이언트 ID 입력으로</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-}
-
-function gdSaveClientId() {
-  const id = document.getElementById('gd-cid-input')?.value.trim();
-  if (!id) { showToast('❌ 클라이언트 ID를 입력해주세요'); return; }
-  gdClientId = id;
-  localStorage.setItem('gd_client_id', id);
-  document.getElementById('gd-modal')?.remove();
-  if (!gapiReady || !gisReady) { showToast('⏳ API 로딩 중...잠시 후 다시 누르세요'); return; }
-  setupTokenClient();
-  tokenClient.requestAccessToken({prompt: 'consent'});
-}
+function showGithubGuide(){document.getElementById('gd-modal')?.remove();const ov=document.createElement('div');ov.className='overlay';ov.id='gh-modal';ov.onclick=e=>{if(e.target===ov)ov.remove();};ov.innerHTML=`<div class="modal" onclick="event.stopPropagation()"><div class="m-handle"></div><div class="m-title">📖 GitHub Pages<button class="m-close" onclick="document.getElementById('gh-modal').remove()">✕</button></div><div class="guide-box"><div class="guide-step">① <a href="https://github.com" target="_blank">github.com</a> 회원가입<br>② + → New repository → <code>gonggu-manager</code><br>③ Public 선택 → Create<br>④ uploading an existing file → HTML 파일 업로드<br>⑤ 파일명을 <b>index.html</b>로 변경<br>⑥ Settings → Pages → Branch: main → Save<br>⑦ <code>https://아이디.github.io/gonggu-manager</code> 접속!</div></div><div class="btn-row"><button class="btn-save" style="flex:1" onclick="document.getElementById('gh-modal').remove();showGDSetupModal()">← 돌아가기</button></div></div>`;document.body.appendChild(ov);}
+function gdSaveClientId(){const id=document.getElementById('gd-cid-input')?.value.trim();if(!id){showToast('❌ 클라이언트 ID를 입력해주세요');return;}gdClientId=id;localStorage.setItem('gd_client_id',id);document.getElementById('gd-modal')?.remove();if(!gapiReady||!gisReady){showToast('⏳ API 로딩 중...');return;}setupTokenClient();tokenClient.requestAccessToken({prompt:'consent'});}
 
 // ══════════════════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════════════════
-let _toastTimer = null;
-function showToast(msg, dur = 2500) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => t.classList.remove('show'), dur);
-}
+let _toastTimer=null;
+function showToast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove('show'),dur);}
 
 // ══════════════════════════════════════════════════
-// APP DATA & STATE
+// PRODUCT COLOR SYSTEM
 // ══════════════════════════════════════════════════
-const STAGES = [
-  {id:'dm_sent',       label:'DM 발송',      step:1,  cat:'contact',    color:'#94A3B8'},
-  {id:'replied',       label:'답장 옴',      step:2,  cat:'contact',    color:'#6366F1'},
-  {id:'kakao_req',     label:'카톡 요청',    step:3,  cat:'contact',    color:'#8B5CF6'},
-  {id:'proposal',      label:'제안서 발송',  step:4,  cat:'contact',    color:'#A78BFA'},
-  {id:'decided',       label:'공구 결정',    step:5,  cat:'contact',    color:'#F59E0B'},
-  {id:'delivery_info', label:'배송정보 수령',step:6,  cat:'sample',     color:'#F97316'},
-  {id:'sample_req',    label:'샘플 신청',    step:7,  cat:'sample',     color:'#EF4444'},
-  {id:'tracking',      label:'송장 전달',    step:8,  cat:'sample',     color:'#EC4899'},
-  {id:'delivery_ok',   label:'배송 확인',    step:9,  cat:'sample',     color:'#10B981'},
-  {id:'sch_set',       label:'일정 확정',    step:10, cat:'groupbuy',   color:'#059669'},
-  {id:'link_sent',     label:'링크 전달',    step:11, cat:'groupbuy',   color:'#0EA5E9'},
-  {id:'ongoing',       label:'공구 진행중',  step:12, cat:'groupbuy',   color:'#2563EB'},
-  {id:'done',          label:'공구 완료',    step:13, cat:'settlement', color:'#7C3AED'},
-  {id:'settle_soon',   label:'정산 예정',    step:14, cat:'settlement', color:'#D97706'},
-  {id:'settled',       label:'정산 완료',    step:15, cat:'done',       color:'#6B7280'},
+// Vibrant palette — 20 distinct colors
+const PRODUCT_PALETTE = [
+  '#E53935','#D81B60','#8E24AA','#5E35B1','#3949AB',
+  '#1E88E5','#039BE5','#00ACC1','#00897B','#43A047',
+  '#7CB342','#F9A825','#FB8C00','#F4511E','#6D4C41',
+  '#546E7A','#E91E63','#9C27B0','#2196F3','#009688',
 ];
-const SM = Object.fromEntries(STAGES.map(s => [s.id, s]));
-const TC = {
-  contact:    {label:'소통', icon:'💬', color:'#6366F1', bg:'#EEF2FF'},
-  sample:     {label:'샘플', icon:'📦', color:'#D97706', bg:'#FFFBEB'},
-  groupbuy:   {label:'공구', icon:'🛍️', color:'#2563EB', bg:'#EFF6FF'},
-  settlement: {label:'정산', icon:'💰', color:'#10B981', bg:'#ECFDF5'},
-};
-const DAYS_   = ['일','월','화','수','목','금','토'];
-const MONTHS_ = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+// productColorMap: { productKey → hex }
+// Persisted in localStorage so colors survive refresh
+let _productColorMap = {};
+try { _productColorMap = JSON.parse(localStorage.getItem('product_colors') || '{}'); } catch{}
 
-const uid   = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-const today = () => new Date().toISOString().split('T')[0];
-const addD  = (n,b) => { const d = new Date((b||today())+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; };
-const fmt   = s => { if (!s) return ''; const d = new Date(s+'T00:00:00'); return `${d.getMonth()+1}/${d.getDate()}`; };
-const diff  = s => { if (!s) return null; const d = new Date(s+'T00:00:00'); const t = new Date(); t.setHours(0,0,0,0); return Math.round((d-t)/86400000); };
-const fmtF  = n => { if (!n) return ''; const x = parseInt(n); return x>=10000 ? `${(x/10000).toFixed(1)}만명` : `${x.toLocaleString()}명`; };
-
-let data = [];
-let tab = 'dash', dashTab = '오늘', stageFilter = 'all', search = '';
-let selDate = today();
-let calY = new Date().getFullYear(), calM = new Date().getMonth();
-let editInf = null, modalStage = null, _mInf = {};
-
-// ══════════════════════════════════════════════════
-// LOGIC
-// ══════════════════════════════════════════════════
-function nextAction(inf) {
-  const sent = inf.sampleSentDate ? -diff(inf.sampleSentDate) : null;
-  switch (inf.stage) {
-    case 'replied':       return {cat:'contact',    action:'카카오톡 ID 요청',     urgent:true};
-    case 'kakao_req':     return {cat:'contact',    action:'제안서 보내기',        urgent:true};
-    case 'proposal':      return {cat:'contact',    action:'공구 진행 여부 팔로업', urgent:false};
-    case 'decided':       return {cat:'contact',    action:'배송 정보 받기',       urgent:true};
-    case 'delivery_info': return {cat:'sample',     action:'브랜드에 샘플 신청',   urgent:true};
-    case 'sample_req':    return {cat:'sample',     action:'송장번호 받아서 전달', urgent:false};
-    case 'tracking':
-      if (sent !== null && sent >= 2) return {cat:'sample', action:'샘플 도착 확인 연락', urgent:true};
-      return {cat:'sample', action:'샘플 배송 중 (확인 대기)', urgent:false};
-    case 'delivery_ok':   return {cat:'groupbuy',   action:'공구 일정 잡기',       urgent:false};
-    case 'done':          return {cat:'settlement', action:'정산 일정 안내',       urgent:false};
-    case 'settled':       return {cat:'contact',    action:'다음 제품 제안',       urgent:false};
-    default: return null;
-  }
+function getProductColor(productName) {
+  if (!productName) return '#1E88E5'; // default blue
+  const key = productName.trim().toLowerCase();
+  if (_productColorMap[key]) return _productColorMap[key];
+  // Assign next unused color
+  const used = new Set(Object.values(_productColorMap));
+  const next = PRODUCT_PALETTE.find(c => !used.has(c)) || PRODUCT_PALETTE[Object.keys(_productColorMap).length % PRODUCT_PALETTE.length];
+  _productColorMap[key] = next;
+  localStorage.setItem('product_colors', JSON.stringify(_productColorMap));
+  return next;
 }
 
-function buildCalEvents(infs) {
-  const spans = [], points = [];
+// Pre-warm colors for all current products
+function warmProductColors(infs) {
+  infs.forEach(inf => { const p = inf.negotiating_product || inf.product; if (p) getProductColor(p); });
+}
+
+// Build sorted unique product list from current data (for legend)
+function getProductLegend(infs) {
+  const seen = new Map();
   infs.forEach(inf => {
-    if (inf.scheduleDate) {
-      const e = inf.scheduleEndDate || inf.scheduleDate;
-      spans.push({id:inf.id, label:`${inf.name} · ${inf.product||''}`, shortLabel:inf.name, start:inf.scheduleDate, end:e, color:'#1E88E5', textColor:'#fff', cat:'groupbuy'});
-    }
-    if (inf.settlementDate)
-      points.push({id:inf.id, label:`정산 · ${inf.name}`, shortLabel:`정산 · ${inf.name}`, date:inf.settlementDate, color:'#43A047', textColor:'#fff', cat:'settlement'});
-    if (inf.sampleSentDate) {
-      points.push({id:inf.id, label:`샘플발송 · ${inf.name}`, shortLabel:`샘플 · ${inf.name}`, date:inf.sampleSentDate, color:'#FB8C00', textColor:'#fff', cat:'sample'});
-      points.push({id:inf.id, label:`배송확인 · ${inf.name}`, shortLabel:`배송확인 · ${inf.name}`, date:addD(2,inf.sampleSentDate), color:'#FF7043', textColor:'#fff', cat:'sample'});
-    }
+    const p = inf.negotiating_product || inf.product;
+    if (p && inf.scheduleDate) seen.set(p.trim(), getProductColor(p));
   });
-  return {spans, points};
+  return [...seen.entries()].map(([name, color]) => ({ name, color }));
 }
 
-function allTasks(infs) {
-  const t = today(); const tasks = [];
-  infs.forEach(inf => {
-    const base = {iid:inf.id, name:inf.name, insta:inf.instagram||'', product:inf.product||''};
-    const p = nextAction(inf);
-    if (p) tasks.push({...base, date:t, ...p});
-    if (inf.scheduleDate && (inf.stage==='sch_set'||inf.stage==='link_sent'))
-      tasks.push({...base, date:inf.scheduleDate, cat:'groupbuy', action:'공구 시작일', urgent:true});
-    if (inf.scheduleEndDate && inf.stage==='ongoing')
-      tasks.push({...base, date:inf.scheduleEndDate, cat:'groupbuy', action:'공구 마감일', urgent:true});
-    if (inf.settlementDate && (inf.stage==='settle_soon'||inf.stage==='done'))
-      tasks.push({...base, date:inf.settlementDate, cat:'settlement', action:'정산 진행', urgent:true});
+// ══════════════════════════════════════════════════
+// APP STATE
+// ══════════════════════════════════════════════════
+let data=[];
+let tab='dash',dashTab='오늘',phaseFilter='all',search='';
+let selDate=today();
+let calY=new Date().getFullYear(),calM=new Date().getMonth();
+let editInf=null,modalPhase=null,_mInf={};
+
+// ══════════════════════════════════════════════════
+// TASKS
+// ══════════════════════════════════════════════════
+function allTasks(infs){
+  const t=today();const tasks=[];
+  infs.forEach(inf=>{
+    const base={iid:inf.id,name:inf.name,insta:inf.instagram||'',product:inf.negotiating_product||inf.product||''};
+    const p=getNextAction(inf);
+    if(p)tasks.push({...base,date:t,...p});
+    // Link delivery date
+    const ld=inf.link_delivery_date||autoLinkDate(inf);
+    if(ld){
+      const cl=getChecklist(inf);
+      if(!cl.operation.link)tasks.push({...base,date:ld,cat:'groupbuy',action:`결제링크 전달 (${inf.name})`,urgent:diff(ld)<=1});
+    }
+    // Settlement date
+    const sd=inf.settlement_date||autoSettlementDate(inf);
+    if(sd){
+      const cl=getChecklist(inf);
+      if(!cl.closing.settled&&inf.phase===4)tasks.push({...base,date:sd,cat:'settlement',action:`정산 진행 (${inf.name})`,urgent:diff(sd)<=3});
+    }
   });
   return tasks;
 }
-function filteredTasks(tasks, t) {
-  const d = today();
-  if (t==='오늘')   return tasks.filter(x => x.date===d);
-  if (t==='내일')   return tasks.filter(x => x.date===addD(1));
-  if (t==='이번주') return tasks.filter(x => x.date>=d && x.date<=addD(7));
-  if (t==='이번달') return tasks.filter(x => x.date>=d && x.date<=addD(30));
-  return [];
+function filteredTasks(tasks,t){
+  const d=today();
+  if(t==='오늘')   return tasks.filter(x=>x.date===d);
+  if(t==='내일')   return tasks.filter(x=>x.date===addD(1));
+  if(t==='이번주') return tasks.filter(x=>x.date>=d&&x.date<=addD(7));
+  if(t==='이번달') return tasks.filter(x=>x.date>=d&&x.date<=addD(30));
+  return[];
+}
+
+// ══════════════════════════════════════════════════
+// CALENDAR EVENTS
+// ══════════════════════════════════════════════════
+function buildCalEvents(infs){
+  const spans=[],points=[];
+  infs.forEach(inf=>{
+    const productColor = getProductColor(inf.negotiating_product||inf.product);
+    // 공구 기간 (Gantt bar) — 제품별 색상
+    if(inf.scheduleDate){
+      const e=inf.scheduleEndDate||inf.scheduleDate;
+      spans.push({id:inf.id,label:`${inf.name} · ${inf.negotiating_product||inf.product||''}`,shortLabel:inf.name,start:inf.scheduleDate,end:e,color:productColor,textColor:'#fff',cat:'groupbuy'});
+    }
+    // 샘플 발송일
+    if(inf.sampleSentDate){
+      const track=inf.trackingNumber?` (${inf.trackingNumber})`:'';
+      points.push({id:inf.id,label:`샘플발송 · ${inf.name}${track}`,shortLabel:`샘플 · ${inf.name}`,date:inf.sampleSentDate,color:'#FB8C00',textColor:'#fff',cat:'sample'});
+      points.push({id:inf.id,label:`배송확인 · ${inf.name}`,shortLabel:`배송확인 · ${inf.name}`,date:addD(2,inf.sampleSentDate),color:'#FF7043',textColor:'#fff',cat:'sample'});
+    }
+    // 결제링크 전달일 (자동: 공구 시작 3일 전)
+    const ld=inf.link_delivery_date||autoLinkDate(inf);
+    if(ld){
+      const cl=getChecklist(inf);
+      if(!cl.operation.link)points.push({id:inf.id,label:`링크전달 · ${inf.name}`,shortLabel:`링크전달 · ${inf.name}`,date:ld,color:'#8B5CF6',textColor:'#fff',cat:'groupbuy'});
+    }
+    // 정산 예정일 (자동: 공구 종료 30일 후)
+    const sd=inf.settlement_date||autoSettlementDate(inf);
+    if(sd){
+      const cl=getChecklist(inf);
+      if(!cl.closing.settled)points.push({id:inf.id,label:`정산 · ${inf.name}`,shortLabel:`정산 · ${inf.name}`,date:sd,color:'#43A047',textColor:'#fff',cat:'settlement'});
+    }
+  });
+  return{spans,points};
+}
+
+// ══════════════════════════════════════════════════
+// SMART BRIEFING
+// ══════════════════════════════════════════════════
+function getBriefing(infs){
+  const t=today(),tom=addD(1);
+  const items=[];
+  // 오늘 샘플 발송해야 할 인플루언서
+  const sampleToday=infs.filter(inf=>{const cl=getChecklist(inf);return inf.phase===2&&cl.sample.info&&!cl.sample.sent;});
+  if(sampleToday.length)items.push({text:`샘플 발송 ${sampleToday.length}명 — ${sampleToday.map(i=>i.name).join(', ')}`,color:'#FB8C00',ids:sampleToday.map(i=>i.id)});
+  // 결제링크 전달 D-3 이내
+  const linkSoon=infs.filter(inf=>{const ld=inf.link_delivery_date||autoLinkDate(inf);const cl=getChecklist(inf);return ld&&!cl.operation.link&&diff(ld)<=3&&diff(ld)>=0;});
+  if(linkSoon.length)items.push({text:`결제링크 전달 ${linkSoon.length}건 — ${linkSoon.map(i=>i.name).join(', ')}`,color:'#8B5CF6',ids:linkSoon.map(i=>i.id)});
+  // 공구 시작 오늘/내일
+  const gStart=infs.filter(inf=>inf.scheduleDate&&(inf.scheduleDate===t||inf.scheduleDate===tom));
+  if(gStart.length)items.push({text:`공구 시작 ${gStart.length}건 — ${gStart.map(i=>i.name).join(', ')}`,color:'#1E88E5',ids:gStart.map(i=>i.id)});
+  // 정산 예정 3일 이내
+  const settleNow=infs.filter(inf=>{const sd=inf.settlement_date||autoSettlementDate(inf);const cl=getChecklist(inf);return sd&&!cl.closing.settled&&diff(sd)<=3&&diff(sd)>=0;});
+  if(settleNow.length)items.push({text:`정산 처리 ${settleNow.length}건 — ${settleNow.map(i=>i.name).join(', ')}`,color:'#43A047',ids:settleNow.map(i=>i.id)});
+  return items;
 }
 
 // ══════════════════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════════════════
-function render() { rChrome(); rContent(); updateGDStatus(); }
+function render(){rChrome();rContent();updateGDStatus();}
 
-function rChrome() {
-  const now     = new Date();
-  const dateStr = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
-  const tasks   = allTasks(data);
-  const td      = filteredTasks(tasks, '오늘');
-  const active  = data.filter(d => d.stage !== 'settled').length;
-  const ongoing = data.filter(d => d.stage === 'ongoing').length;
-  const urgent  = td.filter(t => t.urgent).length;
-  const titles  = {dash:'대시보드', cal:'캘린더', list:'인플루언서 관리'};
-
-  const el = id => document.getElementById(id);
-  if (el('sb-date'))   el('sb-date').textContent = dateStr;
-  if (el('sb-stats'))  el('sb-stats').innerHTML = `
-    <div class="sb-stat"><span class="sb-stat-label">진행중</span><span class="sb-stat-num">${active}</span></div>
-    <div class="sb-stat"><span class="sb-stat-label">공구중</span><span class="sb-stat-num">${ongoing}</span></div>
-    <div class="sb-stat" style="${urgent?'background:rgba(239,68,68,.25)':''}"><span class="sb-stat-label">긴급</span><span class="sb-stat-num">${urgent}</span></div>`;
-  ['dash','cal','list'].forEach(t => { const b = el('sbn-'+t); if(b) b.classList.toggle('active', tab===t); });
-  const ub = el('sb-ub'); if (ub) { ub.style.display = urgent?'':'none'; ub.textContent = urgent; }
-  dbCount().then(cnt => { const i = el('sb-db-info'); if(i) i.textContent = `IndexedDB · ${cnt}명 저장됨`; });
-
-  if (el('pc-tab-title')) el('pc-tab-title').textContent = titles[tab]||'';
-  if (el('pc-date'))      el('pc-date').textContent = dateStr;
-  if (el('pc-stats'))     el('pc-stats').innerHTML = `
-    <div class="pc-stat-chip"><span>${active}</span>진행중</div>
-    <div class="pc-stat-chip"><span>${ongoing}</span>공구중</div>
-    <div class="pc-stat-chip red"><span>${urgent}</span>긴급</div>`;
-  if (el('mh-pills'))  el('mh-pills').innerHTML = `
-    <div class="mh-pill"><b>${active}</b>진행중</div>
-    <div class="mh-pill"><b>${ongoing}</b>공구중</div>
-    <div class="mh-pill" style="background:rgba(239,68,68,.25)"><b>${urgent}</b>긴급</div>`;
-  ['dash','cal','list'].forEach(t => { const b = el('mbn-'+t); if(b) b.classList.toggle('active', tab===t); });
+function rChrome(){
+  const now=new Date();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
+  const tasks=allTasks(data);const td=filteredTasks(tasks,'오늘');
+  const active=data.filter(d=>d.phase<4||(d.phase===4&&!getChecklist(d).closing.next_recommend)).length;
+  const ongoing=data.filter(d=>{const cl=getChecklist(d);return d.phase===3&&cl.operation.ongoing;}).length;
+  const urgent=td.filter(t=>t.urgent).length;
+  const titles={dash:'대시보드',cal:'캘린더',list:'인플루언서 관리'};
+  const el=id=>document.getElementById(id);
+  if(el('sb-date'))el('sb-date').textContent=dateStr;
+  if(el('sb-stats'))el('sb-stats').innerHTML=`
+    <div class="sb-stat" style="cursor:pointer" onclick="showBadgeModal('active')" title="진행중 전체 보기"><span class="sb-stat-label">진행중</span><span class="sb-stat-num">${active}</span></div>
+    <div class="sb-stat" style="cursor:pointer" onclick="showBadgeModal('ongoing')" title="공구중 보기"><span class="sb-stat-label">공구중</span><span class="sb-stat-num">${ongoing}</span></div>
+    <div class="sb-stat" style="cursor:pointer;${urgent?'background:rgba(239,68,68,.25)':''}" onclick="showBadgeModal('urgent')" title="긴급 보기"><span class="sb-stat-label">긴급</span><span class="sb-stat-num">${urgent}</span></div>`;
+  ['dash','cal','list'].forEach(t=>{const b=el('sbn-'+t);if(b)b.classList.toggle('active',tab===t);});
+  const ub=el('sb-ub');if(ub){ub.style.display=urgent?'':'none';ub.textContent=urgent;}
+  dbCount().then(cnt=>{const i=el('sb-db-info');if(i)i.textContent=`IndexedDB · ${cnt}명 저장됨`;});
+  if(el('pc-tab-title'))el('pc-tab-title').textContent=titles[tab]||'';
+  if(el('pc-date'))el('pc-date').textContent=dateStr;
+  if(el('pc-stats'))el('pc-stats').innerHTML=`<div class="pc-stat-chip" style="cursor:pointer" onclick="showBadgeModal('active')"><span>${active}</span>진행중</div><div class="pc-stat-chip" style="cursor:pointer" onclick="showBadgeModal('ongoing')"><span>${ongoing}</span>공구중</div><div class="pc-stat-chip red" style="cursor:pointer" onclick="showBadgeModal('urgent')"><span>${urgent}</span>긴급</div>`;
+  if(el('mh-pills'))el('mh-pills').innerHTML=`<div class="mh-pill" style="cursor:pointer" onclick="showBadgeModal('active')"><b>${active}</b>진행중</div><div class="mh-pill" style="cursor:pointer" onclick="showBadgeModal('ongoing')"><b>${ongoing}</b>공구중</div><div class="mh-pill" style="cursor:pointer;background:rgba(239,68,68,.25)" onclick="showBadgeModal('urgent')"><b>${urgent}</b>긴급</div>`;
+  ['dash','cal','list'].forEach(t=>{const b=el('mbn-'+t);if(b)b.classList.toggle('active',tab===t);});
 }
-
-function setTab(t) { tab = t; render(); }
-
-function rContent() {
-  const c = document.getElementById('content');
-  if (tab==='dash')     c.innerHTML = rDash();
-  else if (tab==='cal') c.innerHTML = rCal();
-  else                  c.innerHTML = rList();
-}
+function setTab(t){tab=t;render();}
+function rContent(){const c=document.getElementById('content');if(tab==='dash')c.innerHTML=rDash();else if(tab==='cal')c.innerHTML=rCal();else c.innerHTML=rList();}
 
 // ── DASHBOARD ──
-function rDash() {
-  const tasks = allTasks(data);
-  const tabs  = ['오늘','내일','이번주','이번달'];
-  const td    = filteredTasks(tasks, dashTab);
-  const bycat = {
-    groupbuy:   td.filter(t=>t.cat==='groupbuy'),
-    sample:     td.filter(t=>t.cat==='sample'),
-    settlement: td.filter(t=>t.cat==='settlement'),
-    contact:    td.filter(t=>t.cat==='contact'),
-  };
-  const sumCards = [['groupbuy','공구','🛍️'],['sample','샘플','📦'],['settlement','정산','💰'],['contact','소통','💬']].map(([k,l,i]) => {
-    const n = bycat[k].length; if (!n) return '';
-    return `<div class="sum-card"><div style="font-size:20px">${i}</div><div class="sum-num" style="color:${TC[k].color}">${n}</div><div class="sum-lbl">${l}</div></div>`;
+function rDash(){
+  const tasks=allTasks(data);const tabs=['오늘','내일','이번주','이번달'];
+  const td=filteredTasks(tasks,dashTab);
+  const bycat={groupbuy:td.filter(t=>t.cat==='groupbuy'),sample:td.filter(t=>t.cat==='sample'),settlement:td.filter(t=>t.cat==='settlement'),contact:td.filter(t=>t.cat==='contact')};
+  const sumCards=[['groupbuy','공구','🛍️'],['sample','샘플','📦'],['settlement','정산','💰'],['contact','소통','💬']].map(([k,l,i])=>{
+    const n=bycat[k].length;if(!n)return'';
+    return`<div class="sum-card"><div style="font-size:19px">${i}</div><div class="sum-num" style="color:${TC[k].color}">${n}</div><div class="sum-lbl">${l}</div></div>`;
   }).join('');
-  const mkSec = cat => {
-    const items = bycat[cat]; if (!items.length) return '';
-    const tc = TC[cat];
-    return `<div style="margin-bottom:20px">
-      <div class="sec-title">${tc.icon} ${tc.label}<span class="sec-badge">${items.length}</span></div>
-      ${items.map(t => `<div class="task${t.urgent?' urgent':''}" onclick="openEdit('${t.iid}')">
-        <div class="t-ico" style="background:${tc.bg}">${tc.icon}</div>
-        <div class="t-body"><div class="t-action">${t.action}</div>
-        <div class="t-name">${t.name}${t.insta?` <span style="color:#94A3B8">${t.insta}</span>`:''}</div></div>
-        <div class="t-right"><span class="t-badge" style="background:${tc.bg};color:${tc.color}">${tc.label}</span>
-        ${t.urgent&&t.date===today()?`<span class="t-urgent">🔴 긴급</span>`:''}</div>
-      </div>`).join('')}
-    </div>`;
+  const mkSec=cat=>{
+    const items=bycat[cat];if(!items.length)return'';const tc=TC[cat];
+    return`<div style="margin-bottom:18px"><div class="sec-title">${tc.icon} ${tc.label}<span class="sec-badge">${items.length}</span></div>
+    ${items.map(t=>`<div class="task${t.urgent?' urgent':''}" onclick="openEdit('${t.iid}')">
+      <div class="t-ico" style="background:${tc.bg}">${tc.icon}</div>
+      <div class="t-body"><div class="t-action">${t.action}</div><div class="t-name">${t.name}${t.insta?` <span style="color:#94A3B8">${t.insta}</span>`:''}</div></div>
+      <div class="t-right"><span class="t-badge" style="background:${tc.bg};color:${tc.color}">${tc.label}</span>
+      ${t.urgent&&t.date===today()?`<span class="t-urgent">🔴 긴급</span>`:''}</div>
+    </div>`).join('')}</div>`;
   };
-  const sections = ['groupbuy','sample','settlement','contact'].map(mkSec).join('');
-  const empty = !sections ? `<div class="empty"><div class="empty-ico">✨</div><div class="empty-tit">할 일 없어요!</div></div>` : '';
-  return `
-    <div class="dtab-row">${tabs.map(t=>`<button class="dtab${dashTab===t?' active':''}" onclick="setDtab('${t}')">${t}</button>`).join('')}</div>
-    ${sumCards?`<div class="sum-row">${sumCards}</div>`:''}
-    <div class="pc-grid"><div>${sections}${empty}</div><div>${rUpcoming()}</div></div>`;
+  const sections=['groupbuy','sample','settlement','contact'].map(mkSec).join('');
+  const empty=!sections?`<div class="empty"><div class="empty-ico">✨</div><div class="empty-tit">할 일 없어요!</div></div>`:'';
+  // Smart briefing
+  const briefItems=getBriefing(data);
+  const briefHTML=briefItems.length
+    ?`<div class="briefing-card"><div class="briefing-title">📋 오늘 챙겨야 할 것들</div>${briefItems.map(b=>`<div class="briefing-item" onclick="setTab('list')"><div class="briefing-dot" style="background:${b.color}"></div>${b.text}</div>`).join('')}</div>`
+    :`<div class="briefing-card"><div class="briefing-title">📋 오늘 브리핑</div><div class="briefing-empty">🎉 오늘 긴급 할 일이 없어요!</div></div>`;
+  return`${briefHTML}<div class="dtab-row">${tabs.map(t=>`<button class="dtab${dashTab===t?' active':''}" onclick="setDtab('${t}')">${t}</button>`).join('')}</div>${sumCards?`<div class="sum-row">${sumCards}</div>`:''}
+  <div class="pc-grid"><div>${sections}${empty}</div><div>${rUpcoming()}</div></div>`;
 }
-function setDtab(t) { dashTab = t; rContent(); }
-
-function rUpcoming() {
-  const t = today(), w = addD(14);
-  const up = data.filter(d=>d.scheduleDate&&d.scheduleDate>=t&&d.scheduleDate<=w)
-    .sort((a,b)=>a.scheduleDate.localeCompare(b.scheduleDate));
-  if (!up.length) return '';
-  return `<div class="upcoming-card">
-    <div class="sec-title">📅 앞으로 2주 공구<span class="sec-badge">${up.length}</span></div>
-    ${up.map(inf=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F1F5F9;cursor:pointer" onclick="openEdit('${inf.id}')">
-      <div style="background:#EFF6FF;border-radius:8px;padding:6px 10px;text-align:center;flex-shrink:0">
-        <div style="font-size:11px;font-weight:800;color:#2563EB">${fmt(inf.scheduleDate)}</div>
-        <div style="font-size:10px;color:#94A3B8">~${fmt(inf.scheduleEndDate)}</div>
-      </div>
-      <div style="min-width:0">
-        <div style="font-size:13px;font-weight:700">${inf.name}</div>
-        <div style="font-size:11px;color:#94A3B8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${inf.product||''}</div>
-      </div>
-    </div>`).join('')}
-  </div>`;
+function setDtab(t){dashTab=t;rContent();}
+function rUpcoming(){
+  const t=today(),w=addD(14);
+  const up=data.filter(d=>d.scheduleDate&&d.scheduleDate>=t&&d.scheduleDate<=w).sort((a,b)=>a.scheduleDate.localeCompare(b.scheduleDate));
+  if(!up.length)return'';
+  return`<div class="upcoming-card"><div class="sec-title">📅 앞으로 2주 공구<span class="sec-badge">${up.length}</span></div>
+  ${up.map(inf=>`<div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid #F1F5F9;cursor:pointer" onclick="openEdit('${inf.id}')">
+    <div style="background:#EFF6FF;border-radius:7px;padding:5px 9px;text-align:center;flex-shrink:0"><div style="font-size:11px;font-weight:800;color:#2563EB">${fmt(inf.scheduleDate)}</div><div style="font-size:10px;color:#94A3B8">~${fmt(inf.scheduleEndDate)}</div></div>
+    <div style="min-width:0"><div style="font-size:12px;font-weight:700">${inf.name}</div><div style="font-size:11px;color:#94A3B8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${inf.negotiating_product||inf.product||''}</div></div>
+  </div>`).join('')}</div>`;
 }
 
 // ── CALENDAR ──
-function rCal() {
-  const {spans, points} = buildCalEvents(data);
-  const first    = new Date(calY, calM, 1);
-  const lastDate = new Date(calY, calM+1, 0).getDate();
-  const dow      = first.getDay();
-  const pm       = new Date(calY, calM, 0).getDate();
-  let cells = [];
-  for (let i=dow-1; i>=0; i--) cells.push({d:pm-i, dim:true, date:null});
-  for (let d=1; d<=lastDate; d++) {
-    const m  = (calM+1).toString().padStart(2,'0');
-    const dd = d.toString().padStart(2,'0');
-    cells.push({d, dim:false, date:`${calY}-${m}-${dd}`});
-  }
-  while (cells.length%7) cells.push({d:cells.length-dow-lastDate+1, dim:true, date:null});
-  const weeks = []; for (let i=0;i<cells.length;i+=7) weeks.push(cells.slice(i,i+7));
-  const t = today();
-
-  const weeksHTML = weeks.map(wk => {
-    const wkD = wk.map(c=>c.date).filter(Boolean);
-    const ws = wkD[0], we = wkD[wkD.length-1];
-    if (!ws) return `<div class="cal-week-row">${wk.map(c=>cellH(c,t)).join('')}</div>`;
-    const activeSpans = spans.filter(sp=>sp.start<=we&&sp.end>=ws);
-    const rows = [];
-    activeSpans.forEach(sp => {
-      const sc = sp.start<ws?0:wk.findIndex(c=>c.date===sp.start);
-      const ec = sp.end>we?6:wk.findLastIndex(c=>c.date===sp.end);
-      const s=sc<0?0:sc, e=ec<0?6:ec;
-      for (let r=0;r<4;r++) {
-        if (!rows[r]) rows[r]=[];
-        if (!rows[r].some(x=>!(x.e<s||x.s>e))) { rows[r].push({sp,s,e}); break; }
-      }
-    });
-    const ptsByDay = {};
-    points.forEach(pt => { if (pt.date>=ws&&pt.date<=we) { if(!ptsByDay[pt.date]) ptsByDay[pt.date]=[]; ptsByDay[pt.date].push(pt); } });
-    const cw = 100/7;
-    let bars = '';
-    rows.forEach((row,ri)=>{
-      row.forEach(({sp,s,e})=>{
-        const left  = (s*cw).toFixed(2)+'%';
-        const width = ((e-s+1)*cw-.4).toFixed(2)+'%';
-        const top   = (ri*20+2)+'px';
-        const isS=sp.start>=ws, isE=sp.end<=we;
-        const r2=isS&&isE?'6px':isS?'6px 2px 2px 6px':isE?'2px 6px 6px 2px':'2px';
-        const lbl=isS?`${sp.label} ${sp.start===sp.end?fmt(sp.start):`${fmt(sp.start)}~${fmt(sp.end)}`}`:'';
-        bars+=`<div class="ev-bar" onclick="openEdit('${sp.id}')" style="left:${left};width:${width};top:${top};background:${sp.color};color:${sp.textColor};border-radius:${r2}">${lbl}</div>`;
-      });
-    });
-    const ptRow = rows.length;
-    wk.forEach((cell,ci)=>{
-      if (!cell.date) return;
-      (ptsByDay[cell.date]||[]).forEach((pt,pi)=>{
-        const top=((ptRow+pi)*20+2)+'px', left=(ci*cw).toFixed(2)+'%', width=(cw-.4).toFixed(2)+'%';
-        bars+=`<div class="ev-bar" onclick="openEdit('${pt.id}')" style="left:${left};width:${width};top:${top};background:${pt.color};color:${pt.textColor};border-radius:6px">${pt.shortLabel}</div>`;
-      });
-    });
-    const maxR = ptRow+Math.max(0,...Object.values(ptsByDay).map(a=>a.length),0);
-    const mh   = Math.max(72, 30+maxR*20+4);
-    return `<div class="cal-week-row" style="min-height:${mh}px">${wk.map(c=>cellH(c,t)).join('')}<div class="week-events-layer">${bars}</div></div>`;
+function rCal(){
+  const{spans,points}=buildCalEvents(data);
+  const first=new Date(calY,calM,1);const lastDate=new Date(calY,calM+1,0).getDate();const dow=first.getDay();const pm=new Date(calY,calM,0).getDate();
+  let cells=[];
+  for(let i=dow-1;i>=0;i--)cells.push({d:pm-i,dim:true,date:null});
+  for(let d=1;d<=lastDate;d++){const m=(calM+1).toString().padStart(2,'0');const dd=d.toString().padStart(2,'0');cells.push({d,dim:false,date:`${calY}-${m}-${dd}`});}
+  while(cells.length%7)cells.push({d:cells.length-dow-lastDate+1,dim:true,date:null});
+  const weeks=[];for(let i=0;i<cells.length;i+=7)weeks.push(cells.slice(i,i+7));
+  const t=today();
+  const weeksHTML=weeks.map(wk=>{
+    const wkD=wk.map(c=>c.date).filter(Boolean);const ws=wkD[0],we=wkD[wkD.length-1];
+    if(!ws)return`<div class="cal-week-row">${wk.map(c=>cellH(c,t)).join('')}</div>`;
+    const activeSpans=spans.filter(sp=>sp.start<=we&&sp.end>=ws);const rows=[];
+    activeSpans.forEach(sp=>{const sc=sp.start<ws?0:wk.findIndex(c=>c.date===sp.start);const ec=sp.end>we?6:wk.findLastIndex(c=>c.date===sp.end);const s=sc<0?0:sc,e=ec<0?6:ec;for(let r=0;r<4;r++){if(!rows[r])rows[r]=[];if(!rows[r].some(x=>!(x.e<s||x.s>e))){rows[r].push({sp,s,e});break;}}});
+    const ptsByDay={};points.forEach(pt=>{if(pt.date>=ws&&pt.date<=we){if(!ptsByDay[pt.date])ptsByDay[pt.date]=[];ptsByDay[pt.date].push(pt);}});
+    const cw=100/7;let bars='';
+    rows.forEach((row,ri)=>{row.forEach(({sp,s,e})=>{const left=(s*cw).toFixed(2)+'%';const width=((e-s+1)*cw-.4).toFixed(2)+'%';const top=(ri*18+2)+'px';const isS=sp.start>=ws,isE=sp.end<=we;const r2=isS&&isE?'5px':isS?'5px 2px 2px 5px':isE?'2px 5px 5px 2px':'2px';const lbl=isS?`${sp.label} ${sp.start===sp.end?fmt(sp.start):`${fmt(sp.start)}~${fmt(sp.end)}`}`:'';bars+=`<div class="ev-bar" onclick="openEdit('${sp.id}')" style="left:${left};width:${width};top:${top};background:${sp.color};color:${sp.textColor};border-radius:${r2}">${lbl}</div>`;});});
+    const ptRow=rows.length;
+    wk.forEach((cell,ci)=>{if(!cell.date)return;(ptsByDay[cell.date]||[]).forEach((pt,pi)=>{const top=((ptRow+pi)*18+2)+'px';const left=(ci*cw).toFixed(2)+'%';const width=(cw-.4).toFixed(2)+'%';bars+=`<div class="ev-bar" onclick="openEdit('${pt.id}')" style="left:${left};width:${width};top:${top};background:${pt.color};color:${pt.textColor};border-radius:5px">${pt.shortLabel}</div>`;});});
+    const maxR=ptRow+Math.max(0,...Object.values(ptsByDay).map(a=>a.length),0);const mh=Math.max(72,28+maxR*18+4);
+    return`<div class="cal-week-row" style="min-height:${mh}px">${wk.map(c=>cellH(c,t)).join('')}<div class="week-events-layer">${bars}</div></div>`;
   }).join('');
-
-  const selEvs = [];
-  if (selDate) {
-    spans.forEach(sp=>{ if(sp.start<=selDate&&selDate<=sp.end) selEvs.push({...sp,isSpan:true}); });
-    points.forEach(pt=>{ if(pt.date===selDate) selEvs.push({...pt,isSpan:false}); });
-  }
-  const selD  = selDate ? new Date(selDate+'T00:00:00') : null;
-  const selLbl = selD ? `${selD.getMonth()+1}월 ${selD.getDate()}일 ${DAYS_[selD.getDay()]}요일` : '';
-  const ddHTML = selEvs.length
-    ? `<div class="day-detail">
-        <div class="dd-title">📌 ${selLbl} · ${selEvs.length}건</div>
-        ${selEvs.map(e=>`<div class="dd-item" style="background:${e.color}15" onclick="openEdit('${e.id}')">
-          <div class="dd-dot" style="background:${e.color}"></div>
-          <div class="dd-body">
-            <div class="dd-action" style="color:${e.color}">${e.isSpan?(e.start===e.end?'공구':'공구 기간'):e.type==='settlement'?'정산':'샘플'}</div>
-            <div class="dd-name">${e.label}</div>
-            ${e.isSpan&&e.start!==e.end?`<div class="dd-meta">${fmt(e.start)} ~ ${fmt(e.end)}</div>`:''}
-          </div>
-        </div>`).join('')}
-      </div>`
-    : (selDate?`<div class="day-detail" style="text-align:center;padding:20px"><div style="font-size:28px;margin-bottom:6px">🗓️</div><div style="font-size:13px;font-weight:700;color:#94A3B8">${selLbl} 일정 없음</div></div>`:'');
-
-  return `
+  const selEvs=[];
+  if(selDate){spans.forEach(sp=>{if(sp.start<=selDate&&selDate<=sp.end)selEvs.push({...sp,isSpan:true});});points.forEach(pt=>{if(pt.date===selDate)selEvs.push({...pt,isSpan:false});});}
+  const selD=selDate?new Date(selDate+'T00:00:00'):null;
+  const selLbl=selD?`${selD.getMonth()+1}월 ${selD.getDate()}일 ${DAYS_[selD.getDay()]}요일`:'';
+  const ddHTML=selEvs.length?`<div class="day-detail"><div class="dd-title">📌 ${selLbl} · ${selEvs.length}건</div>
+    ${selEvs.map(e=>`<div class="dd-item" style="background:${e.color}15" onclick="openEdit('${e.id}')">
+      <div class="dd-dot" style="background:${e.color}"></div>
+      <div><div class="dd-action" style="color:${e.color}">${e.isSpan?'공구 기간':e.label.split(' · ')[0]}</div>
+      <div class="dd-name">${e.isSpan?e.label:e.label}</div>
+      ${e.isSpan&&e.start!==e.end?`<div class="dd-meta">${fmt(e.start)} ~ ${fmt(e.end)}</div>`:''}</div>
+    </div>`).join('')}</div>`
+    :(selDate?`<div class="day-detail" style="text-align:center;padding:20px"><div style="font-size:26px;margin-bottom:6px">🗓️</div><div style="font-size:12px;font-weight:700;color:#94A3B8">${selLbl} 일정 없음</div></div>`:'');
+  warmProductColors(data);
+  const productLegend = getProductLegend(data);
+  const productLegendHTML = productLegend.map(p =>
+    `<div class="leg-item"><div class="leg-dot" style="background:${p.color}"></div><span style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span></div>`
+  ).join('');
+  return`
     <div class="legend">
-      <div class="leg-item"><div class="leg-dot" style="background:#1E88E5"></div>공구 기간</div>
-      <div class="leg-item"><div class="leg-dot" style="background:#43A047"></div>정산</div>
+      ${productLegendHTML}
+      <div class="leg-item"><div class="leg-dot" style="background:#8B5CF6"></div>링크전달(D-3)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#43A047"></div>정산(+30일)</div>
       <div class="leg-item"><div class="leg-dot" style="background:#FB8C00"></div>샘플</div>
     </div>
-    <div class="cal-nav-row">
-      <button class="cal-arrow" onclick="calMove(-1)">‹</button>
-      <span class="cal-month-title">${calY}년 ${MONTHS_[calM]}</span>
-      <button class="cal-arrow" onclick="calMove(1)">›</button>
-    </div>
-    <div class="pc-grid">
-      <div><div class="cal-wrap">
-        <div class="cal-dow-row">${['일','월','화','수','목','금','토'].map(d=>`<div class="cal-dow-cell">${d}</div>`).join('')}</div>
-        ${weeksHTML}
-      </div></div>
-      <div>${ddHTML}</div>
-    </div>`;
+    <div class="cal-nav-row"><button class="cal-arrow" onclick="calMove(-1)">‹</button><span class="cal-month-title">${calY}년 ${MONTHS_[calM]}</span><button class="cal-arrow" onclick="calMove(1)">›</button></div>
+    <div class="pc-grid"><div><div class="cal-wrap"><div class="cal-dow-row">${['일','월','화','수','목','금','토'].map(d=>`<div class="cal-dow-cell">${d}</div>`).join('')}</div>${weeksHTML}</div></div><div>${ddHTML}</div></div>`;
 }
-function cellH(cell, t) {
-  const isTd=cell.date===t, isSel=cell.date===selDate;
-  return `<div class="cal-day-cell${isTd?' today':''}${isSel&&!isTd?' selected':''}${cell.dim?' dim':''}" onclick="${cell.date?`selectDate('${cell.date}')`:''}" ><div class="cal-day-num">${cell.d}</div></div>`;
-}
-function calMove(d) { calM+=d; if(calM>11){calM=0;calY++;} if(calM<0){calM=11;calY--;} rContent(); }
-function selectDate(d) { selDate = d; rContent(); }
+function cellH(cell,t){const isTd=cell.date===t,isSel=cell.date===selDate;return`<div class="cal-day-cell${isTd?' today':''}${isSel&&!isTd?' selected':''}${cell.dim?' dim':''}" onclick="${cell.date?`selectDate('${cell.date}')`:''}" ><div class="cal-day-num">${cell.d}</div></div>`;}
+function calMove(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}rContent();}
+function selectDate(d){selDate=d;rContent();}
 
 // ── INF LIST ──
-function rList() {
-  const filtered = data.filter(inf => {
-    const ms = (inf.name||'').includes(search)||(inf.instagram||'').includes(search)||(inf.product||'').includes(search);
-    return ms && (stageFilter==='all'||inf.stage===stageFilter);
+function rList(){
+  const filtered=data.filter(inf=>{
+    const ms=(inf.name||'').includes(search)||(inf.instagram||'').includes(search)||(inf.negotiating_product||inf.product||'').includes(search)||(inf.nickname||'').includes(search);
+    const pf=phaseFilter==='all'||inf.phase===parseInt(phaseFilter);
+    return ms&&pf;
   });
-  const chips = `<div class="filter-row">
-    <button class="fchip${stageFilter==='all'?' active':''}" onclick="setFilter('all')">전체 ${data.length}</button>
-    ${STAGES.filter(s=>data.some(d=>d.stage===s.id)).map(s=>{
-      const cnt=data.filter(d=>d.stage===s.id).length;
-      return `<button class="fchip${stageFilter===s.id?' active':''}" onclick="setFilter('${s.id}')">${s.label} ${cnt}</button>`;
-    }).join('')}
+  const chips=`<div class="filter-row">
+    <button class="fchip${phaseFilter==='all'?' active':''}" onclick="setFilter('all')">전체 ${data.length}</button>
+    ${PHASES.map(ph=>{const cnt=data.filter(d=>d.phase===ph.id).length;return cnt?`<button class="fchip${phaseFilter==ph.id?' active':''}" onclick="setFilter(${ph.id})" style="${phaseFilter==ph.id?'':`border-left:3px solid ${ph.color};padding-left:9px`}">${ph.icon} ${ph.label} ${cnt}</button>`:''}).join('')}
   </div>`;
-  const cards = filtered.length
-    ? `<div class="inf-grid">${filtered.map(inf => {
-        const s  = SM[inf.stage]||STAGES[0];
-        const pct = Math.round(s.step/15*100);
-        const p  = nextAction(inf), tc2 = p?TC[p.cat]:null;
-        const dTags = [
-          inf.scheduleDate ? `<span class="dtag" style="background:#EFF6FF;color:#2563EB">📅 ${fmt(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmt(inf.scheduleEndDate)}`:''}</span>` : '',
-          inf.settlementDate ? `<span class="dtag" style="background:#ECFDF5;color:#10B981">💰 ${fmt(inf.settlementDate)}</span>` : '',
-        ].filter(Boolean).join('');
-        const instLink = inf.instagramUrl
-          ? `<a href="${inf.instagramUrl}" target="_blank" style="color:#E1306C;font-weight:700;font-size:12px;text-decoration:none" onclick="event.stopPropagation()">${inf.instagram||'인스타'} ↗</a>`
-          : `<span>${inf.instagram||''}</span>`;
-        return `<div class="inf-card" onclick="openEdit('${inf.id}')">
-          <div class="inf-row">
-            <div>
-              <div class="inf-name">${inf.name}</div>
-              <div class="inf-handle">${instLink}${inf.followers?`<span>· ${fmtF(inf.followers)}</span>`:''}</div>
-            </div>
-            <span class="stage-pill" style="background:${s.color}18;color:${s.color}">${s.label}</span>
-          </div>
-          <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:linear-gradient(90deg,#4F46E5,${s.color})"></div></div>
-          ${p?`<div class="next-box" style="background:${p.urgent?'#FEF2F2':'#F8FAFC'}"><span>${tc2.icon}</span><span class="next-txt" style="color:${p.urgent?'#EF4444':'#475569'}">→ ${p.action}</span></div>`:''}
-          ${dTags?`<div class="date-row">${dTags}</div>`:''}
-        </div>`;
-      }).join('')}</div>`
-    : `<div class="empty"><div class="empty-ico">👥</div><div class="empty-tit">인플루언서가 없어요</div><div style="font-size:13px;margin-top:4px">+ 버튼으로 추가하세요</div></div>`;
-  return `<input class="search-box" placeholder="이름 · 인스타 · 제품 검색" value="${search}" oninput="setSearch(this.value)">${chips}${cards}<button class="fab" onclick="openAdd()">＋</button>`;
+  const cards=filtered.length?`<div class="inf-grid">${filtered.map(inf=>{
+    const ph=PHASE_MAP[inf.phase||1];const prog=getPhaseProgress(inf);const total=getTotalProgress(inf);
+    const p=getNextAction(inf);const tc2=p?TC[p.cat]:null;
+    const ld=inf.link_delivery_date||autoLinkDate(inf);const sd=inf.settlement_date||autoSettlementDate(inf);
+    const dTags=[
+      inf.scheduleDate?`<span class="dtag" style="background:#EFF6FF;color:#2563EB">📅 ${fmt(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmt(inf.scheduleEndDate)}`:''}</span>`:'',
+      ld&&!getChecklist(inf).operation.link?`<span class="dtag" style="background:#F5F3FF;color:#8B5CF6">🔗 링크 ${fmt(ld)}</span>`:'',
+      sd&&!getChecklist(inf).closing.settled&&inf.phase===4?`<span class="dtag" style="background:#ECFDF5;color:#10B981">💰 정산 ${fmt(sd)}</span>`:'',
+    ].filter(Boolean).join('');
+    const instLink=inf.instagramUrl||inf.channel_url?`<a href="${inf.instagramUrl||inf.channel_url}" target="_blank" style="color:#E1306C;font-weight:700;font-size:11px;text-decoration:none" onclick="event.stopPropagation()">${inf.instagram||'인스타'} ↗</a>`:`<span>${inf.instagram||''}</span>`;
+    return`<div class="inf-card phase-${ph.id}" onclick="openEdit('${inf.id}')">
+      <div class="inf-top">
+        <div><div class="inf-name">${inf.name}${inf.nickname?` <span style="font-size:12px;color:#94A3B8;font-weight:600">(${inf.nickname})</span>`:''}</div>
+        <div class="inf-handle">${instLink}${inf.followers?`<span>· ${fmtF(inf.followers)}</span>`:''}</div></div>
+        <span class="phase-badge" style="background:${ph.bg};color:${ph.color};--pc:${ph.color};--pb:${ph.bg}">${ph.id}. ${ph.label}</span>
+      </div>
+      <div class="check-prog-text">${total.done}/${total.total} 완료</div>
+      <div class="check-prog-bar"><div class="check-prog-fill" style="width:${Math.round(total.done/total.total*100)}%;background:${ph.color}"></div></div>
+      ${p?`<div class="next-box" style="background:${p.urgent?'#FEF2F2':'#F8FAFC'}"><span>${tc2.icon}</span><span class="next-txt" style="color:${p.urgent?'#EF4444':'#475569'}">→ ${p.action}</span></div>`:''}
+      ${dTags?`<div class="date-row">${dTags}</div>`:''}
+    </div>`;
+  }).join('')}</div>`:`<div class="empty"><div class="empty-ico">👥</div><div class="empty-tit">인플루언서가 없어요</div></div>`;
+  return`<input class="search-box" placeholder="이름 · 인스타 · 제품 · 별명 검색" value="${search}" oninput="setSearch(this.value)">${chips}${cards}<button class="fab" onclick="openAdd()">＋</button>`;
 }
-function setFilter(s) { stageFilter = s; rContent(); }
-function setSearch(v) { search = v; rContent(); }
+function setFilter(f){phaseFilter=f;rContent();}
+function setSearch(v){search=v;rContent();}
 
 // ── MODAL ──
-function openAdd()     { editInf=null; modalStage='dm_sent'; _mInf={id:uid()}; showModal(); }
-function openEdit(id)  { editInf=data.find(x=>x.id===id)||null; modalStage=editInf?.stage||'dm_sent'; showModal(); }
+function openAdd(){editInf=null;modalPhase=1;_mInf={id:uid()};showModal();}
+function openEdit(id){editInf=data.find(x=>x.id===id)||null;modalPhase=editInf?.phase||1;showModal();}
 
-function showModal() {
-  const isNew = !editInf;
-  const inf   = editInf || {id:_mInf.id||uid(), name:'', instagram:'', instagramUrl:'', followers:'', product:'', stage:'dm_sent', kakaoId:'', phone:'', sampleRecipient:'', samplePhone:'', sampleAddress:'', sampleProduct:'', sampleSentDate:'', trackingNumber:'', scheduleDate:'', scheduleEndDate:'', settlementDate:'', settlementAmount:'', paymentLink:'', notes:''};
-  const st   = modalStage||inf.stage;
-  const step = SM[st]?.step || 1;
+function showModal(){
+  const isNew=!editInf;
+  const def={id:_mInf.id||uid(),name:'',nickname:'',instagram:'',instagramUrl:'',channel_url:'',followers:'',category:'',kakaoId:'',kakao_email:'',phone:'',negotiating_product:'',chat_history:'',phase:1,checklist:{contact:{},sample:{},operation:{},closing:{}},sample_detail:'',recipient_name:'',recipient_phone:'',recipient_address:'',sampleSentDate:'',trackingNumber:'',scheduleDate:'',scheduleEndDate:'',link_delivery_date:'',paymentLink:'',settlement_date:'',settlementAmount:'',notes:'',createdAt:new Date().toISOString()};
+  const inf={...def,...(editInf||{})};
+  const ph=modalPhase||inf.phase||1;
+  const cl=getChecklist(inf);
+  const phObj=PHASE_MAP[ph];
+  const phCl=cl[phObj.key];
 
-  const ss = `<div class="stage-scroll">${STAGES.map(s=>`<button class="stage-chip${st===s.id?' active':''}" onclick="changeStage('${s.id}')">${s.label}</button>`).join('')}</div>`;
-  const s1 = `<div class="step-section">
-    <div class="step-header"><div class="step-num">1</div><div><div class="step-label">기본 정보</div><div class="step-desc">처음엔 이것만 입력하세요</div></div></div>
-    <div class="field"><label>이름 *</label><input id="f-name" value="${inf.name||''}" placeholder="홍길동"></div>
+  // Phase tabs
+  const phaseTabs=`<div class="phase-tabs">${PHASES.map(p=>{
+    const pcl=cl[p.key];const done=p.checks.filter(c=>pcl[c.key]).length;const total=p.checks.length;
+    const isActive=p.id===ph;
+    return`<button class="phase-tab${isActive?' active':''}" style="--pc:${p.color};--pb:${p.bg}" onclick="switchPhase(${p.id})">
+      <div class="phase-tab-ico">${p.icon}</div>
+      <span class="phase-tab-label">${p.label}</span>
+      <span class="phase-tab-check">${done}/${total}</span>
+    </button>`;
+  }).join('')}</div>`;
+
+  // Checklist
+  let nextFound=false;
+  const checklistHTML=`<div class="checklist-section">
+    <div class="checklist-title">✅ ${phObj.label} 체크리스트</div>
+    ${phObj.checks.map(c=>{
+      const checked=!!phCl[c.key];const isNext=!checked&&!nextFound;if(isNext)nextFound=true;
+      return`<label class="check-item${checked?' checked':''}${isNext?' is-next':''}" onclick="event.preventDefault();toggleCheck(${ph},'${c.key}','${inf.id}')">
+        <input type="checkbox" ${checked?'checked':''} readonly>
+        <span class="check-item-label">${c.label}</span>
+        ${isNext?`<span class="next-pill">다음 할 일</span>`:''}
+      </label>`;
+    }).join('')}
+  </div>`;
+
+  // 기본 정보 (항상)
+  const sec1=`<div class="step-section">
+    <div class="step-header"><div class="step-num">1</div><div><div class="step-label">기본 정보</div><div class="step-desc">채널 및 연락처</div></div></div>
+    <div class="field-row">
+      <div class="field"><label>이름 *</label><input id="f-name" value="${inf.name||''}" placeholder="홍길동"></div>
+      <div class="field"><label>별명/채널명</label><input id="f-nickname" value="${inf.nickname||''}" placeholder="육아맘 서연"></div>
+    </div>
     <div class="field-row">
       <div class="field"><label>인스타그램 아이디</label><input id="f-insta" value="${inf.instagram||''}" placeholder="@username"></div>
       <div class="field"><label>팔로워 수</label><input id="f-followers" type="number" value="${inf.followers||''}"></div>
     </div>
-    <div class="field"><label>인스타그램 채널 URL</label><input id="f-insta-url" value="${inf.instagramUrl||''}" placeholder="https://www.instagram.com/username/"></div>
-    <div class="field"><label>제품명</label><input id="f-product" value="${inf.product||''}" placeholder="코닥 미니샷 ERA"></div>
-  </div>`;
-  const s2 = step>=3 ? `<div class="step-section">
-    <div class="step-header"><div class="step-num">2</div><div><div class="step-label">연락처</div><div class="step-desc">카카오 ID 받은 후 입력</div></div></div>
+    <div class="field"><label>인스타그램 채널 URL</label><input id="f-insta-url" value="${inf.instagramUrl||inf.channel_url||''}" placeholder="https://www.instagram.com/username/"></div>
     <div class="field-row">
       <div class="field"><label>카카오톡 ID</label><input id="f-kakao" value="${inf.kakaoId||''}"></div>
-      <div class="field"><label>전화번호</label><input id="f-phone" value="${inf.phone||''}" placeholder="010-0000-0000"></div>
+      <div class="field"><label>이메일/연락처</label><input id="f-kakao-email" value="${inf.kakao_email||inf.phone||''}" placeholder="이메일 또는 전화번호"></div>
     </div>
-  </div>` : '';
-  const s3 = step>=6 ? `<div class="step-section">
-    <div class="step-header"><div class="step-num">3</div><div><div class="step-label">샘플 배송</div><div class="step-desc">배송 정보 받은 후 입력</div></div></div>
     <div class="field-row">
-      <div class="field"><label>수령인</label><input id="f-srec" value="${inf.sampleRecipient||''}"></div>
-      <div class="field"><label>연락처</label><input id="f-sphone" value="${inf.samplePhone||''}"></div>
+      <div class="field"><label>협의 중인 제품</label><input id="f-neg-product" value="${inf.negotiating_product||inf.product||''}" placeholder="코닥 미니샷 ERA"></div>
+      <div class="field"><label>카테고리</label><input id="f-category" value="${inf.category||''}" placeholder="육아, 여행, 뷰티..."></div>
     </div>
-    <div class="field"><label>주소</label><input id="f-saddr" value="${inf.sampleAddress||''}" placeholder="서울시 강남구..."></div>
-    <div class="field-row">
-      <div class="field"><label>샘플 제품</label><input id="f-sprod" value="${inf.sampleProduct||''}"></div>
-      ${step>=8?`<div class="field"><label>발송일</label><input type="date" id="f-sdate" value="${inf.sampleSentDate||''}"></div>`:'<div></div>'}
-    </div>
-    ${step>=8?`<div class="field"><label>송장번호</label><input id="f-track" value="${inf.trackingNumber||''}" placeholder="운송장 번호"></div>`:''}
-  </div>` : '';
-  const s4 = step>=10 ? `<div class="step-section">
-    <div class="step-header"><div class="step-num">4</div><div><div class="step-label">공구 일정</div><div class="step-desc">일정 확정 후 입력</div></div></div>
-    <div class="field-row">
-      <div class="field"><label>공구 시작일</label><input type="date" id="f-schstart" value="${inf.scheduleDate||''}"></div>
-      <div class="field"><label>공구 종료일</label><input type="date" id="f-schend" value="${inf.scheduleEndDate||''}"></div>
-    </div>
-    ${step>=11?`<div class="field"><label>결제 링크</label><input id="f-link" value="${inf.paymentLink||''}" placeholder="https://..."></div>`:''}
-  </div>` : '';
-  const s5 = step>=13 ? `<div class="step-section">
-    <div class="step-header"><div class="step-num">5</div><div><div class="step-label">정산</div><div class="step-desc">공구 완료 후 입력</div></div></div>
-    <div class="field-row">
-      <div class="field"><label>정산 예정일</label><input type="date" id="f-setdate" value="${inf.settlementDate||''}"></div>
-      <div class="field"><label>정산 금액 (원)</label><input type="number" id="f-setamt" value="${inf.settlementAmount||''}" placeholder="150000"></div>
-    </div>
-  </div>` : '';
-  const sm = `<div class="step-section" style="border-color:#F1F5F9"><div class="field"><label>📝 메모</label><textarea id="f-notes">${inf.notes||''}</textarea></div></div>`;
+    <div class="field"><label>대화 요약 / 협의 내용</label><textarea id="f-chat" placeholder="주요 대화 내용, 요청사항, 협의 진행 상황 등...">${inf.chat_history||''}</textarea></div>
+  </div>`;
 
-  const overlay = document.createElement('div');
-  overlay.className = 'overlay'; overlay.id = 'm-overlay';
-  overlay.onclick = e => { if (e.target===overlay) closeModal(); };
-  overlay.innerHTML = `<div class="modal" onclick="event.stopPropagation()">
+  // 샘플 배송 (Phase 2+)
+  const sec2=ph>=2?`<div class="step-section">
+    <div class="step-header"><div class="step-num">2</div><div><div class="step-label">샘플 배송 정보</div><div class="step-desc">배송 정보 받은 후 입력</div></div></div>
+    <div class="field"><label>샘플 상세 (모델명/수량/색상)</label><input id="f-sample-detail" value="${inf.sample_detail||''}" placeholder="코닥 미니샷 레트로 화이트 1개 + 필름 2팩"></div>
+    <div class="field-row">
+      <div class="field"><label>수령인 성함</label><input id="f-rec-name" value="${inf.recipient_name||inf.sampleRecipient||''}"></div>
+      <div class="field"><label>수령인 연락처</label><input id="f-rec-phone" value="${inf.recipient_phone||inf.samplePhone||''}"></div>
+    </div>
+    <div class="field"><label>배송 주소</label><input id="f-rec-addr" value="${inf.recipient_address||inf.sampleAddress||''}" placeholder="서울시 강남구..."></div>
+    <div class="field-row">
+      <div class="field"><label>샘플 발송일</label><input type="date" id="f-sdate" value="${inf.sampleSentDate||''}"></div>
+      <div class="field"><label>송장번호</label><input id="f-track" value="${inf.trackingNumber||''}" placeholder="운송장 번호"></div>
+    </div>
+  </div>`:'' ;
+
+  // 공구 일정 (Phase 3+)
+  const ldAuto=inf.scheduleDate?subD(3,inf.scheduleDate):'';
+  const sec3=ph>=3?`<div class="step-section">
+    <div class="step-header"><div class="step-num">3</div><div><div class="step-label">공구 일정</div><div class="step-desc">일정 확정 후 입력</div></div></div>
+    <div class="field-row">
+      <div class="field"><label>공구 시작일</label><input type="date" id="f-schstart" value="${inf.scheduleDate||''}" oninput="updateAutoLinkDate(this.value)"></div>
+      <div class="field"><label>공구 종료일</label><input type="date" id="f-schend" value="${inf.scheduleEndDate||''}" oninput="updateAutoSettlementDate(this.value)"></div>
+    </div>
+    <div class="field"><label>결제 링크</label><input id="f-link" value="${inf.paymentLink||''}" placeholder="https://..."></div>
+    <div class="field"><label>링크 전달 예정일 <span style="color:#8B5CF6;font-size:10px">(공구 시작 3일 전 자동계산)</span></label>
+      <input type="date" id="f-link-date" value="${inf.link_delivery_date||ldAuto}">
+      <div class="field-note">공구 시작일 변경 시 자동 업데이트 됩니다</div>
+    </div>
+  </div>`:'' ;
+
+  // 정산 (Phase 4)
+  const sdAuto=inf.scheduleEndDate?addD(30,inf.scheduleEndDate):'';
+  const sec4=ph>=4?`<div class="step-section">
+    <div class="step-header"><div class="step-num">4</div><div><div class="step-label">정산</div><div class="step-desc">공구 완료 후 입력</div></div></div>
+    <div class="field"><label>정산 예정일 <span style="color:#10B981;font-size:10px">(공구 종료 30일 후 자동계산)</span></label>
+      <input type="date" id="f-setdate" value="${inf.settlement_date||sdAuto}">
+    </div>
+    <div class="field"><label>정산 금액 (원)</label><input type="number" id="f-setamt" value="${inf.settlementAmount||''}" placeholder="150000"></div>
+  </div>`:'' ;
+
+  const secMemo=`<div class="step-section" style="border-color:#F1F5F9"><div class="field"><label>📝 메모</label><textarea id="f-notes">${inf.notes||''}</textarea></div></div>`;
+
+  const overlay=document.createElement('div');overlay.className='overlay';overlay.id='m-overlay';
+  overlay.onclick=e=>{if(e.target===overlay)closeModal();};
+  overlay.innerHTML=`<div class="modal" onclick="event.stopPropagation()">
     <div class="m-handle"></div>
     <div class="m-title">${isNew?'✨ 인플루언서 추가':'✏️ 정보 수정'}<button class="m-close" onclick="closeModal()">✕</button></div>
-    <div class="m-sub">현재 단계를 선택하면 필요한 입력칸만 나타나요</div>
-    ${ss}${s1}${s2}${s3}${s4}${s5}${sm}
+    <div class="m-sub">단계 선택 → 체크리스트와 필요한 입력칸이 나타나요</div>
+    ${phaseTabs}${checklistHTML}${sec1}${sec2}${sec3}${sec4}${secMemo}
     <div class="btn-row">
       ${!isNew?`<button class="btn-del" onclick="delInf('${inf.id}')">삭제</button>`:''}
       <button class="btn-cancel" onclick="closeModal()">취소</button>
@@ -1161,67 +985,174 @@ function showModal() {
   document.body.appendChild(overlay);
 }
 
-function changeStage(sid) {
-  const f = collectForm();
-  _mInf = {..._mInf, ...f, stage:sid}; modalStage = sid;
-  if (editInf) editInf = {...editInf, ...f, stage:sid};
-  else editInf = {..._mInf};
-  const o = document.getElementById('m-overlay'); if (o) o.remove();
-  showModal();
+function switchPhase(ph){
+  const f=collectForm();_mInf={..._mInf,...f,phase:ph};modalPhase=ph;
+  if(editInf)editInf={...editInf,...f,phase:ph};else editInf={..._mInf,id:_mInf.id||uid()};
+  const o=document.getElementById('m-overlay');if(o)o.remove();showModal();
 }
-function collectForm() {
-  const gv = id => { const e = document.getElementById(id); return e?e.value:''; };
-  return {
-    name:gv('f-name'), instagram:gv('f-insta'), instagramUrl:gv('f-insta-url'),
-    followers:parseInt(gv('f-followers'))||0, product:gv('f-product'),
-    kakaoId:gv('f-kakao'), phone:gv('f-phone'),
-    sampleRecipient:gv('f-srec'), samplePhone:gv('f-sphone'), sampleAddress:gv('f-saddr'),
-    sampleProduct:gv('f-sprod'), sampleSentDate:gv('f-sdate'), trackingNumber:gv('f-track'),
-    scheduleDate:gv('f-schstart'), scheduleEndDate:gv('f-schend'), paymentLink:gv('f-link'),
-    settlementDate:gv('f-setdate'), settlementAmount:gv('f-setamt'), notes:gv('f-notes'),
+
+async function toggleCheck(phaseId,key,infId){
+  let inf=data.find(x=>x.id===infId)||(editInf?.id===infId?editInf:null);
+  if(!inf)return;
+  const ph=PHASE_MAP[phaseId];
+  const cl=getChecklist(inf);
+  cl[ph.key][key]=!cl[ph.key][key];
+  // Auto-advance phase if all checks in current phase done
+  const allDone=ph.checks.every(c=>cl[ph.key][c.key]);
+  const newPhase=allDone&&phaseId<4?phaseId+1:inf.phase;
+  const updated={...inf,checklist:cl,phase:newPhase,updatedAt:new Date().toISOString()};
+  await dbPut(updated);data=await dbGetAll();
+  if(editInf?.id===infId){editInf=updated;modalPhase=newPhase;}
+  gdSave();
+  // Refresh modal checklist
+  const o=document.getElementById('m-overlay');if(o)o.remove();showModal();
+}
+
+function updateAutoLinkDate(startDate){
+  const el=document.getElementById('f-link-date');
+  if(el&&startDate)el.value=subD(3,startDate);
+}
+function updateAutoSettlementDate(endDate){
+  const el=document.getElementById('f-setdate');
+  if(el&&endDate)el.value=addD(30,endDate);
+}
+
+function collectForm(){
+  const gv=id=>{const e=document.getElementById(id);return e?e.value:'';};
+  const ph=modalPhase||editInf?.phase||1;
+  // Auto-calculate dates if not manually set
+  const schStart=gv('f-schstart');const schEnd=gv('f-schend');
+  const rawLinkDate=gv('f-link-date');const rawSetDate=gv('f-setdate');
+  return{
+    name:gv('f-name'), nickname:gv('f-nickname'), instagram:gv('f-insta'),
+    instagramUrl:gv('f-insta-url'), channel_url:gv('f-insta-url'),
+    followers:parseInt(gv('f-followers'))||0, category:gv('f-category'),
+    kakaoId:gv('f-kakao'), kakao_email:gv('f-kakao-email'), phone:gv('f-kakao-email'),
+    negotiating_product:gv('f-neg-product'), product:gv('f-neg-product'),
+    chat_history:gv('f-chat'),
+    sample_detail:gv('f-sample-detail'),
+    recipient_name:gv('f-rec-name'), sampleRecipient:gv('f-rec-name'),
+    recipient_phone:gv('f-rec-phone'), samplePhone:gv('f-rec-phone'),
+    recipient_address:gv('f-rec-addr'), sampleAddress:gv('f-rec-addr'),
+    sampleSentDate:gv('f-sdate'), trackingNumber:gv('f-track'),
+    scheduleDate:schStart, scheduleEndDate:schEnd,
+    link_delivery_date:rawLinkDate||(schStart?subD(3,schStart):''),
+    paymentLink:gv('f-link'),
+    settlement_date:rawSetDate||(schEnd?addD(30,schEnd):''),
+    settlementAmount:gv('f-setamt'),
+    notes:gv('f-notes'),
   };
 }
-async function saveModal(id) {
-  const form  = collectForm();
-  const final = {
-    id, ...form,
-    stage: modalStage||editInf?.stage||'dm_sent',
-    createdAt: editInf?.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+
+async function saveModal(id){
+  const form=collectForm();
+  const existing=data.find(x=>x.id===id);
+  const final={
+    ...(existing||{}),
+    ...form,
+    id,
+    phase:modalPhase||editInf?.phase||1,
+    checklist:getChecklist({...existing,...editInf}),
+    createdAt:existing?.createdAt||editInf?.createdAt||new Date().toISOString(),
+    updatedAt:new Date().toISOString(),
   };
-  await dbPut(final);
-  data = await dbGetAll();
-  gdSave(); // ← 드라이브 자동 저장
-  showToast('✅ 저장됐어요!');
-  closeModal();
+  await dbPut(final);data=await dbGetAll();gdSave();showToast('✅ 저장됐어요!');closeModal();
 }
-async function delInf(id) {
-  if (!confirm('이 인플루언서를 삭제할까요?')) return;
-  await dbDelete(id);
-  data = await dbGetAll();
-  gdSave(); // ← 드라이브 자동 저장
-  showToast('🗑️ 삭제됐어요');
-  closeModal();
+
+async function delInf(id){
+  if(!confirm('이 인플루언서를 삭제할까요?'))return;
+  await dbDelete(id);data=await dbGetAll();gdSave();showToast('🗑️ 삭제됐어요');closeModal();
 }
-function closeModal() {
-  const o = document.getElementById('m-overlay'); if (o) o.remove();
-  editInf = null; modalStage = null; _mInf = {};
-  render();
+
+// ── BADGE FILTER MODAL ──
+function showBadgeModal(type) {
+  const config = {
+    active:  { title:'📋 진행중 인플루언서', color:'#4F46E5', desc:'마감 이전 단계 전체' },
+    ongoing: { title:'🛍️ 공구 진행중',       color:'#2563EB', desc:'현재 공구 운영 단계' },
+    urgent:  { title:'🔴 긴급 처리 필요',    color:'#EF4444', desc:'링크 전달일 초과 또는 정산 3일 이내' },
+  };
+  const cfg = config[type];
+
+  let filtered = [];
+  if (type === 'active') {
+    filtered = data.filter(d => {
+      const cl = getChecklist(d);
+      return d.phase < 4 || (d.phase === 4 && !cl.closing.next_recommend);
+    });
+  } else if (type === 'ongoing') {
+    filtered = data.filter(d => {
+      const cl = getChecklist(d);
+      return d.phase === 3 && cl.operation.ongoing;
+    });
+  } else if (type === 'urgent') {
+    filtered = data.filter(d => {
+      const cl = getChecklist(d);
+      const ld = d.link_delivery_date || autoLinkDate(d);
+      const sd = d.settlement_date || autoSettlementDate(d);
+      const linkOverdue = ld && !cl.operation.link && diff(ld) <= 1;
+      const settleSoon  = sd && !cl.closing.settled && d.phase === 4 && diff(sd) !== null && diff(sd) <= 3 && diff(sd) >= -3;
+      return linkOverdue || settleSoon;
+    });
+  }
+
+  const listHTML = filtered.length
+    ? filtered.map(inf => {
+        const ph = PHASE_MAP[inf.phase||1];
+        const p  = getNextAction(inf);
+        const ld = inf.link_delivery_date || autoLinkDate(inf);
+        const sd = inf.settlement_date || autoSettlementDate(inf);
+        // Reason tags for urgent
+        const tags = [];
+        if (type === 'urgent') {
+          const cl = getChecklist(inf);
+          if (ld && !cl.operation.link && diff(ld) <= 1) tags.push(`<span style="background:#FEF2F2;color:#EF4444;font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px">🔗 링크전달 ${diff(ld)===0?'오늘':diff(ld)<0?`${Math.abs(diff(ld))}일 초과`:'내일'}</span>`);
+          if (sd && !cl.closing.settled && diff(sd) !== null && diff(sd) <= 3) tags.push(`<span style="background:#FEF2F2;color:#EF4444;font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px">💰 정산 D${diff(sd)<=0?diff(sd):`-${diff(sd)}`}</span>`);
+        }
+        return `<div style="display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border-radius:11px;background:#F8FAFC;margin-bottom:7px;cursor:pointer;border-left:4px solid ${ph.color}" onclick="closeBadgeModal();openEdit('${inf.id}')">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+              <span style="font-size:14px;font-weight:800">${inf.name}</span>
+              <span style="font-size:10px;font-weight:700;background:${ph.bg};color:${ph.color};padding:2px 7px;border-radius:7px">${ph.id}. ${ph.label}</span>
+            </div>
+            <div style="font-size:11px;color:#94A3B8;margin-bottom:4px">${inf.instagram||''} ${inf.negotiating_product||inf.product?`· ${inf.negotiating_product||inf.product}`:''}</div>
+            ${p?`<div style="font-size:12px;font-weight:600;color:${p.urgent?'#EF4444':'#475569'}">→ ${p.action}</div>`:''}
+            ${tags.length?`<div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap">${tags.join('')}</div>`:''}
+          </div>
+          ${inf.scheduleDate?`<div style="text-align:right;flex-shrink:0"><div style="font-size:10px;font-weight:800;color:#2563EB">${fmt(inf.scheduleDate)}</div><div style="font-size:9px;color:#94A3B8">공구</div></div>`:''}
+        </div>`;
+      }).join('')
+    : `<div class="empty"><div class="empty-ico">✅</div><div class="empty-tit">해당 항목이 없어요</div></div>`;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay'; overlay.id = 'badge-modal';
+  overlay.onclick = e => { if (e.target === overlay) closeBadgeModal(); };
+  overlay.innerHTML = `<div class="modal" onclick="event.stopPropagation()">
+    <div class="m-handle"></div>
+    <div class="m-title" style="color:${cfg.color}">${cfg.title}<button class="m-close" onclick="closeBadgeModal()">✕</button></div>
+    <div style="font-size:12px;color:#94A3B8;margin-bottom:14px">${cfg.desc} · <b style="color:${cfg.color}">${filtered.length}명</b></div>
+    ${listHTML}
+  </div>`;
+  document.body.appendChild(overlay);
 }
+function closeBadgeModal() { document.getElementById('badge-modal')?.remove(); }
+
+function closeModal(){const o=document.getElementById('m-overlay');if(o)o.remove();editInf=null;modalPhase=null;_mInf={};render();}
 
 // ══════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════
-async function init() {
+async function init(){
   await openDB();
-  data = await dbGetAll();
+  const raw=await dbGetAll();
+  // migrate old data on load
+  data=raw.map(migrateInf);
+  // save migrated data back
+  for(const item of data)await dbPut(item);
+  // pre-assign product colors
+  warmProductColors(data);
   render();
 }
-
 init();
 </script>
-<!-- Google APIs -->
-<script src="https://apis.google.com/js/api.js" onload="onGapiLoad()"></script>
-<script src="https://accounts.google.com/gsi/client" onload="onGisLoad()" async defer></script>
 </body>
 </html>
