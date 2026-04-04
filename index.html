@@ -971,14 +971,14 @@ function rDash(){
       const isToday=item.date===t;
       const dv=diffDays(item.date);const dvTxt=dv===0?'오늘':dv===1?'내일':dv>0?`D-${dv}`:'';
       return`<div class="ptc${isToday?' is-today':''}" onclick="openTaskEdit('${item.id}')">
-        <div class="ptc-ico" style="background:${c}18;color:${c}">${ico}</div>
+        <div class="ptc-ico" style="background:${c}35;color:#1E1B4B">${ico}</div>
         <div class="ptc-body">
           <div class="ptc-date${isToday?' today-date':''}">${isToday?'오늘':fmtFull(item.date)}${item.time?` · ${item.time}`:''}</div>
           <div class="ptc-title">${item.title}</div>
           ${item.notes?`<div class="ptc-memo">"${item.notes.slice(0,55)}${item.notes.length>55?'...':''}"</div>`:''}
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-          <span class="ptc-badge" style="background:${c};color:white">${item.category}</span>
+          <span class="ptc-badge" style="background:${c}35;color:#1E1B4B;border:1px solid ${c}">${item.category}</span>
           <span style="font-size:12px;font-weight:800;color:${isToday?'#DC2626':dv<=3?'#D97706':'#94A3B8'}">${dvTxt}</span>
         </div>
       </div>`;
@@ -1109,14 +1109,14 @@ function rCal(){
     const dv2=e.date?diffDays(e.date):null;
     const dvTxt2=dv2===0?'오늘':dv2===1?'내일':dv2>0?`D-${dv2}`:'';
     return`<div class="ptc" onclick="${fn}">
-      <div class="ptc-ico" style="background:${c2};color:white">${ico}</div>
+      <div class="ptc-ico" style="background:${c2}35;color:#1E1B4B">${ico}</div>
       <div class="ptc-body">
         <div class="ptc-date">${e.date?fmtFull(e.date):''}${e.time?` · ${e.time}`:''}</div>
         <div class="ptc-title">${titleTxt}</div>
         ${e.notes?`<div class="ptc-memo">"${e.notes.slice(0,55)}${e.notes.length>55?'...':''}"</div>`:''}
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-        ${cat?`<span class="ptc-badge" style="background:${c2};color:white">${cat}</span>`:''}
+        ${cat?`<span class="ptc-badge" style="background:${c2}35;color:#1E1B4B;border:1px solid ${c2}">${cat}</span>`:''}
         ${dvTxt2?`<span style="font-size:12px;font-weight:800;color:${dv2===0?'#DC2626':dv2<=3?'#D97706':'#94A3B8'}">${dvTxt2}</span>`:''}
       </div>
     </div>`;
