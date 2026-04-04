@@ -1041,7 +1041,7 @@ function rCal(){
   const spans=[],points=[];
   data.forEach(inf=>{
     const pc=getProductColor(inf.negotiating_product||inf.product);
-    if(inf.scheduleDate){const e=inf.scheduleEndDate||inf.scheduleDate;spans.push({id:inf.id,label:`${inf.name} · ${inf.negotiating_product||inf.product||''}`,shortLabel:inf.name,product:inf.negotiating_product||inf.product||'',start:inf.scheduleDate,end:e,color:pc,cat:'gonggu'});}
+    if(inf.scheduleDate){const e=inf.scheduleEndDate||inf.scheduleDate;spans.push({id:inf.id,label:`${inf.name} · ${inf.negotiating_product||inf.product||''}`,shortLabel:inf.name+(inf.nickname?`(${inf.nickname})`:'')+' ',product:inf.negotiating_product||inf.product||'',start:inf.scheduleDate,end:e,color:pc,cat:'gonggu'});}
     if(inf.sampleSentDate){const tr=inf.trackingNumber?` (${inf.trackingNumber})`:'';points.push({id:inf.id,label:`샘플 · ${inf.name}${tr}`,shortLabel:`샘플 · ${inf.name}`,date:inf.sampleSentDate,color:'#FB8C00',cat:'work'});points.push({id:inf.id,label:`배송확인 · ${inf.name}`,shortLabel:`배송확인 · ${inf.name}`,date:addDays(2,inf.sampleSentDate),color:'#FF7043',cat:'work'});}
     const sd=calcSettleDate(inf);
     if(sd){const cl=getCL(inf);if(!cl.closing.settled)points.push({id:inf.id,label:`정산 · ${inf.name}`,shortLabel:`정산 · ${inf.name}`,date:sd,color:'#059669',cat:'work'});}
