@@ -890,7 +890,7 @@ function rDash(){
         ${isLive?`<div class="gc-prog"><div class="gc-prog-fill" style="width:${pct}%;background:${g.color}"></div></div>`:''}
         <div class="gc-dates">
           <span class="gc-date-txt">📅 ${fmtDate(g.start)} ~ ${fmtDate(g.end)}</span>
-          <span class="gc-d" style="color:${isLive?'#2563EB':'#94A3B8'}">${isLive?`진행 ${Math.abs(d)+1}일차`:d>0?`D-${d}`:''}</span>
+          ${isLive?`<span class="gc-d" style="color:#2563EB">진행 ${Math.abs(d)+1}일차</span>`:''}
         </div>
       </div>`;
     }).join('')
@@ -975,11 +975,10 @@ function rDash(){
         <div class="ptc-body">
           <div class="ptc-date${isToday?' today-date':''}">${isToday?'오늘':fmtFull(item.date)}${item.time?` · ${item.time}`:''}</div>
           <div class="ptc-title">${item.title}</div>
-          <div class="ptc-meta">${item.category}</div>
           ${item.notes?`<div class="ptc-memo">"${item.notes.slice(0,55)}${item.notes.length>55?'...':''}"</div>`:''}
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-          <span class="ptc-badge" style="background:${c}40;color:${c==='#94A3B8'?'#475569':c.replace('F','9').replace('E','7')}">${item.category}</span>
+          <span class="ptc-badge" style="background:${c};color:white">${item.category}</span>
           <span style="font-size:12px;font-weight:800;color:${isToday?'#DC2626':dv<=3?'#D97706':'#94A3B8'}">${dvTxt}</span>
         </div>
       </div>`;
@@ -1098,22 +1097,27 @@ function rCal(){
         <div class="gc-row1"><div class="gc-name">${nameWithNick}</div><span class="gc-status ${isLive?'live':d===0?'today':'soon'}">${statusLbl||'예정'}</span></div>
         <div class="gc-product">${e.product}</div>
         ${isLive?`<div class="gc-prog"><div class="gc-prog-fill" style="width:${pct}%;background:${e.color}"></div></div>`:''}
-        <div class="gc-dates"><span class="gc-date-txt">📅 ${fmtDate(e.start)} ~ ${fmtDate(e.end)}</span><span class="gc-d" style="color:${isLive?'#2563EB':'#94A3B8'}">${isLive?`진행 ${Math.abs(d)+1}일차`:d>0?`D-${d}`:''}</span></div>
+        <div class="gc-dates"><span class="gc-date-txt">📅 ${fmtDate(e.start)} ~ ${fmtDate(e.end)}</span>${isLive?`<span class="gc-d" style="color:#2563EB">진행 ${Math.abs(d)+1}일차</span>`:''}</div>
       </div>`;
     }
     // 업무/포인트 → ptc 카드 형식
     const cat=e.isPT?e.category:(e.ptCategory||'');
     const ico=PTASK_ICOS[cat]||'📋';
     const c2=PTASK_COLORS[cat]||e.color||'#94A3B8';
-    const titleTxt=e.isPT?e.shortLabel:(e.ptCategory?`${e.shortLabel}`:'');
-    const subTxt=e.isPT?cat:cat;
+    const titleTxt=e.isPT?e.shortLabel:(e.shortLabel||'');
     const fn=e.isPT?`openTaskEdit('${e.id}')`:`openEdit('${e.id}')`;
+    const dv2=e.date?diffDays(e.date):null;
+    const dvTxt2=dv2===0?'오늘':dv2===1?'내일':dv2>0?`D-${dv2}`:'';
     return`<div class="ptc" onclick="${fn}">
-      <div class="ptc-ico" style="background:${c2}30;color:#1E1B4B">${ico}</div>
+      <div class="ptc-ico" style="background:${c2};color:white">${ico}</div>
       <div class="ptc-body">
+        <div class="ptc-date">${e.date?fmtFull(e.date):''}${e.time?` · ${e.time}`:''}</div>
         <div class="ptc-title">${titleTxt}</div>
-        <div class="ptc-meta">${subTxt}${e.time?` · ${e.time}`:''}</div>
         ${e.notes?`<div class="ptc-memo">"${e.notes.slice(0,55)}${e.notes.length>55?'...':''}"</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        ${cat?`<span class="ptc-badge" style="background:${c2};color:white">${cat}</span>`:''}
+        ${dvTxt2?`<span style="font-size:12px;font-weight:800;color:${dv2===0?'#DC2626':dv2<=3?'#D97706':'#94A3B8'}">${dvTxt2}</span>`:''}
       </div>
     </div>`;
   }
