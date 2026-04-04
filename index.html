@@ -262,12 +262,12 @@ a{text-decoration:none}
 .ev-pt:hover{opacity:1;box-shadow:0 3px 10px rgba(0,0,0,.18)}
 /* Day detail */
 .day-detail-panel{background:white;border-radius:13px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
-.dd-hdr{font-size:13px;font-weight:800;margin-bottom:10px}
+.dd-hdr{font-size:14px;font-weight:800;margin-bottom:12px;color:#1E293B}
 .dd-ev{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;margin-bottom:5px;cursor:pointer}
 .dd-ev:hover{opacity:.85}
 .dd-ev-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px}
-.dd-ev-action{font-size:12px;font-weight:800}
-.dd-ev-meta{font-size:11px;color:#94A3B8;margin-top:1px}
+.dd-ev-action{font-size:13px;font-weight:800;color:#1E293B}
+.dd-ev-meta{font-size:12px;color:#475569;margin-top:2px}
 
 /* ════════════════════════════════════════ INF LIST ════════════════════════════════════════ */
 .search-box{width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #E2E8F0;font-size:13px;font-family:inherit;background:white;outline:none;margin-bottom:10px}
@@ -1042,9 +1042,9 @@ function rCal(){
   data.forEach(inf=>{
     const pc=getProductColor(inf.negotiating_product||inf.product);
     if(inf.scheduleDate){const e=inf.scheduleEndDate||inf.scheduleDate;spans.push({id:inf.id,label:`${inf.name} · ${inf.negotiating_product||inf.product||''}`,shortLabel:inf.name+(inf.nickname?`(${inf.nickname})`:'')+' ',product:inf.negotiating_product||inf.product||'',start:inf.scheduleDate,end:e,color:pc,cat:'gonggu'});}
-    if(inf.sampleSentDate){const tr=inf.trackingNumber?` (${inf.trackingNumber})`:'';const infNickS=inf.nickname?`(${inf.nickname})`:'';points.push({id:inf.id,label:`샘플 · ${inf.name}${infNickS}${tr}`,shortLabel:`샘플 · ${inf.name}${infNickS}`,date:inf.sampleSentDate,color:'#FED7AA',cat:'work'});points.push({id:inf.id,label:`배송확인 · ${inf.name}${infNickS}`,shortLabel:`배송확인 · ${inf.name}${infNickS}`,date:addDays(2,inf.sampleSentDate),color:'#FCA5A5',cat:'work'});}
+    if(inf.sampleSentDate){const tr=inf.trackingNumber?` (${inf.trackingNumber})`:'';const infNickS=inf.nickname?`(${inf.nickname})`:'';points.push({id:inf.id,label:`샘플 · ${inf.name}${infNickS}${tr}`,shortLabel:`${inf.name}${infNickS}`,ptCategory:'샘플',date:inf.sampleSentDate,color:'#FED7AA',cat:'work'});points.push({id:inf.id,label:`배송확인 · ${inf.name}${infNickS}`,shortLabel:`${inf.name}${infNickS}`,ptCategory:'배송확인',date:addDays(2,inf.sampleSentDate),color:'#FBCFE8',cat:'work'});}
     const sd=calcSettleDate(inf);
-    if(sd){const cl=getCL(inf);const infNickSt=inf.nickname?`(${inf.nickname})`:'';if(!cl.closing.settled)points.push({id:inf.id,label:`정산 · ${inf.name}${infNickSt}`,shortLabel:`정산 · ${inf.name}${infNickSt}`,date:sd,color:'#059669',cat:'work'});}
+    if(sd){const cl=getCL(inf);const infNickSt=inf.nickname?`(${inf.nickname})`:'';if(!cl.closing.settled)points.push({id:inf.id,label:`정산 · ${inf.name}${infNickSt}`,shortLabel:`${inf.name}${infNickSt}`,ptCategory:'정산',date:sd,color:'#A7F3D0',cat:'work'});}
   });
   pTasks.filter(p=>!p.done&&p.date).forEach(p=>{
     const c=PTASK_COLORS[p.category]||'#94A3B8';
@@ -1070,7 +1070,7 @@ function rCal(){
     const cw=100/7;let bars='';
     const BAR_H=38;rows.forEach((row,ri)=>{row.forEach(({sp,s,e})=>{const left=(s*cw).toFixed(2)+'%';const width=((e-s+1)*cw-.3).toFixed(2)+'%';const top=(ri*BAR_H+2)+'px';const isS=sp.start>=ws,isE=sp.end<=we;const r2=isS&&isE?'5px':isS?'5px 2px 2px 5px':isE?'2px 5px 5px 2px':'2px';const nameHtml=`<span class="evb-n">${sp.shortLabel}</span>`;const prodHtml=sp.product?`<span class="evb-p">${sp.product}</span>`:'';bars+=`<div class="ev-bar" onclick="openEdit('${sp.id}')" style="left:${left};width:${width};top:${top};background:${sp.color};border-radius:${r2}">${nameHtml}${prodHtml}</div>`;});});
     const ptRow=rows.length;
-    wk.forEach((cell,ci)=>{if(!cell.date)return;(ptsByDay[cell.date]||[]).forEach((pt,pi)=>{const top=((ptRow+pi)*BAR_H+2)+'px';const left=(ci*cw).toFixed(2)+'%';const width=(cw-.3).toFixed(2)+'%';const fn=pt.isPT?`openTaskEdit('${pt.id}')`:`openEdit('${pt.id}')`;const ptInner=pt.isPT&&pt.category?`<span class="evp-c">${pt.category}</span><span class="evp-t">${pt.shortLabel}</span>`:`<span class="evp-t">${pt.shortLabel}</span>`;bars+=`<div class="ev-pt" onclick="${fn}" style="left:${left};width:${width};top:${top};background:${pt.color}">${ptInner}</div>`;});});
+    wk.forEach((cell,ci)=>{if(!cell.date)return;(ptsByDay[cell.date]||[]).forEach((pt,pi)=>{const top=((ptRow+pi)*BAR_H+2)+'px';const left=(ci*cw).toFixed(2)+'%';const width=(cw-.3).toFixed(2)+'%';const fn=pt.isPT?`openTaskEdit('${pt.id}')`:`openEdit('${pt.id}')`;const ptCat=pt.isPT?pt.category:(pt.ptCategory||'');const ptInner=ptCat?`<span class="evp-c">${ptCat}</span><span class="evp-t">${pt.shortLabel}</span>`:`<span class="evp-t">${pt.shortLabel}</span>`;bars+=`<div class="ev-pt" onclick="${fn}" style="left:${left};width:${width};top:${top};background:${pt.color}">${ptInner}</div>`;});});
     const maxR=ptRow+Math.max(0,...Object.values(ptsByDay).map(a=>a.length),0);const mh=Math.max(90,32+maxR*BAR_H+4);
     return`<div class="cal-week" style="min-height:${mh}px">${wk.map(c=>cellH(c,t)).join('')}<div class="ev-layer">${bars}</div></div>`;
   }).join('');
@@ -1080,7 +1080,7 @@ function rCal(){
   const selD=selDate?new Date(selDate+'T00:00:00'):null;
   const selLbl=selD?`${selD.getMonth()+1}월 ${selD.getDate()}일 ${DAYS_[selD.getDay()]}요일`:'';
   const ddContent=selEvs.length
-    ?`<div class="dd-hdr">📌 ${selLbl} · ${selEvs.length}건</div>${selEvs.map(e=>`<div class="dd-ev" style="background:${e.color}15" onclick="${e.isPT?`openTaskEdit('${e.id}')`:`openEdit('${e.id}')`}"><div class="dd-ev-dot" style="background:${e.color}"></div><div><div class="dd-ev-action" style="color:${e.color}">${e.isSpan?'공구 기간':e.label.split(' · ')[0]}</div><div class="dd-ev-meta">${e.label}${e.isSpan&&e.start!==e.end?` (${fmtDate(e.start)}~${fmtDate(e.end)})`:''}</div></div></div>`).join('')}`
+    ?`<div class="dd-hdr">📌 ${selLbl} · ${selEvs.length}건</div>${selEvs.map(e=>`<div class="dd-ev" style="background:${e.color}15" onclick="${e.isPT?`openTaskEdit('${e.id}')`:`openEdit('${e.id}')`}"><div class="dd-ev-dot" style="background:${e.color}"></div><div><div class="dd-ev-action">${e.isSpan?'공구 기간':e.label.split(' · ')[0]}</div><div class="dd-ev-meta">${e.label}${e.isSpan&&e.start!==e.end?` (${fmtDate(e.start)}~${fmtDate(e.end)})`:''}</div></div></div>`).join('')}`
     :(selDate?`<div class="dd-hdr">🗓️ ${selLbl}</div><div style="font-size:12px;color:#94A3B8;padding:8px 0">일정 없음</div>`:'');
   const ddPanel=ddContent?`<div class="day-detail-panel">${ddContent}</div>`:'';
 
