@@ -709,6 +709,7 @@ function buildGonggu(){
     .map(inf=>({
       id:inf.id,name:inf.name,
       product:inf.negotiating_product||inf.product||'',
+      nickname:inf.nickname||'',
       start:inf.scheduleDate,end:inf.scheduleEndDate,
       color:getProductColor(inf.negotiating_product||inf.product),
       phase:PM[inf.phase||1],
@@ -884,7 +885,7 @@ function rDash(){
       const cardCls=isLive?'live':isTodayStart?'today-start':'';
       return`<div class="gc ${cardCls}" onclick="openEdit('${g.id}')">
         <div class="gc-color-stripe" style="background:${g.color}"></div>
-        <div class="gc-row1"><div class="gc-name">${g.name}</div><span class="gc-status ${isLive?'live':isTodayStart?'today':'soon'}">${statusLbl||'예정'}</span></div>
+        <div class="gc-row1"><div class="gc-name">${g.name}${g.nickname?` <span style="font-size:12px;color:#94A3B8;font-weight:600">(${g.nickname})</span>`:''}</div><span class="gc-status ${isLive?'live':isTodayStart?'today':'soon'}">${statusLbl||'예정'}</span></div>
         <div class="gc-product">${g.product}</div>
         ${isLive?`<div class="gc-prog"><div class="gc-prog-fill" style="width:${pct}%;background:${g.color}"></div></div>`:''}
         <div class="gc-dates">
@@ -1041,14 +1042,14 @@ function rCal(){
   const spans=[],points=[];
   data.forEach(inf=>{
     const pc=getProductColor(inf.negotiating_product||inf.product);
-    if(inf.scheduleDate){const e=inf.scheduleEndDate||inf.scheduleDate;spans.push({id:inf.id,label:`${inf.name} · ${inf.negotiating_product||inf.product||''}`,shortLabel:inf.name+(inf.nickname?`(${inf.nickname})`:'')+' ',product:inf.negotiating_product||inf.product||'',start:inf.scheduleDate,end:e,color:pc,cat:'gonggu'});}
+    if(inf.scheduleDate){const e=inf.scheduleEndDate||inf.scheduleDate;spans.push({id:inf.id,label:`${inf.name} · ${inf.negotiating_product||inf.product||''}`,shortLabel:inf.name+(inf.nickname?`(${inf.nickname})`:'')+' ',product:inf.negotiating_product||inf.product||'',name:inf.name,nickname:inf.nickname||'',start:inf.scheduleDate,end:e,color:pc,cat:'gonggu'});}
     if(inf.sampleSentDate){const tr=inf.trackingNumber?` (${inf.trackingNumber})`:'';const infNickS=inf.nickname?`(${inf.nickname})`:'';points.push({id:inf.id,label:`샘플 · ${inf.name}${infNickS}${tr}`,shortLabel:`${inf.name}${infNickS}`,ptCategory:'샘플',date:inf.sampleSentDate,color:'#FED7AA',cat:'work'});points.push({id:inf.id,label:`배송확인 · ${inf.name}${infNickS}`,shortLabel:`${inf.name}${infNickS}`,ptCategory:'배송확인',date:addDays(2,inf.sampleSentDate),color:'#FBCFE8',cat:'work'});}
     const sd=calcSettleDate(inf);
     if(sd){const cl=getCL(inf);const infNickSt=inf.nickname?`(${inf.nickname})`:'';if(!cl.closing.settled)points.push({id:inf.id,label:`정산 · ${inf.name}${infNickSt}`,shortLabel:`${inf.name}${infNickSt}`,ptCategory:'정산',date:sd,color:'#A7F3D0',cat:'work'});}
   });
   pTasks.filter(p=>!p.done&&p.date).forEach(p=>{
     const c=PTASK_COLORS[p.category]||'#94A3B8';
-    points.push({id:p.id,label:`${p.category} · ${p.title}`,shortLabel:p.title,category:p.category,date:p.date,color:c,cat:'work',isPT:true});
+    points.push({id:p.id,label:`${p.category} · ${p.title}`,shortLabel:p.title,category:p.category,notes:p.notes||'',time:p.time||'',date:p.date,color:c,cat:'work',isPT:true});
   });
   const modeSpans =calMode==='gonggu'?spans:[];
   const modePoints=calMode==='work'?points:[];
@@ -1079,8 +1080,41 @@ function rCal(){
   if(selDate){modeSpans.forEach(sp=>{if(sp.start<=selDate&&selDate<=sp.end)selEvs.push({...sp,isSpan:true});});modePoints.forEach(pt=>{if(pt.date===selDate)selEvs.push({...pt,isSpan:false});});}
   const selD=selDate?new Date(selDate+'T00:00:00'):null;
   const selLbl=selD?`${selD.getMonth()+1}월 ${selD.getDate()}일 ${DAYS_[selD.getDay()]}요일`:'';
+  // 캘린더 하단 패널 — 대시보드 카드 형식
+  function ddCard(e){
+    if(e.isSpan){
+      // 공구 기간 → gc 카드 형식
+      const d=diffDays(e.start),de=diffDays(e.end);
+      const isLive=d<=0&&de>=0;const pct=isLive?Math.round(((-d)/((-d)+de+1))*100):0;
+      const statusLbl=isLive?'진행중 🔥':d===0?'오늘 시작':d>0?`D-${d}`:'';
+      const cardCls=isLive?'live':d===0?'today-start':'';
+      const nameWithNick=e.name+(e.nickname?` <span style="font-size:11px;color:#94A3B8;font-weight:600">(${e.nickname})</span>`:'');
+      return`<div class="gc ${cardCls}" onclick="openEdit('${e.id}')">
+        <div class="gc-color-stripe" style="background:${e.color}"></div>
+        <div class="gc-row1"><div class="gc-name">${nameWithNick}</div><span class="gc-status ${isLive?'live':d===0?'today':'soon'}">${statusLbl||'예정'}</span></div>
+        <div class="gc-product">${e.product}</div>
+        ${isLive?`<div class="gc-prog"><div class="gc-prog-fill" style="width:${pct}%;background:${e.color}"></div></div>`:''}
+        <div class="gc-dates"><span class="gc-date-txt">📅 ${fmtDate(e.start)} ~ ${fmtDate(e.end)}</span><span class="gc-d" style="color:${isLive?'#2563EB':'#94A3B8'}">${isLive?`진행 ${Math.abs(d)+1}일차`:d>0?`D-${d}`:''}</span></div>
+      </div>`;
+    }
+    // 업무/포인트 → ptc 카드 형식
+    const cat=e.isPT?e.category:(e.ptCategory||'');
+    const ico=PTASK_ICOS[cat]||'📋';
+    const c2=PTASK_COLORS[cat]||e.color||'#94A3B8';
+    const titleTxt=e.isPT?e.shortLabel:(e.ptCategory?`${e.shortLabel}`:'');
+    const subTxt=e.isPT?cat:cat;
+    const fn=e.isPT?`openTaskEdit('${e.id}')`:`openEdit('${e.id}')`;
+    return`<div class="ptc" onclick="${fn}">
+      <div class="ptc-ico" style="background:${c2}30;color:#1E1B4B">${ico}</div>
+      <div class="ptc-body">
+        <div class="ptc-title">${titleTxt}</div>
+        <div class="ptc-meta">${subTxt}${e.time?` · ${e.time}`:''}</div>
+        ${e.notes?`<div class="ptc-memo">"${e.notes.slice(0,55)}${e.notes.length>55?'...':''}"</div>`:''}
+      </div>
+    </div>`;
+  }
   const ddContent=selEvs.length
-    ?`<div class="dd-hdr">📌 ${selLbl} · ${selEvs.length}건</div>${selEvs.map(e=>`<div class="dd-ev" style="background:${e.color}15" onclick="${e.isPT?`openTaskEdit('${e.id}')`:`openEdit('${e.id}')`}"><div class="dd-ev-dot" style="background:${e.color}"></div><div><div class="dd-ev-action">${e.isSpan?'공구 기간':e.label.split(' · ')[0]}</div><div class="dd-ev-meta">${e.label}${e.isSpan&&e.start!==e.end?` (${fmtDate(e.start)}~${fmtDate(e.end)})`:''}</div></div></div>`).join('')}`
+    ?`<div class="dd-hdr">📌 ${selLbl} · ${selEvs.length}건</div>${selEvs.map(e=>ddCard(e)).join('')}`
     :(selDate?`<div class="dd-hdr">🗓️ ${selLbl}</div><div style="font-size:12px;color:#94A3B8;padding:8px 0">일정 없음</div>`:'');
   const ddPanel=ddContent?`<div class="day-detail-panel">${ddContent}</div>`:'';
 
