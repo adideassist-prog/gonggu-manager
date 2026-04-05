@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.7</title>
+<title>공구 매니저 v8.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.7</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.8</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.7</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.8</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -1145,7 +1145,6 @@ function rDash(){
   const t=today();
 
   /* Nav bar */
-  const icBtn='<button class="dash-nav-btn" style="border-color:#FBBF24;color:#92400E" onclick="scrollToSection(\'sec-inconsist\')">&#9888; 체크사항 '+counts.inconsist+'</button>';
   const navHTML=`<div class="dash-nav" id="dash-nav">
     <button class="dash-nav-btn urg-btn active" onclick="scrollToSection('sec-urg')">🚨 긴급<span class="dash-nav-cnt">${counts.urgent}</span></button>
     <button class="dash-nav-btn" onclick="scrollToSection('sec-gonggu')">📅 공구<span class="dash-nav-cnt">${counts.gonggu}</span></button>
@@ -1153,7 +1152,6 @@ function rDash(){
     <button class="dash-nav-btn" onclick="scrollToSection('sec-settle')">💰 정산<span class="dash-nav-cnt">${counts.settle}</span></button>
     <button class="dash-nav-btn" onclick="scrollToSection('sec-contact')">💬 소통<span class="dash-nav-cnt">${counts.contact}</span></button>
     <button class="dash-nav-btn" onclick="scrollToSection('sec-personal')">📝 개인일정<span class="dash-nav-cnt">${counts.personal}</span></button>
-    ${counts.inconsist>0?icBtn:''}
   </div>`;
 
   /* ── S1: Urgent ── */
@@ -1204,6 +1202,16 @@ function rDash(){
       </div>`;
     }).join('')
     :`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">긴급 처리 사항 없음!</div></div>`;
+  // 체크사항(불일치)을 긴급 섹션에 합치기
+  const inconsistCards=inconsistItems.map(item=>`<div style="border-radius:11px;padding:11px 13px;background:#FFFBEB;border:1.5px solid #FDE68A;cursor:pointer;display:flex;align-items:flex-start;gap:10px" onclick="openEdit('${item.infId}')">
+    <div style="font-size:18px;flex-shrink:0">⚠️</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:800;margin-bottom:3px">${item.name}${item.nickname?' ('+item.nickname+')':''} <span style="font-size:11px;font-weight:700;color:#2563EB">${item.product}</span></div>
+      <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:3px">${item.issue}</div>
+      <div style="font-size:11px;color:#78350F">💡 ${item.suggest}</div>
+    </div>
+  </div>`).join('');
+  const s1BodyFinal=s1Body+(inconsistCards?'<div style="margin-top:6px;display:flex;flex-direction:column;gap:6px">'+inconsistCards+'</div>':'');
 
   /* ── S2: Gonggu ── */
   const gongguItems=buildGonggu();
@@ -1338,10 +1346,10 @@ function rDash(){
     <div class="ds" id="sec-urg">
       <div class="ds-hdr h-urg">
         <div class="ds-hdr-ico">🚨</div>
-        <div class="ds-hdr-info"><div class="ds-hdr-title" style="color:#DC2626">긴급 &amp; 오늘 할 일</div><div class="ds-hdr-sub c-urg">${counts.urgent}건 즉시 처리 필요</div></div>
+        <div class="ds-hdr-info"><div class="ds-hdr-title" style="color:#DC2626">긴급 &amp; 오늘 할 일</div><div class="ds-hdr-sub c-urg">${counts.urgent}건 즉시 처리 필요${counts.inconsist>0?" · ⚠️ 체크 "+counts.inconsist+"건":""}</div></div>
         <button class="ds-add-btn" style="border-color:#FECACA;color:#DC2626" onclick="openTaskAdd()">+ 업무 추가</button>
       </div>
-      <div class="ds-body">${s1Body}</div>
+      <div class="ds-body">${s1BodyFinal}</div>
     </div>
 
     <div class="ds" id="sec-gonggu">
