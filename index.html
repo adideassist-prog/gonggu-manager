@@ -425,6 +425,23 @@ a{text-decoration:none}
   .dash-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .dash-wide{grid-column:1/-1}
 }
+/* ── 카테고리 멀티셀렉트 드롭다운 ── */
+.cat-select{position:relative}
+.cat-select-box{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:7px 10px;border:1.5px solid #E2E8F0;border-radius:10px;background:white;cursor:pointer;min-height:38px;transition:border-color .15s}
+.cat-select-box:hover,.cat-select-box.open{border-color:#6366F1}
+.cat-select-placeholder{font-size:12px;color:#94A3B8;font-weight:500}
+.cat-selected-tag{display:inline-flex;align-items:center;gap:3px;background:#EEF2FF;color:#4F46E5;font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px}
+.cat-selected-tag button{border:none;background:none;color:#6366F1;cursor:pointer;font-size:12px;padding:0;line-height:1;margin-left:1px}
+.cat-arrow{margin-left:auto;color:#94A3B8;font-size:12px;flex-shrink:0;transition:transform .2s}
+.cat-arrow.open{transform:rotate(180deg)}
+.cat-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1.5px solid #E2E8F0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:600;overflow:hidden}
+.cat-dropdown.show{display:block}
+.cat-dropdown-inner{max-height:220px;overflow-y:auto;padding:6px}
+.cat-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:#374151;transition:background .1s}
+.cat-item:hover{background:#F5F3FF}
+.cat-item.selected{background:#EEF2FF;color:#4F46E5;font-weight:700}
+.cat-item-check{width:16px;height:16px;border-radius:4px;border:1.5px solid #D1D5DB;background:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px}
+.cat-item.selected .cat-item-check{background:#4F46E5;border-color:#4F46E5;color:white}
 </style>
 </head>
 <body>
@@ -975,23 +992,25 @@ function scrollToSection(id){
   setTimeout(()=>{
     const el=document.getElementById(id);
     if(!el)return;
-    // sticky 요소들의 실제 높이 계산
-    const topbar=document.querySelector('.pc-topbar')||document.querySelector('.mob-hdr');
-    const dashNav=document.getElementById('dash-nav');
-    const topbarH=topbar?topbar.getBoundingClientRect().height:0;
-    const dashNavH=dashNav?dashNav.getBoundingClientRect().height:0;
-    const offset=topbarH+dashNavH+8; // 8px 여유
-    // 현재 스크롤 컨테이너 찾기 (PC는 .page, 모바일은 window)
+    const isMob=window.innerWidth<860;
     const pageEl=document.querySelector('.page');
-    const scrollEl=(pageEl&&getComputedStyle(pageEl).overflowY==='auto')?pageEl:null;
-    const elTop=el.getBoundingClientRect().top;
-    if(scrollEl){
-      scrollEl.scrollBy({top:elTop-offset,behavior:'smooth'});
+    const isPageScroll=!isMob&&pageEl&&getComputedStyle(pageEl).overflowY==='auto';
+    function elH(sel){const e=document.querySelector(sel);return e?e.offsetHeight:0;}
+    const topH=isMob?elH('.mob-hdr'):elH('.pc-topbar');
+    const navH=elH('#dash-nav');
+    const offset=topH+navH+8;
+    if(isPageScroll){
+      // PC: .page 기준 절대 위치 계산
+      const containerTop=pageEl.getBoundingClientRect().top;
+      const elTop=el.getBoundingClientRect().top;
+      const target=pageEl.scrollTop+(elTop-containerTop)-offset;
+      pageEl.scrollTo({top:target,behavior:'smooth'});
     } else {
-      const absTop=el.getBoundingClientRect().top+window.pageYOffset-offset;
-      window.scrollTo({top:absTop,behavior:'smooth'});
+      // 모바일: window 기준 절대 위치 계산
+      const target=el.getBoundingClientRect().top+window.pageYOffset-offset;
+      window.scrollTo({top:target,behavior:'smooth'});
     }
-  },50);
+  },80);
 }
 
 /* ── DASHBOARD ── */
@@ -1373,7 +1392,17 @@ function showInfModal(){
     <div class="field"><label>인스타그램 채널 URL</label><input id="f-url" value="${inf.instagramUrl||inf.channel_url||''}" placeholder="https://www.instagram.com/username/"></div>
     <div class="field-row"><div class="field"><label>카카오톡 ID</label><input id="f-kakao" value="${inf.kakaoId||''}"></div><div class="field"><label>이메일/연락처</label><input id="f-email" value="${inf.kakao_email||inf.phone||''}"></div></div>
     <div class="field"><label>협의 중인 제품</label><input id="f-prod" value="${inf.negotiating_product||inf.product||''}" placeholder="코닥 미니샷 ERA"></div>
-    <div class="field"><label>카테고리 (복수 선택 가능)</label><div id="f-cat-wrap" style="display:flex;flex-wrap:wrap;gap:5px;padding:8px;border:1.5px solid #E2E8F0;border-radius:10px;background:white">${INF_CATS.map(c=>{const sel=(inf.category||'').split(',').map(x=>x.trim()).includes(c);return`<label style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:14px;border:1.5px solid ${sel?'#6366F1':'#E2E8F0'};background:${sel?'#EEF2FF':'white'};cursor:pointer;font-size:12px;font-weight:${sel?700:500};color:${sel?'#4F46E5':'#64748B'}"><input type="checkbox" value="${c}" ${sel?'checked':''} onchange="toggleCat()" style="display:none">${c}</label>`;}).join('')}</div></div>
+    <div class="field"><label>카테고리 (복수 선택 가능)</label>
+    <div class="cat-select" id="cat-select-wrap">
+      <div class="cat-select-box" id="f-cat-box" onclick="toggleCatDrop()">
+        <div id="f-cat-tags" style="display:flex;gap:4px;flex-wrap:wrap;flex:1">${(()=>{const sels=(inf.category||'').split(',').map(x=>x.trim()).filter(Boolean);return sels.length?sels.map(s=>`<span class="cat-selected-tag">${s}<button type="button" onclick="event.stopPropagation();removeCat('${s}')">✕</button></span>`).join(''):`<span class="cat-select-placeholder">카테고리 선택...</span>`;})()}</div>
+        <span class="cat-arrow" id="cat-arrow">▼</span>
+      </div>
+      <div class="cat-dropdown" id="f-cat-dropdown">
+        <div class="cat-dropdown-inner">${INF_CATS.map(c=>{const sel=(inf.category||'').split(',').map(x=>x.trim()).includes(c);return`<div class="cat-item${sel?' selected':''}" onclick="selectCat('${c}')" data-cat="${c}"><div class="cat-item-check">${sel?'✓':''}</div>${c}</div>`;}).join('')}</div>
+      </div>
+      <input type="hidden" id="f-cat" value="${inf.category||''}">
+    </div></div>
     <div class="field"><label>대화 요약</label><textarea id="f-chat">${inf.chat_history||''}</textarea></div>
   </div>`;
   const s2=ph>=2?`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">2</div><div><div class="fsec-lbl">샘플 배송</div></div></div>
@@ -1418,25 +1447,61 @@ async function toggleCk(phId,key,infId){
   gdSave();closeId('inf-modal');showInfModal();
 }
 
-function toggleCat(){
-  const boxes=document.querySelectorAll('#f-cat-wrap input[type=checkbox]');
-  const selected=[...boxes].filter(b=>b.checked).map(b=>b.value);
-  // 시각적 업데이트
-  document.querySelectorAll('#f-cat-wrap label').forEach(lbl=>{
-    const cb=lbl.querySelector('input');
-    const on=cb.checked;
-    lbl.style.borderColor=on?'#6366F1':'#E2E8F0';
-    lbl.style.background=on?'#EEF2FF':'white';
-    lbl.style.color=on?'#4F46E5':'#64748B';
-    lbl.style.fontWeight=on?700:500;
+function toggleCatDrop(){
+  const dd=document.getElementById('f-cat-dropdown');
+  const box=document.getElementById('f-cat-box');
+  const arrow=document.getElementById('cat-arrow');
+  if(!dd)return;
+  const isOpen=dd.classList.contains('show');
+  if(isOpen){dd.classList.remove('show');box.classList.remove('open');arrow.classList.remove('open');}
+  else{dd.classList.add('show');box.classList.add('open');arrow.classList.add('open');}
+}
+function selectCat(cat){
+  const inp=document.getElementById('f-cat');
+  if(!inp)return;
+  let sels=inp.value.split(',').map(x=>x.trim()).filter(Boolean);
+  const idx=sels.indexOf(cat);
+  if(idx>=0)sels.splice(idx,1);else sels.push(cat);
+  inp.value=sels.join(',');
+  updateCatUI(sels);
+}
+function removeCat(cat){
+  const inp=document.getElementById('f-cat');
+  if(!inp)return;
+  let sels=inp.value.split(',').map(x=>x.trim()).filter(Boolean);
+  sels=sels.filter(s=>s!==cat);
+  inp.value=sels.join(',');
+  updateCatUI(sels);
+}
+function updateCatUI(sels){
+  const tags=document.getElementById('f-cat-tags');
+  if(tags){
+    tags.innerHTML=sels.length
+      ?sels.map(s=>`<span class="cat-selected-tag">${s}<button type="button" onclick="event.stopPropagation();removeCat('${s}')">✕</button></span>`).join('')
+      :`<span class="cat-select-placeholder">카테고리 선택...</span>`;
+  }
+  document.querySelectorAll('#f-cat-dropdown .cat-item').forEach(el=>{
+    const c=el.dataset.cat;const on=sels.includes(c);
+    el.classList.toggle('selected',on);
+    el.querySelector('.cat-item-check').textContent=on?'✓':'';
   });
 }
+// 드롭다운 외부 클릭 시 닫기
+document.addEventListener('click',function(e){
+  const wrap=document.getElementById('cat-select-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    const dd=document.getElementById('f-cat-dropdown');
+    const box=document.getElementById('f-cat-box');
+    const arrow=document.getElementById('cat-arrow');
+    if(dd){dd.classList.remove('show');box&&box.classList.remove('open');arrow&&arrow.classList.remove('open');}
+  }
+});
 function collectInf(){
   const gv=id=>{const e=document.getElementById(id);return e?e.value:''};
   const seVal=gv('f-se');
   return{
     name:gv('f-name'),nickname:gv('f-nick'),instagram:gv('f-insta'),instagramUrl:gv('f-url'),channel_url:gv('f-url'),
-    followers:parseInt(gv('f-flw'))||0,category:[...document.querySelectorAll('#f-cat-wrap input:checked')].map(b=>b.value).join(',') || gv('f-cat') || '',kakaoId:gv('f-kakao'),kakao_email:gv('f-email'),phone:gv('f-email'),
+    followers:parseInt(gv('f-flw'))||0,category:gv('f-cat')||'',kakaoId:gv('f-kakao'),kakao_email:gv('f-email'),phone:gv('f-email'),
     negotiating_product:gv('f-prod'),product:gv('f-prod'),chat_history:gv('f-chat'),
     sample_detail:gv('f-sdet'),recipient_name:gv('f-rname'),sampleRecipient:gv('f-rname'),
     recipient_phone:gv('f-rphone'),samplePhone:gv('f-rphone'),recipient_address:gv('f-raddr'),sampleAddress:gv('f-raddr'),
