@@ -1393,7 +1393,7 @@ async function toggleCk(phId,key,infId){
   const newPh=inf.phase;
   const updated={...inf,checklist:cl,phase:newPh,updatedAt:new Date().toISOString()};
   await dbPut(IS,updated);data=await dbAll(IS);
-  if(editInf?.id===infId){editInf=updated;modalPh=newPh;}
+  if(editInf?.id===infId){editInf=updated;modalPh=phId;} // 현재 탭 유지
   gdSave();closeId('inf-modal');showInfModal();
 }
 
