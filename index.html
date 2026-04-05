@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.1</title>
+<title>공구 매니저 v8.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.2</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.2</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -1343,11 +1343,22 @@ function rCal(){
   warmProductColors(data);
   const spans=[],points=[];
   data.forEach(inf=>{
-    const pc=getProductColor(inf.negotiating_product||inf.product);
-    if(inf.scheduleDate){const e=inf.scheduleEndDate||inf.scheduleDate;spans.push({id:inf.id,label:`${inf.name} · ${inf.negotiating_product||inf.product||''}`,shortLabel:inf.name+(inf.nickname?`(${inf.nickname})`:'')+' ',product:inf.negotiating_product||inf.product||'',name:inf.name,nickname:inf.nickname||'',start:inf.scheduleDate,end:e,color:pc,cat:'gonggu'});}
-    if(inf.sampleSentDate){const tr=inf.trackingNumber?` (${inf.trackingNumber})`:'';const infNickS=inf.nickname?`(${inf.nickname})`:'';points.push({id:inf.id,label:`샘플 · ${inf.name}${infNickS}${tr}`,shortLabel:`${inf.name}${infNickS}`,ptCategory:'샘플',date:inf.sampleSentDate,color:'#FED7AA',cat:'work'});points.push({id:inf.id,label:`배송확인 · ${inf.name}${infNickS}`,shortLabel:`${inf.name}${infNickS}`,ptCategory:'배송확인',date:addDays(2,inf.sampleSentDate),color:'#FBCFE8',cat:'work'});}
-    const sd=calcSettleDate(inf);
-    if(sd){const cl=getCL(inf);const infNickSt=inf.nickname?`(${inf.nickname})`:'';if(!cl.closing.settled)points.push({id:inf.id,label:`정산 · ${inf.name}${infNickSt}`,shortLabel:`${inf.name}${infNickSt}`,ptCategory:'정산',date:sd,color:'#A7F3D0',cat:'work'});}
+    const infNick=inf.nickname?`(${inf.nickname})`:'';
+    (inf.projects||[]).forEach(proj=>{
+      const pc=getProductColor(proj.product||'');
+      if(proj.scheduleDate){
+        const e=proj.scheduleEndDate||proj.scheduleDate;
+        spans.push({id:inf.id,pid:proj.pid,label:`${inf.name}${infNick} · ${proj.product||''}`,shortLabel:inf.name+infNick+' ',product:proj.product||'',name:inf.name,nickname:inf.nickname||'',start:proj.scheduleDate,end:e,color:pc,cat:'gonggu'});
+      }
+      if(proj.sampleSentDate){
+        const tr=proj.trackingNumber?` (${proj.trackingNumber})`:'';
+        points.push({id:inf.id,pid:proj.pid,label:`샘플 · ${inf.name}${infNick}${tr}`,shortLabel:`${inf.name}${infNick}`,ptCategory:'샘플',date:proj.sampleSentDate,color:'#FED7AA',cat:'work'});
+        points.push({id:inf.id,pid:proj.pid,label:`배송확인 · ${inf.name}${infNick}`,shortLabel:`${inf.name}${infNick}`,ptCategory:'배송확인',date:addDays(2,proj.sampleSentDate),color:'#FBCFE8',cat:'work'});
+      }
+      const sd=calcSettleDate(proj);const cl=getCL(proj);
+      if(sd&&!cl.closing.settled)
+        points.push({id:inf.id,pid:proj.pid,label:`정산 · ${inf.name}${infNick}`,shortLabel:`${inf.name}${infNick}`,ptCategory:'정산',date:sd,color:'#A7F3D0',cat:'work'});
+    });
   });
   pTasks.filter(p=>!p.done&&p.date).forEach(p=>{
     const c=PTASK_COLORS[p.category]||'#94A3B8';
