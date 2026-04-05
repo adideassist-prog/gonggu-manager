@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.9</title>
+<title>공구 매니저 v8.10</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.9</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.10</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.9</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.10</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -983,14 +983,9 @@ function rChrome(){
   // 프로젝트 기준 카운트: 한 인플루언서의 여러 프로젝트를 각각 집계
   let cntContact=0,cntSample=0,cntOp=0,cntClose=0;
   data.forEach(d=>{(d.projects||[]).forEach(p=>{
-    const cl=getCL(p);
     if(p.phase===1)cntContact++;
     else if(p.phase===2)cntSample++;
-    else if(p.phase===3){
-      // 샘플 미완료 프로젝트는 샘플 카운트에도 포함
-      if(!cl.sample.sent||!cl.sample.received)cntSample++;
-      else cntOp++;
-    }
+    else if(p.phase===3)cntOp++;
     else if(p.phase===4)cntClose++;
   });});
   const t0=today();const e30=addDays(30);
@@ -1780,6 +1775,7 @@ function showInfModal(){
       <span style="font-size:10px;color:#94A3B8">(탭은 내용 확인용 · 단계는 여기서 변경)</span>
     </div>`;
     let nf=false;const ph=PM[viewPh]; // viewPh 기준으로 체크리스트 표시
+    const phCl=cl[ph.key]; // viewPh의 체크리스트 데이터 사용 (재정의)
     const clHTML=`<div class="cl-wrap"><div class="cl-title">✅ ${ph.label} 체크리스트</div>${ph.checks.map(c=>{const ck=!!phCl[c.k];const isN=!ck&&!nf;if(isN)nf=true;return`<label class="cl-item${ck?' ckd':''}${isN?' nxt-item':''}" onclick="event.preventDefault();toggleCk(${ph.id},'${c.k}','${inf.id}','${pid}')"><input type="checkbox" ${ck?'checked':''} readonly><span class="cl-lbl">${c.lbl}</span>${isN?`<span class="nxt-tag">다음</span>`:''}</label>`;}).join('')}</div>`;
     // 단계별 입력 섹션
     const p=curProj;
@@ -2144,12 +2140,13 @@ function showBadgeModal(type){
   else if(type==='settle')filtered=data.filter(d=>(d.projects||[]).some(p=>{const sd=calcSettleDate(p);return sd&&sd>=t0b&&sd<=e30b&&!getCL(p).closing.settled;}));
   else if(type==='done')filtered=data.filter(d=>(d.projects||[]).some(p=>p.scheduleEndDate&&p.scheduleEndDate.startsWith(ymb)&&getCL(p).closing.done));
   else if(type==='urgent'){const urgItems=buildUrgent();const ids=new Set(urgItems.filter(i=>i.type==='inf').map(i=>i.infId||i.id));filtered=data.filter(d=>ids.has(d.id));}
-  const listHTML=filtered.length?filtered.flatMap(inf=>(inf.projects||[]).map(proj=>{
+  const allProjs=filtered.flatMap(inf=>(inf.projects||[]).map(proj=>({inf,proj})));
+  const listHTML=allProjs.length?allProjs.map(({inf,proj})=>{
     const ph=PM[proj.phase||1];const na=getNextAct(proj);
     const schedInfo=proj.scheduleDate?`<span style="font-size:11px;font-weight:700;color:#2563EB;background:#EFF6FF;padding:2px 7px;border-radius:5px;margin-left:4px">📅 ${fmtDate(proj.scheduleDate)}${proj.scheduleEndDate?`~${fmtDate(proj.scheduleEndDate)}`:''}</span>`:'';
     return`<div class="bm-item" style="border-left-color:${ph.color}" onclick="closeBM();openEdit('${inf.id}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap"><b style="font-size:14px">${inf.name}${inf.nickname?` <span style="color:#5B21B6;font-weight:800">(${inf.nickname})</span>`:''}</b><span style="font-size:10px;font-weight:700;background:${ph.bg};color:${ph.color};padding:2px 6px;border-radius:4px">${ph.ico} ${ph.label}</span>${schedInfo}</div><div style="font-size:11px;color:#94A3B8;margin-bottom:3px">${inf.instagram||''}${proj.product?` · ${proj.product}`:''}</div>${na?`<div style="font-size:12px;font-weight:700;color:${na.urg?'#DC2626':'#475569'}">→ ${na.action}</div>`:''}</div>`;
-  })).join(''):`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">해당 항목이 없어요</div></div>`;
-  const ov=mkOv('bm-modal');ov.innerHTML=`<div class="modal" onclick="event.stopPropagation()"><div class="m-hnd"></div><div class="m-head" style="color:${c.color}">${c.title}<button class="m-x" onclick="closeBM()">✕</button></div><div style="font-size:12px;color:#94A3B8;margin-bottom:12px">${c.desc} · <b style="color:${c.color}">${filtered.length}명</b></div>${listHTML}</div>`;document.body.appendChild(ov);
+  }).join(''):`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">해당 항목이 없어요</div></div>`;
+  const ov=mkOv('bm-modal');ov.innerHTML=`<div class="modal" onclick="event.stopPropagation()"><div class="m-hnd"></div><div class="m-head" style="color:${c.color}">${c.title}<button class="m-x" onclick="closeBM()">✕</button></div><div style="font-size:12px;color:#94A3B8;margin-bottom:12px">${c.desc} · <b style="color:${c.color}">${allProjs.length}건</b></div>${listHTML}</div>`;document.body.appendChild(ov);
 }
 function closeBM(){closeId('bm-modal');}
 
