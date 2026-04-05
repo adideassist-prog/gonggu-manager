@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v7.1</title>
+<title>공구 매니저 v7.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v7.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v7.2</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -480,7 +480,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v7.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v7.2</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -1302,7 +1302,9 @@ function rCal(){
       points.push({id:p.id,label:`${p.category} · ${p.title}`,shortLabel:p.title,category:p.category,notes:p.notes||'',time:p.time||'',date:p.date,color:c,cat:'work',isPT:true,url:p.url||''});
     }
   });
-  const modeSpans =calMode==='gonggu'?spans:[];
+  const modeSpans =calMode==='gonggu'
+    ? spans.filter(sp=>!sp.isTaskSpan)        // 공구 캘린더: 인플루언서 공구 바만
+    : spans.filter(sp=>sp.isTaskSpan);        // 업무 캘린더: 기간 업무 바만
   const modePoints=calMode==='work'?points:[];
   const first=new Date(calY,calM,1);const lastDate=new Date(calY,calM+1,0).getDate();const dow=first.getDay();
   const pm=new Date(calY,calM,0).getDate();
