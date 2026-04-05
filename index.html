@@ -401,6 +401,7 @@ a{text-decoration:none}
   .main{height:100vh;overflow:hidden;display:flex;flex-direction:column}
   .pc-topbar{flex-shrink:0}
   .page{flex:1;overflow-y:auto;min-height:0;padding:12px 20px 20px}
+  #srch-wrap{padding:10px 20px 0}
   /* 캘린더 탭일 때만 page도 flex로 */
   .page.cal-page{display:flex;flex-direction:column;overflow:hidden;padding-bottom:12px}
   /* Calendar body fills remaining space */
@@ -515,6 +516,11 @@ a{text-decoration:none}
     <div class="pc-topbar-row2" id="pc-kpis"></div>
   </div>
 
+  <!-- 인플루언서 검색창: rContent() 재렌더와 무관하게 독립 유지 -->
+  <div id="srch-wrap" style="display:none;padding:10px 14px 0">
+    <input class="search-box" id="srch-input" placeholder="이름 · 인스타 · 제품 · 별명 검색"
+      oninput="onSrchInput(this.value)">
+  </div>
   <div class="page" id="content"></div>
 
   <!-- BOTTOM NAV -->
@@ -984,9 +990,25 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
     </div>`;
   ['dash','cal','list'].forEach(t=>{const b=el('mbn-'+t);if(b)b.classList.toggle('on',tab===t);});
 }
-function setTab(t){tab=t;render();}
+function setTab(t){
+  tab=t;
+  const sw=document.getElementById('srch-wrap');
+  if(sw){sw.style.display=(t==='list')?'block':'none';}
+  // 검색창 초기화
+  if(t!=='list'){srch='';const si=document.getElementById('srch-input');if(si)si.value='';}
+  render();
+}
 function updatePageClass(){const c=document.getElementById('content');if(c){c.classList.toggle('cal-page',tab==='cal');}}
-function rContent(){const c=document.getElementById('content');if(tab==='dash')c.innerHTML=rDash();else if(tab==='cal')c.innerHTML=rCal();else c.innerHTML=rList();updatePageClass();}
+function rContent(){
+  const c=document.getElementById('content');
+  if(tab==='dash')c.innerHTML=rDash();else if(tab==='cal')c.innerHTML=rCal();else c.innerHTML=rList();
+  // srch-wrap 표시/숨김 + 검색값 복원
+  const sw=document.getElementById('srch-wrap');
+  if(sw){sw.style.display=(tab==='list')?'block':'none';}
+  const si=document.getElementById('srch-input');
+  if(si&&tab==='list'&&si.value!==srch)si.value=srch;
+  updatePageClass();
+}
 
 function scrollToSection(id){
   setTimeout(()=>{
@@ -997,14 +1019,14 @@ function scrollToSection(id){
     const isPageScroll=!isMob&&pageEl&&getComputedStyle(pageEl).overflowY==='auto';
     function elH(sel){const e=document.querySelector(sel);return e?e.offsetHeight:0;}
     if(isPageScroll){
-      // PC: pc-topbar + dash-nav 모두 포함 (dash-nav가 .page 안에서 정상 sticky)
-      const offset=elH('.pc-topbar')+elH('#dash-nav')+8;
-      const containerTop=pageEl.getBoundingClientRect().top;
-      const elTop=el.getBoundingClientRect().top;
-      const target=pageEl.scrollTop+(elTop-containerTop)-offset;
-      pageEl.scrollTo({top:target,behavior:'smooth'});
+      // PC: el이 page top에서 얼마나 떨어져있는지 계산 후 scrollBy
+      const navH=elH('#dash-nav');
+      const elRect=el.getBoundingClientRect();
+      const pageRect=pageEl.getBoundingClientRect();
+      const fromTop=elRect.top-pageRect.top; // el과 page 상단의 거리
+      pageEl.scrollBy({top:fromTop-navH-8,behavior:'smooth'});
     } else {
-      // 모바일: mob-hdr만 포함 (dash-nav는 mob-hdr 뒤에 가려져서 오프셋 불필요)
+      // 모바일: mob-hdr만 (dash-nav는 z-index상 mob-hdr 뒤)
       const offset=elH('.mob-hdr')+8;
       const target=el.getBoundingClientRect().top+window.pageYOffset-offset;
       window.scrollTo({top:target,behavior:'smooth'});
@@ -1346,31 +1368,44 @@ function selectDate(d){selDate=d;rContent();}
 function setCalMode(m){calMode=m;rContent();}
 
 /* ── INF LIST ── */
-function rList(){
+function buildInfListHTML(){
   const filtered=data.filter(inf=>{
     const ms=(inf.name||'').includes(srch)||(inf.instagram||'').includes(srch)||(inf.negotiating_product||inf.product||'').includes(srch)||(inf.nickname||'').includes(srch)||(inf.category||'').includes(srch);
     return ms&&(phFilter==='all'||inf.phase===parseInt(phFilter));
   });
   const chips=`<div class="chip-row"><button class="chip${phFilter==='all'?' on':''}" onclick="setFilter('all')">전체 ${data.length}</button>${PHASES.map(ph=>{const cnt=data.filter(d=>d.phase===ph.id).length;return cnt?`<button class="chip${phFilter==ph.id?' on':''}" onclick="setFilter(${ph.id})" style="${phFilter==ph.id?'':'border-left:3px solid '+ph.color+';padding-left:8px'}">${ph.ico} ${ph.label} ${cnt}</button>`:''}).join('')}</div>`;
-  const cards=filtered.length?`<div class="inf-grid-wrap">${filtered.map(inf=>{
-    const ph=PM[inf.phase||1];const prog=getTotalProg(inf);const na=getNextAct(inf);const cm2=na?CAT_META[na.cat]:null;
-    const sd=calcSettleDate(inf);
-    const iLink=inf.instagramUrl||inf.channel_url?`<a href="${inf.instagramUrl||inf.channel_url}" target="_blank" style="color:#E1306C;font-weight:700;font-size:11px;text-decoration:none" onclick="event.stopPropagation()">${inf.instagram||'인스타'} ↗</a>`:`<span>${inf.instagram||''}</span>`;
-    const dTags=[inf.scheduleDate?`<span class="dtag" style="background:#EFF6FF;color:#2563EB">📅 ${fmtDate(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmtDate(inf.scheduleEndDate)}`:''}</span>`:'',sd&&!getCL(inf).closing.settled&&inf.phase===4?`<span class="dtag" style="background:#ECFDF5;color:#059669">💰 ${fmtDate(sd)}</span>`:''].filter(Boolean).join('');
-    // 현재 단계 체크리스트
-    const cl=getCL(inf);const phChecks=ph.checks.map(c=>{const done=!!cl[ph.key][c.k];return`<div class="sc-ck${done?' is-done':''}"><div class="sc-ck-box${done?' done':''}">${done?'✓':''}</div><span class="sc-ck-lbl">${c.lbl}</span></div>`;}).join('');
-    return`<div class="inf-card p${ph.id}" onclick="openEdit('${inf.id}')">
-      <div class="inf-top"><div><div class="inf-name">${inf.name}${inf.nickname?` <span style="color:#5B21B6;font-weight:800">(${inf.nickname})</span>`:''}</div><div class="inf-sub">${iLink}${inf.followers?`<span>· ${fmtFollowers(inf.followers)}</span>`:''}</div></div><span class="ph-badge" style="background:${ph.bg};color:${ph.color}">${ph.ico} ${ph.label}</span></div>
-      ${inf.negotiating_product||inf.product?`<div style="font-size:12px;font-weight:700;color:#2563EB;margin-bottom:6px">${inf.negotiating_product||inf.product}</div>`:''}
-      <div class="sc-checks">${phChecks}</div>
-      ${na?`<div class="nxt-box" style="background:${na.urg?'#FEF2F2':'#F8FAFC'};margin-top:6px"><span>${cm2.ico}</span><span class="nxt-txt" style="color:${na.urg?'#EF4444':'#475569'}">→ ${na.action}</span></div>`:''}
-      ${dTags?`<div class="dtags" style="margin-top:5px">${dTags}</div>`:''}
-    </div>`;
-  }).join('')}</div>`:`<div class="empty-s"><div class="empty-s-ico">👥</div><div class="empty-s-txt">인플루언서가 없어요</div></div>`;
-  return`<input class="search-box" placeholder="이름 · 인스타 · 제품 · 별명 검색" value="${srch}" oninput="setSrch(this.value)">${chips}${cards}<button class="fab" onclick="openAdd()">＋</button>`;
+  const cards=filtered.length?buildInfCards(filtered):`<div class="empty-s"><div class="empty-s-ico">👥</div><div class="empty-s-txt">인플루언서가 없어요</div></div>`;
+  return chips+cards;
 }
-function setFilter(f){phFilter=f;rContent();}
-function setSrch(v){srch=v;rContent();const sb=document.querySelector('.search-box');if(sb){sb.focus();try{sb.setSelectionRange(v.length,v.length);}catch(e){}}}
+function buildInfCards(filtered){return`<div class="inf-grid-wrap">${filtered.map(inf=>{
+  const ph=PM[inf.phase||1];const prog=getTotalProg(inf);const na=getNextAct(inf);const cm2=na?CAT_META[na.cat]:null;const cl=getCL(inf);
+  const sd=calcSettleDate(inf);
+  const iLink=inf.instagramUrl||inf.channel_url?`<a href="${inf.instagramUrl||inf.channel_url}" target="_blank" style="color:#E1306C;font-weight:700;font-size:11px;text-decoration:none" onclick="event.stopPropagation()">${inf.instagram||'인스타'} ↗</a>`:`<span>${inf.instagram||''}</span>`;
+  const dTags=[inf.scheduleDate?`<span class="dtag" style="background:#EFF6FF;color:#2563EB">📅 ${fmtDate(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmtDate(inf.scheduleEndDate)}`:''}</span>`:'',sd&&!getCL(inf).closing.settled&&inf.phase===4?`<span class="dtag" style="background:#ECFDF5;color:#059669">💰 ${fmtDate(sd)}</span>`:''].filter(Boolean).join('');
+  const catTags=(inf.category||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const catInline=catTags.map(c=>`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:#EEF2FF;color:#4F46E5;margin-left:3px">${c}</span>`).join('');
+  const phChecks=ph.checks.map(c=>{const done=!!cl[ph.key][c.k];return`<div class="sc-ck${done?' is-done':''}"><div class="sc-ck-box${done?' done':''}">${done?'✓':''}</div><span class="sc-ck-lbl">${c.lbl}</span></div>`;}).join('');
+  return`<div class="inf-card p${ph.id}" onclick="openEdit('${inf.id}')">
+    <div class="inf-top"><div><div class="inf-name">${inf.name}${inf.nickname?` <span style="color:#5B21B6;font-weight:800">(${inf.nickname})</span>`:''}${catInline}</div><div class="inf-sub">${iLink}${inf.followers?`<span>· ${fmtFollowers(inf.followers)}</span>`:''}</div></div><span class="ph-badge" style="background:${ph.bg};color:${ph.color}">${ph.ico} ${ph.label}</span></div>
+    ${inf.negotiating_product||inf.product?`<div style="font-size:12px;font-weight:700;color:#2563EB;margin-bottom:6px">${inf.negotiating_product||inf.product}</div>`:''}
+    <div class="sc-checks">${phChecks}</div>
+    ${na?`<div class="nxt-box" style="background:${na.urg?'#FEF2F2':'#F8FAFC'};margin-top:6px"><span>${cm2.ico}</span><span class="nxt-txt" style="color:${na.urg?'#EF4444':'#475569'}">→ ${na.action}</span></div>`:''}
+    ${dTags?`<div class="dtags" style="margin-top:5px">${dTags}</div>`:''}
+  </div>`;}).join('')}</div>`;}
+function rList(){return`<div id="inf-list">${buildInfListHTML()}</div>`;}
+function setFilter(f){phFilter=f;if(tab==='list'){rListOnly();}else{rContent();}}
+let _srchTimer=null;
+// 검색창은 HTML에 고정 → input 파괴 없이 list만 갱신 (IME 자동 해결)
+function onSrchInput(v){
+  srch=v;
+  clearTimeout(_srchTimer);
+  _srchTimer=setTimeout(rListOnly,250); // 250ms debounce - 한글 IME 조합 완료 대기
+}
+function rListOnly(){
+  const listEl=document.getElementById('inf-list');
+  if(listEl)listEl.innerHTML=buildInfListHTML();
+}
+function setSrch(v){srch=v;} // 하위 호환용
 
 /* ════════════════════════════════════════════════
    12. INFLUENCER MODAL
@@ -1566,7 +1601,7 @@ function showBadgeModal(type){
   else if(type==='settle')filtered=data.filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0b&&sd<=e30b&&!getCL(d).closing.settled;});
   else if(type==='done')filtered=data.filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb)&&getCL(d).closing.done);
   else if(type==='urgent'){const urgItems=buildUrgent();const ids=new Set(urgItems.filter(i=>i.type==='inf').map(i=>i.id));filtered=data.filter(d=>ids.has(d.id));}
-  const listHTML=filtered.length?filtered.map(inf=>{const ph=PM[inf.phase||1];const na=getNextAct(inf);return`<div class="bm-item" style="border-left-color:${ph.color}" onclick="closeBM();openEdit('${inf.id}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><b style="font-size:14px">${inf.name}</b><span style="font-size:10px;font-weight:700;background:${ph.bg};color:${ph.color};padding:2px 6px;border-radius:4px">${ph.ico} ${ph.label}</span></div><div style="font-size:11px;color:#94A3B8;margin-bottom:3px">${inf.instagram||''}${inf.negotiating_product||inf.product?` · ${inf.negotiating_product||inf.product}`:''}</div>${na?`<div style="font-size:12px;font-weight:700;color:${na.urg?'#DC2626':'#475569'}">→ ${na.action}</div>`:''}</div>`;}).join(''):`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">해당 항목이 없어요</div></div>`;
+  const listHTML=filtered.length?filtered.map(inf=>{const ph=PM[inf.phase||1];const na=getNextAct(inf);const schedInfo=inf.scheduleDate?`<span style="font-size:11px;font-weight:700;color:#2563EB;background:#EFF6FF;padding:2px 7px;border-radius:5px;margin-left:4px">📅 ${fmtDate(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmtDate(inf.scheduleEndDate)}`:''}</span>`:'';return`<div class="bm-item" style="border-left-color:${ph.color}" onclick="closeBM();openEdit('${inf.id}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap"><b style="font-size:14px">${inf.name}${inf.nickname?` <span style="color:#5B21B6;font-weight:800">(${inf.nickname})</span>`:''}</b><span style="font-size:10px;font-weight:700;background:${ph.bg};color:${ph.color};padding:2px 6px;border-radius:4px">${ph.ico} ${ph.label}</span>${schedInfo}</div><div style="font-size:11px;color:#94A3B8;margin-bottom:3px">${inf.instagram||''}${inf.negotiating_product||inf.product?` · ${inf.negotiating_product||inf.product}`:''}</div>${na?`<div style="font-size:12px;font-weight:700;color:${na.urg?'#DC2626':'#475569'}">→ ${na.action}</div>`:''}</div>`;}).join(''):`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">해당 항목이 없어요</div></div>`;
   const ov=mkOv('bm-modal');ov.innerHTML=`<div class="modal" onclick="event.stopPropagation()"><div class="m-hnd"></div><div class="m-head" style="color:${c.color}">${c.title}<button class="m-x" onclick="closeBM()">✕</button></div><div style="font-size:12px;color:#94A3B8;margin-bottom:12px">${c.desc} · <b style="color:${c.color}">${filtered.length}명</b></div>${listHTML}</div>`;document.body.appendChild(ov);
 }
 function closeBM(){closeId('bm-modal');}
