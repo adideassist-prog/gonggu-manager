@@ -1678,9 +1678,9 @@ function showInfModal(){
   // ── 프로젝트 탭 섹션 ──
   const projTabBtns=projList.map((p,i)=>{
     const pph=PM[p.phase||1];const isCur=p.pid===(curProj?.pid);
-    return`<button class="ph-tab${isCur?' on':''}" style="--pc:${pph.color};--pb:${pph.bg}" onclick="switchProj('${inf.id}','${p.pid}')"><div class="ph-tab-ico">${pph.ico}</div><span class="ph-tab-lbl">${p.product||`프로젝트${i+1}`}</span><span class="ph-tab-ck">${pph.label}</span></button>`;
+    return`<button class="ph-tab${isCur?' on':''}" style="--pc:${pph.color};--pb:${pph.bg};min-width:100px;flex:1" onclick="switchProj('${inf.id}','${p.pid}')"><div class="ph-tab-ico">${pph.ico}</div><span class="ph-tab-lbl" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px">${p.product||`프로젝트${i+1}`}</span><span class="ph-tab-ck">${pph.label}</span></button>`;
   }).join('');
-  const addProjBtn=`<button onclick="addNewProject('${inf.id}')" style="padding:8px 14px;border-radius:10px;border:2px dashed #7C6FCD;background:#FAF8FF;color:#5B21B6;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap">＋ 새 공구</button>`;
+  const addProjBtn=`<button onclick="addNewProject('${inf.id}')" style="padding:8px 14px;border-radius:10px;border:2px dashed #7C6FCD;background:#FAF8FF;color:#5B21B6;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;align-self:center">＋ 새 공구</button>`;
 
   // ── 현재 프로젝트 체크리스트 + 입력 섹션 ──
   let projContent='';
@@ -1749,13 +1749,12 @@ function onScheduleEndChange(val){const el=document.getElementById('f-settle');i
 
 function switchPh(ph,pid){
   const f=collectInf(pid);
-  // 현재 프로젝트 phase 업데이트
   if(editInf&&pid){
-    editInf={...editInf,projects:(editInf.projects||[]).map(p=>p.pid===pid?{...p,...f,phase:ph}:p)};
+    editInf={...editInf,projects:(editInf.projects||[]).map(p=>p.pid===pid?{...p,...(f._projFields||{}),phase:ph}:p)};
   } else if(editInf){
-    editInf={...editInf,...f,phase:ph};
+    editInf={...editInf,...(f._projFields||{}),phase:ph};
   } else {
-    editInf={..._mi,id:_mi.id||uid(),...f,phase:ph};
+    editInf={..._mi,id:_mi.id||uid(),...(f._projFields||{}),phase:ph};
   }
   modalPh=ph;editProjId=pid||editProjId;
   closeId('inf-modal');showInfModal();
@@ -1763,7 +1762,7 @@ function switchPh(ph,pid){
 function switchProj(infId,pid){
   const f=collectInf(editProjId);
   if(editInf&&editProjId){
-    editInf={...editInf,projects:(editInf.projects||[]).map(p=>p.pid===editProjId?{...p,...f}:p)};
+    editInf={...editInf,projects:(editInf.projects||[]).map(p=>p.pid===editProjId?{...p,...(f._projFields||{})}:p)};
   }
   editProjId=pid;const proj=(editInf?.projects||[]).find(p=>p.pid===pid);
   modalPh=proj?.phase||1;
@@ -1772,7 +1771,7 @@ function switchProj(infId,pid){
 function addNewProject(infId){
   const f=collectInf(editProjId);
   if(editInf&&editProjId){
-    editInf={...editInf,projects:(editInf.projects||[]).map(p=>p.pid===editProjId?{...p,...f}:p)};
+    editInf={...editInf,projects:(editInf.projects||[]).map(p=>p.pid===editProjId?{...p,...(f._projFields||{})}:p)};
   }
   const newProj={pid:uid(),product:'',phase:1,checklist:{contact:{},sample:{},operation:{},closing:{}},sample_detail:'',recipient_name:'',recipient_phone:'',recipient_address:'',sampleSentDate:'',trackingNumber:'',scheduleDate:'',scheduleEndDate:'',paymentLink:'',settlement_date:'',settlementAmount:'',createdAt:new Date().toISOString()};
   editInf={...editInf,projects:[...(editInf?.projects||[]),newProj]};
@@ -1790,7 +1789,14 @@ async function deleteProject(infId,pid){
 }
 
 async function toggleCk(phId,key,infId,pid){
-  let inf=data.find(x=>x.id===infId)||(editInf?.id===infId?editInf:null);if(!inf)return;
+  // editInf에 해당 pid가 있으면 우선 사용 (아직 저장 안 된 새 프로젝트 포함)
+  let inf=null;
+  if(pid&&editInf?.id===infId&&(editInf.projects||[]).some(p=>p.pid===pid)){
+    inf=editInf;
+  } else {
+    inf=data.find(x=>x.id===infId)||(editInf?.id===infId?editInf:null);
+  }
+  if(!inf)return;
   const ph=PM[phId];
   // pid가 있으면 해당 프로젝트의 체크리스트 업데이트
   if(pid&&inf.projects){
