@@ -971,7 +971,28 @@ function setTab(t){tab=t;render();}
 function updatePageClass(){const c=document.getElementById('content');if(c){c.classList.toggle('cal-page',tab==='cal');}}
 function rContent(){const c=document.getElementById('content');if(tab==='dash')c.innerHTML=rDash();else if(tab==='cal')c.innerHTML=rCal();else c.innerHTML=rList();updatePageClass();}
 
-function scrollToSection(id){setTimeout(()=>{const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);}
+function scrollToSection(id){
+  setTimeout(()=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    // sticky 요소들의 실제 높이 계산
+    const topbar=document.querySelector('.pc-topbar')||document.querySelector('.mob-hdr');
+    const dashNav=document.getElementById('dash-nav');
+    const topbarH=topbar?topbar.getBoundingClientRect().height:0;
+    const dashNavH=dashNav?dashNav.getBoundingClientRect().height:0;
+    const offset=topbarH+dashNavH+8; // 8px 여유
+    // 현재 스크롤 컨테이너 찾기 (PC는 .page, 모바일은 window)
+    const pageEl=document.querySelector('.page');
+    const scrollEl=(pageEl&&getComputedStyle(pageEl).overflowY==='auto')?pageEl:null;
+    const elTop=el.getBoundingClientRect().top;
+    if(scrollEl){
+      scrollEl.scrollBy({top:elTop-offset,behavior:'smooth'});
+    } else {
+      const absTop=el.getBoundingClientRect().top+window.pageYOffset-offset;
+      window.scrollTo({top:absTop,behavior:'smooth'});
+    }
+  },50);
+}
 
 /* ── DASHBOARD ── */
 function rDash(){
