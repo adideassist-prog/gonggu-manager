@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.3</title>
+<title>공구 매니저 v8.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.3</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.4</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.3</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.4</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -669,13 +669,13 @@ function migrateInf(raw){
    4. PRODUCT COLORS
 ════════════════════════════════════════════════ */
 const PALETTE=['#FECDD3','#BAE6FD','#BBF7D0','#E9D5FF','#FED7AA','#9FE1CB','#C7D2FE','#FBCFE8','#FDE68A','#A5F3FC','#D1FAE5','#F5D0FE','#BFDBFE','#FCA5A5','#6EE7B7','#A7F3D0','#DDD6FE','#FEF3C7','#CFFAFE','#FCE7F3'];
-let _pcMap={};try{_pcMap=JSON.parse(localStorage.getItem('pc_v6p')||'{}');}catch{}
+let _pcMap={};try{_pcMap=JSON.parse(localStorage.getItem('pc_v8p')||'{}');}catch{}
 function getProductColor(name){
   if(!name)return'#1E88E5';const k=name.trim().toLowerCase();
   if(_pcMap[k])return _pcMap[k];
   const used=new Set(Object.values(_pcMap));
   const next=PALETTE.find(c=>!used.has(c))||PALETTE[Object.keys(_pcMap).length%PALETTE.length];
-  _pcMap[k]=next;localStorage.setItem('pc_v6p',JSON.stringify(_pcMap));return next;
+  _pcMap[k]=next;localStorage.setItem('pc_v8p',JSON.stringify(_pcMap));return next;
 }
 function warmProductColors(infs){infs.forEach(i=>{(i.projects||[]).forEach(p=>{if(p.product)getProductColor(p.product);});});}
 function getProductLegend(infs){const seen=new Map();infs.forEach(i=>{(i.projects||[]).forEach(p=>{if(p.product&&p.scheduleDate)seen.set(p.product.trim(),getProductColor(p.product));});});return[...seen.entries()].map(([n,c])=>({name:n,color:c}));}
@@ -956,7 +956,15 @@ function rChrome(){
   // 프로젝트 기준 카운트: 한 인플루언서의 여러 프로젝트를 각각 집계
   let cntContact=0,cntSample=0,cntOp=0,cntClose=0;
   data.forEach(d=>{(d.projects||[]).forEach(p=>{
-    if(p.phase===1)cntContact++;else if(p.phase===2)cntSample++;else if(p.phase===3)cntOp++;else if(p.phase===4)cntClose++;
+    const cl=getCL(p);
+    if(p.phase===1)cntContact++;
+    else if(p.phase===2)cntSample++;
+    else if(p.phase===3){
+      // 샘플 미완료 프로젝트는 샘플 카운트에도 포함
+      if(!cl.sample.sent||!cl.sample.received)cntSample++;
+      else cntOp++;
+    }
+    else if(p.phase===4)cntClose++;
   });});
   const t0=today();const e30=addDays(30);
   const ongoing=data.reduce((n,d)=>{(d.projects||[]).forEach(p=>{if(p.scheduleDate&&p.scheduleEndDate&&p.scheduleDate<=t0&&p.scheduleEndDate>=t0)n++;});return n;},0);
