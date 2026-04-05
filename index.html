@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.4</title>
+<title>공구 매니저 v8.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.4</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.5</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.4</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.5</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -1656,7 +1656,20 @@ function setSrch(v){srch=v;} // 하위 호환용
 /* ════════════════════════════════════════════════
    12. INFLUENCER MODAL
 ════════════════════════════════════════════════ */
-function openAdd(){editInf=null;modalPh=1;editProjId=null;_mi={id:uid()};showInfModal();}
+function openAdd(){
+  const defaultPid=uid();
+  editInf={
+    id:uid(),name:'',nickname:'',instagram:'',instagramUrl:'',followers:'',category:'',
+    kakaoId:'',kakao_email:'',chat_history:'',notes:'',gongguHistory:[],
+    projects:[{pid:defaultPid,product:'',phase:1,checklist:{contact:{},sample:{},operation:{},closing:{}},
+      sample_detail:'',recipient_name:'',recipient_phone:'',recipient_address:'',
+      sampleSentDate:'',trackingNumber:'',scheduleDate:'',scheduleEndDate:'',
+      paymentLink:'',settlement_date:'',settlementAmount:'',createdAt:new Date().toISOString()}],
+    createdAt:new Date().toISOString()
+  };
+  modalPh=1;editProjId=defaultPid;_mi={id:editInf.id};
+  showInfModal();
+}
 function openEdit(id,pid){
   editInf=data.find(x=>x.id===id)||null;
   if(pid){editProjId=pid;const proj=(editInf?.projects||[]).find(p=>p.pid===pid);modalPh=proj?.phase||1;}
@@ -1712,20 +1725,20 @@ function showInfModal(){
     const clHTML=`<div class="cl-wrap"><div class="cl-title">✅ ${ph.label} 체크리스트</div>${ph.checks.map(c=>{const ck=!!phCl[c.k];const isN=!ck&&!nf;if(isN)nf=true;return`<label class="cl-item${ck?' ckd':''}${isN?' nxt-item':''}" onclick="event.preventDefault();toggleCk(${ph.id},'${c.k}','${inf.id}','${pid}')"><input type="checkbox" ${ck?'checked':''} readonly><span class="cl-lbl">${c.lbl}</span>${isN?`<span class="nxt-tag">다음</span>`:''}</label>`;}).join('')}</div>`;
     // 단계별 입력 섹션
     const p=curProj;
-    const s2=(p.phase||1)>=2?`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">2</div><div><div class="fsec-lbl">샘플 배송</div></div></div>
+    const s2=`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">2</div><div><div class="fsec-lbl">샘플 배송</div></div></div>
       <div class="field"><label>샘플 상세 (모델/수량)</label><input id="f-sdet" value="${p.sample_detail||''}" placeholder="코닥 미니샷 레트로 화이트 1개"></div>
       <div class="field-row"><div class="field"><label>수령인 성함</label><input id="f-rname" value="${p.recipient_name||''}"></div><div class="field"><label>수령인 연락처</label><input id="f-rphone" value="${p.recipient_phone||''}"></div></div>
       <div class="field"><label>배송 주소</label><input id="f-raddr" value="${p.recipient_address||''}" placeholder="서울시 강남구..."></div>
       <div class="field-row"><div class="field"><label>샘플 발송일</label><input type="date" id="f-sdate" value="${p.sampleSentDate||''}"></div><div class="field"><label>송장번호</label><input id="f-track" value="${p.trackingNumber||''}"></div></div>
-    </div>`:'';
-    const s3=(p.phase||1)>=3?`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">3</div><div><div class="fsec-lbl">공구 일정</div></div></div>
+    </div>`;
+    const s3=`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">3</div><div><div class="fsec-lbl">공구 일정</div></div></div>
       <div class="field-row"><div class="field"><label>공구 시작일</label><input type="date" id="f-ss" value="${p.scheduleDate||''}"></div><div class="field"><label>공구 종료일</label><input type="date" id="f-se" value="${p.scheduleEndDate||''}" oninput="onScheduleEndChange(this.value)"></div></div>
       <div class="field"><label>결제 링크</label><input id="f-link" value="${p.paymentLink||''}" placeholder="https://..."></div>
-    </div>`:'';
+    </div>`;
     const sdAuto=p.scheduleEndDate?addDays(30,p.scheduleEndDate):'';
-    const s4=(p.phase||1)>=4?`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">4</div><div><div class="fsec-lbl">정산</div></div></div>
+    const s4=`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">4</div><div><div class="fsec-lbl">정산</div></div></div>
       <div class="field-row"><div class="field"><label>정산 예정일 <span style="color:#059669;font-size:10px">(종료+30일 자동)</span></label><input type="date" id="f-settle" value="${p.settlement_date||sdAuto}"></div><div class="field"><label>정산 금액 (원)</label><input type="number" id="f-samount" value="${p.settlementAmount||''}"></div></div>
-    </div>`:'';
+    </div>`;
     const prodField=`<div class="fsec" style="border-color:#EEF2FF"><div class="field"><label>협의 중인 제품</label><input id="f-prod" value="${p.product||''}" placeholder="코닥 미니샷 ERA"></div></div>`;
     projContent=`${phTabs}${clHTML}${prodField}${s2}${s3}${s4}
     <button onclick="deleteProject('${inf.id}','${pid}')" style="width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1px solid #FECACA;background:#FFF5F5;color:#DC2626;font-size:11px;font-weight:700;cursor:pointer">🗑️ 이 공구 프로젝트 삭제</button>`;
@@ -1917,7 +1930,20 @@ async function saveInfModal(id){
   // 현재 프로젝트 업데이트
   let projs=[...(baseInf.projects||[])];
   if(editProjId){
-    projs=projs.map(p=>p.pid===editProjId?{...p,...form._projFields,phase:modalPh||p.phase||1,updatedAt:new Date().toISOString()}:p);
+    // 빈 문자열은 기존 값 유지 (탭 전환 시 입력창이 없어도 기존 데이터 보존)
+    projs=projs.map(p=>{
+      if(p.pid!==editProjId)return p;
+      const pf=form._projFields;
+      const nv=k=>pf[k]?pf[k]:(p[k]||'');
+      return{...p,
+        product:nv('product'),sample_detail:nv('sample_detail'),
+        recipient_name:nv('recipient_name'),recipient_phone:nv('recipient_phone'),recipient_address:nv('recipient_address'),
+        sampleSentDate:nv('sampleSentDate'),trackingNumber:nv('trackingNumber'),
+        scheduleDate:nv('scheduleDate'),scheduleEndDate:nv('scheduleEndDate'),paymentLink:nv('paymentLink'),
+        settlement_date:nv('settlement_date'),settlementAmount:nv('settlementAmount'),
+        phase:modalPh||p.phase||1,updatedAt:new Date().toISOString()
+      };
+    });
   } else if(projs.length===0&&(form._projFields.product||form._projFields.scheduleDate)){
     projs=[{pid:uid(),phase:modalPh||1,checklist:{contact:{},sample:{},operation:{},closing:{}},...form._projFields,createdAt:new Date().toISOString()}];
   }
