@@ -996,17 +996,16 @@ function scrollToSection(id){
     const pageEl=document.querySelector('.page');
     const isPageScroll=!isMob&&pageEl&&getComputedStyle(pageEl).overflowY==='auto';
     function elH(sel){const e=document.querySelector(sel);return e?e.offsetHeight:0;}
-    const topH=isMob?elH('.mob-hdr'):elH('.pc-topbar');
-    const navH=elH('#dash-nav');
-    const offset=topH+navH+8;
     if(isPageScroll){
-      // PC: .page 기준 절대 위치 계산
+      // PC: pc-topbar + dash-nav 모두 포함 (dash-nav가 .page 안에서 정상 sticky)
+      const offset=elH('.pc-topbar')+elH('#dash-nav')+8;
       const containerTop=pageEl.getBoundingClientRect().top;
       const elTop=el.getBoundingClientRect().top;
       const target=pageEl.scrollTop+(elTop-containerTop)-offset;
       pageEl.scrollTo({top:target,behavior:'smooth'});
     } else {
-      // 모바일: window 기준 절대 위치 계산
+      // 모바일: mob-hdr만 포함 (dash-nav는 mob-hdr 뒤에 가려져서 오프셋 불필요)
+      const offset=elH('.mob-hdr')+8;
       const target=el.getBoundingClientRect().top+window.pageYOffset-offset;
       window.scrollTo({top:target,behavior:'smooth'});
     }
