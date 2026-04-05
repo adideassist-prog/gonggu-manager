@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v7.3</title>
+<title>공구 매니저 v7.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v7.3</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v7.4</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -480,7 +480,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v7.3</div>
+      <div class="mob-title">🛍️ 공구 매니저 v7.4</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -558,7 +558,7 @@ const CAT_META={
 };
 const INF_CATS=['육아','여행','뷰티','다이어트','교육','생활/살림','요리','주방','패션','반려동물','운동/헬스','맛집','인테리어','자동차','IT/테크'];
 const PTASK_CATS=['미팅','업체연락','샘플신청','장기 업무','개인 약속','개인메모','기타'];
-const PTASK_COLORS={'미팅':'#C7D2FE','업체연락':'#FED7AA','샘플신청':'#BAE6FD','장기 업무':'#DDD6FE','개인 약속':'#FBCFE8','개인메모':'#BBF7D0','기타':'#E2E8F0'};
+const PTASK_COLORS={'미팅':'#6366F1','업체연락':'#F59E0B','샘플신청':'#38BDF8','장기 업무':'#A78BFA','개인 약속':'#EC4899','개인메모':'#34D399','기타':'#94A3B8'};
 const PTASK_ICOS={'미팅':'🤝','업체연락':'📞','샘플신청':'📦','장기 업무':'📋','개인 약속':'🗓️','개인메모':'📌','기타':'🔖'};
 const PTASK_PRIORITY={HIGH:'🔴 긴급',MID:'🟡 보통',LOW:'🟢 낮음'};
 const DAYS_=['일','월','화','수','목','금','토'];
@@ -787,6 +787,13 @@ function buildUrgent(){
 }
 
 /* Section 2: Gonggu Schedule — only active/future (not past end) */
+function catTagsHTML(category,fontSize){
+  if(!category)return'';
+  const tags=(category).split(',').map(x=>x.trim()).filter(Boolean);
+  if(!tags.length)return'';
+  const fs=fontSize||'11px';
+  return`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${tags.map(t=>`<span style="font-size:${fs};font-weight:700;padding:2px 7px;border-radius:10px;background:#EEF2FF;color:#4F46E5">${t}</span>`).join('')}</div>`;
+}
 function buildGonggu(){
   const t=today();
   return data
@@ -796,6 +803,7 @@ function buildGonggu(){
       id:inf.id,name:inf.name,
       product:inf.negotiating_product||inf.product||'',
       nickname:inf.nickname||'',
+      category:inf.category||'',
       start:inf.scheduleDate,end:inf.scheduleEndDate,
       color:getProductColor(inf.negotiating_product||inf.product),
       phase:PM[inf.phase||1],
@@ -809,7 +817,7 @@ function buildSample(){
     // Phase 2+ and either sent or received not completed
     return inf.phase>=2&&(!cl.sample.sent||!cl.sample.received);
   }).map(inf=>({
-    id:inf.id,name:inf.name,nickname:inf.nickname||'',product:inf.negotiating_product||inf.product||'',
+    id:inf.id,name:inf.name,nickname:inf.nickname||'',product:inf.negotiating_product||inf.product||'',category:inf.category||'',
     phase:PM[inf.phase||1],cl:getCL(inf),
     detail:inf.sample_detail||'',
     sentDate:inf.sampleSentDate||'',
@@ -827,7 +835,7 @@ function buildSettlement(){
   }).sort((a,b)=>{
     const sa=calcSettleDate(a),sb=calcSettleDate(b);return sa.localeCompare(sb);
   }).map(inf=>({
-    id:inf.id,name:inf.name,nickname:inf.nickname||'',product:inf.negotiating_product||inf.product||'',
+    id:inf.id,name:inf.name,nickname:inf.nickname||'',product:inf.negotiating_product||inf.product||'',category:inf.category||'',
     settleDate:calcSettleDate(inf),phase:PM[inf.phase||1],
   }));
 }
@@ -1123,7 +1131,7 @@ function rDash(){
       const cardCls=isLive?'live':isTodayStart?'today-start':'';
       return`<div class="gc ${cardCls}" onclick="openEdit('${g.id}')">
         <div class="gc-color-stripe" style="background:${g.color}"></div>
-        <div class="gc-row1"><div class="gc-name">${g.name}${g.nickname?` <span style="color:#5B21B6;font-weight:800">(${g.nickname})</span>`:''}</div><span class="gc-status ${isLive?'live':isTodayStart?'today':'soon'}">${statusLbl||'예정'}</span></div>
+        <div class="gc-row1"><div class="gc-name">${g.name}${g.nickname?` <span style="color:#5B21B6;font-weight:800">(${g.nickname})</span>`:''}</div><span class="gc-status ${isLive?'live':isTodayStart?'today':'soon'}">${statusLbl||'예정'}</span></div>${catTagsHTML(g.category,'13px')}
         <div class="gc-product">${g.product}</div>
         ${isLive?`<div class="gc-prog"><div class="gc-prog-fill" style="width:${pct}%;background:${g.color}"></div></div>`:''}
         <div class="gc-dates">
@@ -1147,7 +1155,7 @@ function rDash(){
       return`<div class="sc" onclick="openEdit('${item.id}')">
         <div class="sc-ico">📦</div>
         <div class="sc-body">
-          <div class="sc-name">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''}</div>
+          <div class="sc-name">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''}</div>${catTagsHTML(item.category,'12px')}
           <div class="sc-product">${item.product||''}</div>
           <div class="sc-checks">
             ${checks.map(c=>`<div class="sc-ck${c.done?' is-done':''}">
@@ -1172,7 +1180,7 @@ function rDash(){
         return`<div class="stc${isUrgent?' urgent-settle':''}" onclick="openEdit('${item.id}')">
           <div class="stc-left">
             <div class="stc-ico">💰</div>
-            <div><div class="stc-name">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''}</div><div class="stc-product">${item.product}</div></div>
+            <div><div class="stc-name">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''}</div><div class="stc-product">${item.product}</div>${catTagsHTML(item.category,'12px')}</div>
           </div>
           <div class="stc-right">
             <div class="stc-date">${fmtDate(item.settleDate)}</div>
