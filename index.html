@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v7.2</title>
+<title>공구 매니저 v7.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v7.2</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v7.3</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -480,7 +480,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v7.2</div>
+      <div class="mob-title">🛍️ 공구 매니저 v7.3</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -1322,7 +1322,7 @@ function rCal(){
     activeSpans.forEach(sp=>{const sc=sp.start<ws?0:wk.findIndex(c=>c.date===sp.start);const ec=sp.end>we?6:wk.findLastIndex(c=>c.date===sp.end);const s=sc<0?0:sc,e=ec<0?6:ec;for(let r=0;r<5;r++){if(!rows[r])rows[r]=[];if(!rows[r].some(x=>!(x.e<s||x.s>e))){rows[r].push({sp,s,e});break;}}});
     const ptsByDay={};modePoints.forEach(pt=>{if(pt.date>=ws&&pt.date<=we){if(!ptsByDay[pt.date])ptsByDay[pt.date]=[];ptsByDay[pt.date].push(pt);}});
     const cw=100/7;let bars='';
-    const BAR_H=38;rows.forEach((row,ri)=>{row.forEach(({sp,s,e})=>{const left=(s*cw).toFixed(2)+'%';const width=((e-s+1)*cw-.3).toFixed(2)+'%';const top=(ri*BAR_H+2)+'px';const isS=sp.start>=ws,isE=sp.end<=we;const r2=isS&&isE?'5px':isS?'5px 2px 2px 5px':isE?'2px 5px 5px 2px':'2px';const nameHtml=`<span class="evb-n">${sp.shortLabel}</span>`;const prodHtml=sp.product?`<span class="evb-p">${sp.product}</span>`:'';bars+=`<div class="ev-bar" onclick="openEdit('${sp.id}')" style="left:${left};width:${width};top:${top};background:${sp.color};border-radius:${r2}">${nameHtml}${prodHtml}</div>`;});});
+    const BAR_H=38;rows.forEach((row,ri)=>{row.forEach(({sp,s,e})=>{const left=(s*cw).toFixed(2)+'%';const width=((e-s+1)*cw-.3).toFixed(2)+'%';const top=(ri*BAR_H+2)+'px';const isS=sp.start>=ws,isE=sp.end<=we;const r2=isS&&isE?'5px':isS?'5px 2px 2px 5px':isE?'2px 5px 5px 2px':'2px';const nameHtml=`<span class="evb-n">${sp.shortLabel}</span>`;const prodHtml=sp.product?`<span class="evb-p">${sp.product}</span>`:'';const barFn=sp.isTaskSpan?`openTaskEdit('${sp.id}')`:`openEdit('${sp.id}')`;bars+=`<div class="ev-bar" onclick="${barFn}" style="left:${left};width:${width};top:${top};background:${sp.color};border-radius:${r2}">${nameHtml}${prodHtml}</div>`;});});
     const ptRow=rows.length;
     wk.forEach((cell,ci)=>{if(!cell.date)return;(ptsByDay[cell.date]||[]).forEach((pt,pi)=>{const top=((ptRow+pi)*BAR_H+2)+'px';const left=(ci*cw).toFixed(2)+'%';const width=(cw-.3).toFixed(2)+'%';const fn=pt.isPT?`openTaskEdit('${pt.id}')`:`openEdit('${pt.id}')`;const ptCat=pt.isPT?pt.category:(pt.ptCategory||'');const ptInner=ptCat?`<span class="evp-c">${ptCat}</span><span class="evp-t">${pt.shortLabel}</span>`:`<span class="evp-t">${pt.shortLabel}</span>`;bars+=`<div class="ev-pt" onclick="${fn}" style="left:${left};width:${width};top:${top};background:${pt.color}">${ptInner}</div>`;});});
     const maxR=ptRow+Math.max(0,...Object.values(ptsByDay).map(a=>a.length),0);const mh=Math.max(90,32+maxR*BAR_H+4);
