@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v7.6</title>
+<title>공구 매니저 v8.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v7.6</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.0</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v7.6</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.0</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -770,12 +770,18 @@ function buildUrgent(){
     const na=getNextAct(inf);if(!na)return;
     const ph=PM[inf.phase||1];
     if(!na.urg)return;
-    items.push({type:'inf',id:inf.id,name:inf.name,product:inf.negotiating_product||inf.product||'',phase:ph,action:na.action,cat:na.cat,date:t,isToday:true});
+    const urgReason=`[${ph.label}] ${na.action} 필요`;
+    items.push({type:'inf',id:inf.id,name:inf.name,nickname:inf.nickname||'',product:inf.negotiating_product||inf.product||'',phase:ph,action:na.action,urgReason,cat:na.cat,date:t,isToday:true});
   });
   // 오늘 개인 업무일정 + 긴급(HIGH) 업무
   pTasks.filter(p=>!p.done&&(p.date===t||p.priority==='HIGH')).forEach(p=>{
     if(items.some(i=>i.id===p.id))return; // 중복 방지
     items.push({type:'personal',id:p.id,title:p.title,category:p.category,priority:p.priority||'MID',time:p.time,notes:p.notes,url:p.url,date:p.date,isToday:p.date===t});
+  });
+  // 샘플 미발송 경고: 공구확정 단계인데 샘플 미발송
+  data.forEach(inf=>{
+    if((inf.phase||1)>=3&&!getCL(inf).sample.sent)
+      items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',product:inf.negotiating_product||inf.product||'',issue:'공구확정 단계인데 샘플 미발송',suggest:'샘플 발송 후 체크리스트를 업데이트하세요'});
   });
   // 3일 내 정산 마감 (D-3 이하)
   data.forEach(inf=>{
@@ -1090,6 +1096,16 @@ function rDash(){
           </div>
         </div>`;
       }
+      if(item.type==='warn'){
+        return`<div class="uc" style="background:#FFFBEB;border:1.5px solid #FDE68A" onclick="openEdit('${item.id}')">
+          <div class="uc-ico" style="background:#FEF3C7;font-size:18px">⚠️</div>
+          <div class="uc-body">
+            <div class="uc-name"><span>${item.name}${item.nickname?' <span style="color:#5B21B6;font-weight:800">('+item.nickname+')</span>':''}</span><span class="uc-product">${item.product}</span></div>
+            <div class="uc-action" style="color:#92400E;font-weight:800">${item.issue}</div>
+            <div style="font-size:11px;color:#78350F;margin-top:2px">💡 ${item.suggest}</div>
+          </div>
+        </div>`;
+      }
       if(item.type==='settle'){
         // 3일내 정산 마감 카드
         const urgCls=item.dv===0?'today':'';
@@ -1117,7 +1133,7 @@ function rDash(){
             <span class="uc-ph" style="background:${ph.bg};color:${ph.color}">${ph.ico} ${ph.label}</span>
             <span class="today-pill">긴급</span>
           </div>
-          <div class="uc-action">→ ${item.action}</div>
+          <div class="uc-action" style="font-size:13px;font-weight:800;color:#DC2626">${item.urgReason||('→ '+item.action)}</div>
           <div class="uc-meta"><span class="uc-ph" style="background:${cm.bg};color:${cm.color}">${cm.lbl}</span></div>
         </div>
       </div>`;
@@ -1606,20 +1622,20 @@ function showInfModal(){
     </div></div>
     <div class="field"><label>대화 요약</label><textarea id="f-chat">${inf.chat_history||''}</textarea></div>
   </div>`;
-  const s2=ph>=2?`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">2</div><div><div class="fsec-lbl">샘플 배송</div></div></div>
+  const s2=`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">2</div><div><div class="fsec-lbl">샘플 배송</div></div></div>
     <div class="field"><label>샘플 상세 (모델/수량)</label><input id="f-sdet" value="${inf.sample_detail||''}" placeholder="코닥 미니샷 레트로 화이트 1개"></div>
     <div class="field-row"><div class="field"><label>수령인 성함</label><input id="f-rname" value="${inf.recipient_name||''}"></div><div class="field"><label>수령인 연락처</label><input id="f-rphone" value="${inf.recipient_phone||''}"></div></div>
     <div class="field"><label>배송 주소</label><input id="f-raddr" value="${inf.recipient_address||''}" placeholder="서울시 강남구..."></div>
     <div class="field-row"><div class="field"><label>샘플 발송일</label><input type="date" id="f-sdate" value="${inf.sampleSentDate||''}"></div><div class="field"><label>송장번호</label><input id="f-track" value="${inf.trackingNumber||''}"></div></div>
-  </div>`:'';
-  const s3=ph>=3?`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">3</div><div><div class="fsec-lbl">공구 일정</div></div></div>
+  </div>`;
+  const s3=`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">3</div><div><div class="fsec-lbl">공구 일정</div></div></div>
     <div class="field-row"><div class="field"><label>공구 시작일</label><input type="date" id="f-ss" value="${inf.scheduleDate||''}"></div><div class="field"><label>공구 종료일</label><input type="date" id="f-se" value="${inf.scheduleEndDate||''}" oninput="onScheduleEndChange(this.value)"></div></div>
     <div class="field"><label>결제 링크</label><input id="f-link" value="${inf.paymentLink||''}" placeholder="https://..."></div>
-  </div>`:'';
+  </div>`;
   const sdAuto=inf.scheduleEndDate?addDays(30,inf.scheduleEndDate):'';
-  const s4=ph>=4?`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">4</div><div><div class="fsec-lbl">정산</div></div></div>
+  const s4=`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">4</div><div><div class="fsec-lbl">정산</div></div></div>
     <div class="field-row"><div class="field"><label>정산 예정일 <span style="color:#059669;font-size:10px">(종료+30일 자동)</span></label><input type="date" id="f-settle" value="${inf.settlement_date||sdAuto}"></div><div class="field"><label>정산 금액 (원)</label><input type="number" id="f-samount" value="${inf.settlementAmount||''}"></div></div>
-  </div>`:'';
+  </div>`;
   const sm=`<div class="fsec" style="border-color:#F1F5F9"><div class="field"><label>📝 메모</label><textarea id="f-notes">${inf.notes||''}</textarea></div></div>`;
   // 공구 이력 섹션
   const history=inf.gongguHistory||[];
@@ -1660,11 +1676,19 @@ function switchPh(ph){const f=collectInf();_mi={..._mi,...f,phase:ph};modalPh=ph
 async function toggleCk(phId,key,infId){
   let inf=data.find(x=>x.id===infId)||(editInf?.id===infId?editInf:null);if(!inf)return;
   const ph=PM[phId];const cl=getCL(inf);cl[ph.key][key]=!cl[ph.key][key];
-  // 자동 단계 이동 제거: 모든 체크 완료해도 수동으로만 단계 이동
-  const newPh=inf.phase;
-  const updated={...inf,checklist:cl,phase:newPh,updatedAt:new Date().toISOString()};
+  let updated={...inf,checklist:cl,updatedAt:new Date().toISOString()};
+  // 정산 완료 체크 시 이력 자동 저장
+  if(key==='settled'&&cl.closing.settled){
+    const hist=updated.gongguHistory||[];
+    const alreadySaved=hist.some(h=>h.product===(inf.negotiating_product||inf.product)&&h.endDate===inf.scheduleEndDate);
+    if(!alreadySaved){
+      hist.push({product:inf.negotiating_product||inf.product||'',startDate:inf.scheduleDate||'',endDate:inf.scheduleEndDate||'',settleDate:inf.settlement_date||'',amount:inf.settlementAmount||'',notes:'정산 완료 자동 저장',savedAt:new Date().toISOString()});
+      updated={...updated,gongguHistory:hist};
+      showToast('📜 정산 완료 → 공구 이력에 자동 저장됐어요!');
+    }
+  }
   await dbPut(IS,updated);data=await dbAll(IS);
-  if(editInf?.id===infId){editInf=updated;modalPh=phId;} // 현재 탭 유지
+  if(editInf?.id===infId){editInf=updated;modalPh=phId;}
   gdSave();closeId('inf-modal');showInfModal();
 }
 
@@ -1735,7 +1759,9 @@ function collectInf(){
 
 async function saveInfModal(id){
   const form=collectInf();const existing=data.find(x=>x.id===id);
-  const final={...(existing||{}),...form,id,phase:modalPh||editInf?.phase||1,checklist:getCL({...existing,...editInf}),gongguHistory:existing?.gongguHistory||editInf?.gongguHistory||[],createdAt:existing?.createdAt||editInf?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+  let finalPh=modalPh||editInf?.phase||1;
+  if(form.scheduleDate&&finalPh<3)finalPh=3;
+  const final={...(existing||{}),...form,id,phase:finalPh,checklist:getCL({...existing,...editInf}),gongguHistory:existing?.gongguHistory||editInf?.gongguHistory||[],createdAt:existing?.createdAt||editInf?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
   await dbPut(IS,final);data=await dbAll(IS);gdSave();showToast('✅ 저장됐어요!');closeInfModal();
 }
 
