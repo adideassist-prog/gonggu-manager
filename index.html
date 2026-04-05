@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.5</title>
+<title>공구 매니저 v8.6</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.5</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.6</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.5</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.6</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -934,6 +934,32 @@ function buildPersonal(){
     });
 }
 
+
+/* ── 데이터 불일치 감지 ── */
+function buildInconsistencies(){
+  const items=[];
+  data.forEach(inf=>{
+    (inf.projects||[]).forEach(proj=>{
+      const cl=getCL(proj);const ph=proj.phase||1;const pn=proj.product||'(제품명 없음)';
+      // 마감 체크리스트(공구 완료)가 체크됐는데 마감 단계가 아님
+      if(cl.closing.done&&ph<4)
+        items.push({infId:inf.id,pid:proj.pid,name:inf.name,nickname:inf.nickname||'',product:pn,
+          issue:'⚠️ 공구 완료 체크 → 마감 단계로 이동 필요',
+          suggest:`현재 단계: ${PM[ph].label} → 마감으로 변경하세요`});
+      // 공구확정 단계 이상인데 샘플 미발송
+      if(ph>=3&&!cl.sample.sent)
+        items.push({infId:inf.id,pid:proj.pid,name:inf.name,nickname:inf.nickname||'',product:pn,
+          issue:'⚠️ 공구확정 단계인데 샘플 발송 미완료',
+          suggest:'샘플 발송 후 체크리스트를 업데이트하세요'});
+      // 공구확정 단계 이상인데 샘플 미수령
+      if(ph>=3&&cl.sample.sent&&!cl.sample.received)
+        items.push({infId:inf.id,pid:proj.pid,name:inf.name,nickname:inf.nickname||'',product:pn,
+          issue:'⚠️ 공구확정 단계인데 샘플 수령 미확인',
+          suggest:'인플루언서에게 수령 확인 후 체크하세요'});
+    });
+  });
+  return items;
+}
 /* Counts for nav */
 function buildCounts(){
   return{
@@ -943,6 +969,7 @@ function buildCounts(){
     settle:   buildSettlement().length,
     contact:  buildContact().length,
     personal: buildPersonal().length,
+    inconsist:buildInconsistencies().length,
   };
 }
 
@@ -1118,6 +1145,7 @@ function rDash(){
   const t=today();
 
   /* Nav bar */
+  const icBtn='<button class="dash-nav-btn" style="border-color:#FBBF24;color:#92400E" onclick="scrollToSection(\'sec-inconsist\')">&#9888; 체크사항 '+counts.inconsist+'</button>';
   const navHTML=`<div class="dash-nav" id="dash-nav">
     <button class="dash-nav-btn urg-btn active" onclick="scrollToSection('sec-urg')">🚨 긴급<span class="dash-nav-cnt">${counts.urgent}</span></button>
     <button class="dash-nav-btn" onclick="scrollToSection('sec-gonggu')">📅 공구<span class="dash-nav-cnt">${counts.gonggu}</span></button>
@@ -1125,6 +1153,7 @@ function rDash(){
     <button class="dash-nav-btn" onclick="scrollToSection('sec-settle')">💰 정산<span class="dash-nav-cnt">${counts.settle}</span></button>
     <button class="dash-nav-btn" onclick="scrollToSection('sec-contact')">💬 소통<span class="dash-nav-cnt">${counts.contact}</span></button>
     <button class="dash-nav-btn" onclick="scrollToSection('sec-personal')">📝 개인일정<span class="dash-nav-cnt">${counts.personal}</span></button>
+    ${counts.inconsist>0?icBtn:''}
   </div>`;
 
   /* ── S1: Urgent ── */
@@ -1169,7 +1198,7 @@ function rDash(){
             <span class="uc-ph" style="background:${ph.bg};color:${ph.color}">${ph.ico} ${ph.label}</span>
             <span class="today-pill">긴급</span>
           </div>
-          <div class="uc-action">→ ${item.action}</div>
+          <div class="uc-action" style="font-size:13px;font-weight:800;color:#DC2626">${item.urgReason||item.action}</div>
           <div class="uc-meta"><span class="uc-ph" style="background:${cm.bg};color:${cm.color}">${cm.lbl}</span></div>
         </div>
       </div>`;
@@ -1264,6 +1293,19 @@ function rDash(){
       </div>`;
     }).join('')
     :`<div class="empty-s"><div class="empty-s-ico">💬</div><div class="empty-s-txt">소통 대상 없음</div></div>`;
+
+  /* ── S7: Inconsistencies ── */
+  const inconsistItems=buildInconsistencies();
+  const s7Body=inconsistItems.length?`<div style="display:flex;flex-direction:column;gap:8px">
+    ${inconsistItems.map(item=>`<div style="border-radius:11px;padding:12px 14px;background:#FFFBEB;border:1.5px solid #FDE68A;cursor:pointer" onclick="openEdit('${item.infId}')">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">
+        <span style="font-size:13px;font-weight:800">${item.name}${item.nickname?` <span style="color:#5B21B6">(${item.nickname})</span>`:''}</span>
+        <span style="font-size:11px;font-weight:700;color:#2563EB">${item.product}</span>
+      </div>
+      <div style="font-size:13px;font-weight:800;color:#92400E;margin-bottom:3px">${item.issue}</div>
+      <div style="font-size:11px;color:#78350F">💡 ${item.suggest}</div>
+    </div>`).join('')}
+  </div>`:`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">데이터 불일치 없음!</div></div>`;
 
   /* ── S6: Personal ── */
   const personalItems=buildPersonal();
