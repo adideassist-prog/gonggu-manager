@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.0</title>
+<title>공구 매니저 v8.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.0</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.1</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.0</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.1</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -687,6 +687,7 @@ const DB_NAME='gm_v6',DB_VER=1,IS='influencers',TS='personal_tasks';
 let db=null;
 function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(IS))d.createObjectStore(IS,{keyPath:'id'});if(!d.objectStoreNames.contains(TS))d.createObjectStore(TS,{keyPath:'id'});};r.onsuccess=e=>{db=e.target.result;res(db);};r.onerror=e=>rej(e.target.error);});}
 const dbAll  =(s)=>new Promise((res,rej)=>{const t=db.transaction(s,'readonly');const r=t.objectStore(s).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
+async function loadInfs(){const raw=await dbAll(IS);return raw.map(migrateInf);}  // 항상 migrateInf 적용
 const dbPut  =(s,item)=>new Promise((res,rej)=>{const t=db.transaction(s,'readwrite');const r=t.objectStore(s).put(item);r.onsuccess=()=>res();r.onerror=()=>rej(r.error);});
 const dbDel  =(s,id)=>new Promise((res,rej)=>{const t=db.transaction(s,'readwrite');const r=t.objectStore(s).delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error);});
 const dbClear=(s)=>new Promise((res,rej)=>{const t=db.transaction(s,'readwrite');const r=t.objectStore(s).clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error);});
@@ -713,7 +714,7 @@ async function importData(event){
       if(!confirm(`인플루언서 ${infs.length}명 + 업무 ${tasks.length}건 불러올까요?`))return;
       for(const i of infs)await dbPut(IS,i);
       for(const t of tasks)await dbPut(TS,t);
-      data=await dbAll(IS);pTasks=await dbAll(TS);render();showToast('✅ 불러오기 완료!');
+      data=await loadInfs();pTasks=await dbAll(TS);render();showToast('✅ 불러오기 완료!');
     }catch{alert('파일 형식이 올바르지 않아요.');}
     event.target.value='';
   };reader.readAsText(file);
@@ -952,10 +953,11 @@ function render(){rChrome();rContent();updateGDUI();}
 
 function rChrome(){
   const now=new Date();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
-  const cntContact=data.filter(d=>infMaxPhase(d)===1).length;
-  const cntSample=data.filter(d=>infMaxPhase(d)===2).length;
-  const cntOp=data.filter(d=>infMaxPhase(d)===3).length;
-  const cntClose=data.filter(d=>infMaxPhase(d)===4).length;
+  // 프로젝트 기준 카운트: 한 인플루언서의 여러 프로젝트를 각각 집계
+  let cntContact=0,cntSample=0,cntOp=0,cntClose=0;
+  data.forEach(d=>{(d.projects||[]).forEach(p=>{
+    if(p.phase===1)cntContact++;else if(p.phase===2)cntSample++;else if(p.phase===3)cntOp++;else if(p.phase===4)cntClose++;
+  });});
   const t0=today();const e30=addDays(30);
   const ongoing=data.reduce((n,d)=>{(d.projects||[]).forEach(p=>{if(p.scheduleDate&&p.scheduleEndDate&&p.scheduleDate<=t0&&p.scheduleEndDate>=t0)n++;});return n;},0);
   const upcoming=data.reduce((n,d)=>{(d.projects||[]).forEach(p=>{if(p.scheduleDate&&p.scheduleDate>t0&&p.scheduleDate<=e30)n++;});return n;},0);
@@ -1678,7 +1680,7 @@ function showInfModal(){
   // ── 프로젝트 탭 섹션 ──
   const projTabBtns=projList.map((p,i)=>{
     const pph=PM[p.phase||1];const isCur=p.pid===(curProj?.pid);
-    return`<button class="ph-tab${isCur?' on':''}" style="--pc:${pph.color};--pb:${pph.bg};min-width:100px;flex:1" onclick="switchProj('${inf.id}','${p.pid}')"><div class="ph-tab-ico">${pph.ico}</div><span class="ph-tab-lbl" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px">${p.product||`프로젝트${i+1}`}</span><span class="ph-tab-ck">${pph.label}</span></button>`;
+    return`<button class="ph-tab${isCur?' on':''}" style="--pc:${pph.color};--pb:${pph.bg};min-width:90px;flex:1;flex-direction:column;gap:2px" onclick="switchProj('${inf.id}','${p.pid}')"><div class="ph-tab-ico">${pph.ico}</div><span class="ph-tab-ck" style="font-size:10px">${pph.label}</span><span style="font-size:10px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:76px;color:inherit;opacity:.85">${p.product||`프로젝트${i+1}`}</span></button>`;
   }).join('');
   const addProjBtn=`<button onclick="addNewProject('${inf.id}')" style="padding:8px 14px;border-radius:10px;border:2px dashed #7C6FCD;background:#FAF8FF;color:#5B21B6;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;align-self:center">＋ 새 공구</button>`;
 
@@ -1783,7 +1785,7 @@ async function deleteProject(infId,pid){
   const f=collectInf(pid);
   const inf=data.find(x=>x.id===infId)||editInf;if(!inf)return;
   const updated={...inf,projects:(inf.projects||[]).filter(p=>p.pid!==pid),updatedAt:new Date().toISOString()};
-  await dbPut(IS,updated);data=await dbAll(IS);
+  await dbPut(IS,updated);data=await loadInfs();
   editInf=updated;editProjId=(updated.projects[0]?.pid)||null;modalPh=1;
   gdSave();showToast('🗑️ 프로젝트 삭제됐어요');closeId('inf-modal');showInfModal();
 }
@@ -1806,14 +1808,14 @@ async function toggleCk(phId,key,infId,pid){
       return{...p,checklist:cl,updatedAt:new Date().toISOString()};
     });
     const updated={...inf,projects:projs,updatedAt:new Date().toISOString()};
-    await dbPut(IS,updated);data=await dbAll(IS);
+    await dbPut(IS,updated);data=await loadInfs();
     if(editInf?.id===infId){editInf=updated;modalPh=phId;editProjId=pid;}
     gdSave();closeId('inf-modal');showInfModal();
   } else {
     // 하위호환: 프로젝트 없는 경우
     const cl=getCL(inf);cl[ph.key][key]=!cl[ph.key][key];
     const updated={...inf,updatedAt:new Date().toISOString()};
-    await dbPut(IS,updated);data=await dbAll(IS);
+    await dbPut(IS,updated);data=await loadInfs();
     if(editInf?.id===infId){editInf=updated;modalPh=phId;}
     gdSave();closeId('inf-modal');showInfModal();
   }
@@ -1913,7 +1915,7 @@ async function saveInfModal(id){
     createdAt:existing?.createdAt||baseInf.createdAt||new Date().toISOString(),
     updatedAt:new Date().toISOString()
   };
-  await dbPut(IS,final);data=await dbAll(IS);gdSave();showToast('✅ 저장됐어요!');closeInfModal();
+  await dbPut(IS,final);data=await loadInfs();gdSave();showToast('✅ 저장됐어요!');closeInfModal();
 }
 
 // startNewGonggu: v8에서는 deleteProject/addNewProject로 대체됨
@@ -1927,12 +1929,12 @@ async function deleteGongguHistory(infId,idx){
   const inf=data.find(x=>x.id===infId);if(!inf)return;
   const hist=[...(inf.gongguHistory||[])];hist.splice(idx,1);
   const updated={...inf,gongguHistory:hist,updatedAt:new Date().toISOString()};
-  await dbPut(IS,updated);data=await dbAll(IS);
+  await dbPut(IS,updated);data=await loadInfs();
   editInf=updated;
   gdSave();showToast('🗑️ 이력 삭제됐어요');
   closeId('inf-modal');showInfModal();
 }
-async function delInf(id){if(!confirm('삭제할까요?'))return;await dbDel(IS,id);data=await dbAll(IS);gdSave();showToast('🗑️ 삭제됐어요');closeInfModal();}
+async function delInf(id){if(!confirm('삭제할까요?'))return;await dbDel(IS,id);data=await loadInfs();gdSave();showToast('🗑️ 삭제됐어요');closeInfModal();}
 function closeInfModal(){closeId('inf-modal');editInf=null;modalPh=null;editProjId=null;_mi={};render();}
 
 /* ════════════════════════════════════════════════
