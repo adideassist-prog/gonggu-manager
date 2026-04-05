@@ -400,7 +400,7 @@ a{text-decoration:none}
   /* ── 뷰포트 꽉 채우기: 상위 컨테이너 flex 체인 ── */
   .main{height:100vh;overflow:hidden;display:flex;flex-direction:column}
   .pc-topbar{flex-shrink:0}
-  .page{flex:1;overflow-y:auto;min-height:0;padding:12px 20px 20px}
+  .page{flex:1;overflow-y:auto;min-height:0;padding:12px 20px 20px;position:relative}
   #srch-wrap{padding:10px 20px 0}
   /* 캘린더 탭일 때만 page도 flex로 */
   .page.cal-page{display:flex;flex-direction:column;overflow:hidden;padding-bottom:12px}
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v7</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -480,7 +480,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저</div>
+      <div class="mob-title">🛍️ 공구 매니저 v7</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -519,7 +519,9 @@ a{text-decoration:none}
   <!-- 인플루언서 검색창: rContent() 재렌더와 무관하게 독립 유지 -->
   <div id="srch-wrap" style="display:none;padding:10px 14px 0">
     <input class="search-box" id="srch-input" placeholder="이름 · 인스타 · 제품 · 별명 검색"
-      oninput="onSrchInput(this.value)">
+      oninput="onSrchInput(this.value)"
+      oncompositionstart="_isComposing=true"
+      oncompositionend="_isComposing=false;onSrchInput(this.value)">
   </div>
   <div class="page" id="content"></div>
 
@@ -1019,12 +1021,11 @@ function scrollToSection(id){
     const isPageScroll=!isMob&&pageEl&&getComputedStyle(pageEl).overflowY==='auto';
     function elH(sel){const e=document.querySelector(sel);return e?e.offsetHeight:0;}
     if(isPageScroll){
-      // PC: el이 page top에서 얼마나 떨어져있는지 계산 후 scrollBy
+      // PC: .page가 position:relative라서 offsetParent 체인이 .page에서 정확히 멈춤
       const navH=elH('#dash-nav');
-      const elRect=el.getBoundingClientRect();
-      const pageRect=pageEl.getBoundingClientRect();
-      const fromTop=elRect.top-pageRect.top; // el과 page 상단의 거리
-      pageEl.scrollBy({top:fromTop-navH-8,behavior:'smooth'});
+      let elTop=0,node=el;
+      while(node&&node!==pageEl){elTop+=node.offsetTop;node=node.offsetParent;}
+      pageEl.scrollTo({top:elTop-navH-8,behavior:'smooth'});
     } else {
       // 모바일: mob-hdr만 (dash-nav는 z-index상 mob-hdr 뒤)
       const offset=elH('.mob-hdr')+8;
