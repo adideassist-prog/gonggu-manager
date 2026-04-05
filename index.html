@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.10</title>
+<title>공구 매니저 v8.11</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.10</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.11</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.10</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.11</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -946,16 +946,7 @@ function buildInconsistencies(){
         items.push({infId:inf.id,pid:proj.pid,name:inf.name,nickname:inf.nickname||'',product:pn,
           issue:'⚠️ 공구 완료 체크 → 마감 단계로 이동 필요',
           suggest:`현재 단계: ${PM[ph].label} → 마감으로 변경하세요`});
-      // 공구확정 단계 이상인데 샘플 미발송
-      if(ph>=3&&!cl.sample.sent)
-        items.push({infId:inf.id,pid:proj.pid,name:inf.name,nickname:inf.nickname||'',product:pn,
-          issue:'⚠️ 공구확정 단계인데 샘플 발송 미완료',
-          suggest:'샘플 발송 후 체크리스트를 업데이트하세요'});
-      // 공구확정 단계 이상인데 샘플 미수령
-      if(ph>=3&&cl.sample.sent&&!cl.sample.received)
-        items.push({infId:inf.id,pid:proj.pid,name:inf.name,nickname:inf.nickname||'',product:pn,
-          issue:'⚠️ 공구확정 단계인데 샘플 수령 미확인',
-          suggest:'인플루언서에게 수령 확인 후 체크하세요'});
+      // 샘플 경고 제거: 2차 공구는 샘플 없어도 됨
     });
   });
   return items;
@@ -984,7 +975,7 @@ function rChrome(){
   let cntContact=0,cntSample=0,cntOp=0,cntClose=0;
   data.forEach(d=>{(d.projects||[]).forEach(p=>{
     if(p.phase===1)cntContact++;
-    else if(p.phase===2)cntSample++;
+    else if(p.phase===2){const cl2=getCL(p);if(!cl2.sample.sent||!cl2.sample.received)cntSample++;else cntOp++;} // 샘플 완료 시 공구확정으로 이동
     else if(p.phase===3)cntOp++;
     else if(p.phase===4)cntClose++;
   });});
@@ -1833,7 +1824,6 @@ function showInfModal(){
   document.body.appendChild(ov);
 }
 
-function onScheduleEndChange(val){const el=document.getElementById('f-settle');if(el&&val)el.value=addDays(30,val);}
 
 function switchPh(ph,pid){
   // 탭은 보기만 전환 — 프로젝트 실제 단계는 변경 안 함
@@ -1852,6 +1842,18 @@ function changeProjPhase(newPhase,pid){
   editInf={...editInf,projects:(editInf.projects||[]).map(p=>p.pid===pid?{...p,...(f._projFields||{}),phase:ph}:p)};
   modalPh=ph;editProjId=pid;
   closeId('inf-modal');showInfModal();
+}
+// 공구 날짜 입력 시 단계 자동 제안
+function onScheduleEndChange(val){
+  const el=document.getElementById('f-settle');if(el&&val)el.value=addDays(30,val);
+  // 공구확정 단계가 아니면 드롭다운에 안내
+  if(val&&editProjId){
+    const proj=(editInf?.projects||[]).find(p=>p.pid===editProjId);
+    if(proj&&(proj.phase||1)<3){
+      const sel=document.querySelector('select[onchange*="changeProjPhase"]');
+      if(sel){sel.value='3';sel.style.borderColor='#4F46E5';sel.title='공구 날짜 입력됨 → 공구확정 단계를 선택하세요';}
+    }
+  }
 }
 function switchProj(infId,pid){
   const f=collectInf(editProjId);
@@ -2001,7 +2003,9 @@ async function saveInfModal(id){
         sampleSentDate:nv('sampleSentDate'),trackingNumber:nv('trackingNumber'),
         scheduleDate:nv('scheduleDate'),scheduleEndDate:nv('scheduleEndDate'),paymentLink:nv('paymentLink'),
         settlement_date:nv('settlement_date'),settlementAmount:nv('settlementAmount'),
-        phase:modalPh||p.phase||1,updatedAt:new Date().toISOString()
+        // 공구 날짜 입력 시 자동으로 공구확정(3) 단계로
+        phase:(()=>{const sd=nv('scheduleDate');const basePhase=modalPh||p.phase||1;return(sd&&basePhase<3)?3:basePhase;})(),
+        updatedAt:new Date().toISOString()
       };
     });
   } else if(projs.length===0&&(form._projFields.product||form._projFields.scheduleDate)){
