@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v7.4</title>
+<title>공구 매니저 v7.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v7.4</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v7.5</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -460,6 +460,7 @@ a{text-decoration:none}
     <button class="sb-link" id="sbn-dash" onclick="setTab('dash')"><span class="sb-link-ico">📊</span>대시보드<span class="sb-nb" id="sb-ub" style="display:none"></span></button>
     <button class="sb-link" id="sbn-cal"  onclick="setTab('cal')"><span class="sb-link-ico">📅</span>캘린더</button>
     <button class="sb-link" id="sbn-list" onclick="setTab('list')"><span class="sb-link-ico">👥</span>인플루언서</button>
+    <button class="sb-link" id="sbn-tasks" onclick="setTab('tasks')"><span class="sb-link-ico">📝</span>업무</button>
   </div>
   <div class="sb-foot">
     <button class="sb-action" onclick="openAdd()">＋ 인플루언서 추가</button>
@@ -480,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v7.4</div>
+      <div class="mob-title">🛍️ 공구 매니저 v7.5</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -530,6 +531,7 @@ a{text-decoration:none}
     <button class="bot-btn" id="mbn-dash" onclick="setTab('dash')"><span class="bot-ico">📊</span><span class="bot-lbl">대시보드</span></button>
     <button class="bot-btn" id="mbn-cal"  onclick="setTab('cal')"><span class="bot-ico">📅</span><span class="bot-lbl">캘린더</span></button>
     <button class="bot-btn" id="mbn-list" onclick="setTab('list')"><span class="bot-ico">👥</span><span class="bot-lbl">인플루언서</span></button>
+    <button class="bot-btn" id="mbn-tasks" onclick="setTab('tasks')"><span class="bot-ico">📝</span><span class="bot-lbl">업무</span></button>
   </div>
   <button class="fab" onclick="openAdd()">＋</button>
 </div>
@@ -787,12 +789,14 @@ function buildUrgent(){
 }
 
 /* Section 2: Gonggu Schedule — only active/future (not past end) */
-function catTagsHTML(category,fontSize){
+function catTagsHTML(category,fontSize,inline){
   if(!category)return'';
   const tags=(category).split(',').map(x=>x.trim()).filter(Boolean);
   if(!tags.length)return'';
   const fs=fontSize||'11px';
-  return`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${tags.map(t=>`<span style="font-size:${fs};font-weight:700;padding:2px 7px;border-radius:10px;background:#EEF2FF;color:#4F46E5">${t}</span>`).join('')}</div>`;
+  const tagSpans=tags.map(t=>`<span style="font-size:${fs};font-weight:700;padding:2px 7px;border-radius:10px;background:#EEF2FF;color:#4F46E5">${t}</span>`).join('');
+  if(inline)return tagSpans; // 인라인: span만 반환
+  return`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${tagSpans}</div>`;
 }
 function buildGonggu(){
   const t=today();
@@ -922,7 +926,7 @@ function rChrome(){
   const urgItems=buildUrgent();
   const todayN=urgItems.length;
   const urgCnt=urgItems.filter(i=>i.type==='inf').length;
-  const titles={dash:'커맨드 센터',cal:'캘린더',list:'인플루언서 관리'};
+  const titles={dash:'커맨드 센터',cal:'캘린더',list:'인플루언서 관리',tasks:'업무 관리'};
   const el=id=>document.getElementById(id);
   if(el('sb-date'))el('sb-date').textContent=dateStr;
   if(el('sb-kpis'))el('sb-kpis').innerHTML=`
@@ -950,7 +954,7 @@ function rChrome(){
         <div class="sb-kpi" onclick="showBadgeModal('closing')"><span class="sb-kpi-lbl">마감</span><span class="sb-kpi-num">${cntClose}</span></div>
       </div>
     </div>`;
-  ['dash','cal','list'].forEach(t=>{const b=el('sbn-'+t);if(b)b.classList.toggle('on',tab===t);});
+  ['dash','cal','list','tasks'].forEach(t=>{const b=el('sbn-'+t);if(b)b.classList.toggle('on',tab===t);});
   const ub=el('sb-ub');if(ub){ub.style.display=urgCnt?'':'none';ub.textContent=urgCnt;}
   dbCount(IS).then(c=>{dbCount(TS).then(tc=>{const h=el('sb-hint');if(h)h.textContent=`IndexedDB · 인플 ${c}명 · 업무 ${tc}건`;});});
   if(el('pc-title'))el('pc-title').textContent=titles[tab]||'';
@@ -1011,7 +1015,7 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
         <div class="mob-kpi" onclick="showBadgeModal('closing')"><b>${cntClose}</b><span>마감</span></div>
       </div>
     </div>`;
-  ['dash','cal','list'].forEach(t=>{const b=el('mbn-'+t);if(b)b.classList.toggle('on',tab===t);});
+  ['dash','cal','list','tasks'].forEach(t=>{const b=el('mbn-'+t);if(b)b.classList.toggle('on',tab===t);});
 }
 function setTab(t){
   tab=t;
@@ -1024,7 +1028,7 @@ function setTab(t){
 function updatePageClass(){const c=document.getElementById('content');if(c){c.classList.toggle('cal-page',tab==='cal');}}
 function rContent(){
   const c=document.getElementById('content');
-  if(tab==='dash')c.innerHTML=rDash();else if(tab==='cal')c.innerHTML=rCal();else c.innerHTML=rList();
+  if(tab==='dash')c.innerHTML=rDash();else if(tab==='cal')c.innerHTML=rCal();else if(tab==='tasks')c.innerHTML=rTasks();else c.innerHTML=rList();
   // srch-wrap 표시/숨김 + 검색값 복원
   const sw=document.getElementById('srch-wrap');
   if(sw){sw.style.display=(tab==='list')?'block':'none';}
@@ -1131,7 +1135,7 @@ function rDash(){
       const cardCls=isLive?'live':isTodayStart?'today-start':'';
       return`<div class="gc ${cardCls}" onclick="openEdit('${g.id}')">
         <div class="gc-color-stripe" style="background:${g.color}"></div>
-        <div class="gc-row1"><div class="gc-name">${g.name}${g.nickname?` <span style="color:#5B21B6;font-weight:800">(${g.nickname})</span>`:''}</div><span class="gc-status ${isLive?'live':isTodayStart?'today':'soon'}">${statusLbl||'예정'}</span></div>${catTagsHTML(g.category,'13px')}
+        <div class="gc-row1"><div class="gc-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">${g.name}${g.nickname?` <span style="color:#5B21B6;font-weight:800">(${g.nickname})</span>`:''} ${catTagsHTML(g.category,'12px',true)}</div><span class="gc-status ${isLive?'live':isTodayStart?'today':'soon'}">${statusLbl||'예정'}</span></div>
         <div class="gc-product">${g.product}</div>
         ${isLive?`<div class="gc-prog"><div class="gc-prog-fill" style="width:${pct}%;background:${g.color}"></div></div>`:''}
         <div class="gc-dates">
@@ -1155,7 +1159,7 @@ function rDash(){
       return`<div class="sc" onclick="openEdit('${item.id}')">
         <div class="sc-ico">📦</div>
         <div class="sc-body">
-          <div class="sc-name">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''}</div>${catTagsHTML(item.category,'12px')}
+          <div class="sc-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''} ${catTagsHTML(item.category,'12px',true)}</div>
           <div class="sc-product">${item.product||''}</div>
           <div class="sc-checks">
             ${checks.map(c=>`<div class="sc-ck${c.done?' is-done':''}">
@@ -1180,7 +1184,7 @@ function rDash(){
         return`<div class="stc${isUrgent?' urgent-settle':''}" onclick="openEdit('${item.id}')">
           <div class="stc-left">
             <div class="stc-ico">💰</div>
-            <div><div class="stc-name">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''}</div><div class="stc-product">${item.product}</div>${catTagsHTML(item.category,'12px')}</div>
+            <div><div class="stc-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''} ${catTagsHTML(item.category,'12px',true)}</div><div class="stc-product">${item.product}</div></div>
           </div>
           <div class="stc-right">
             <div class="stc-date">${fmtDate(item.settleDate)}</div>
@@ -1400,6 +1404,135 @@ function cellH(cell,t){const isTd=cell.date===t,isSel=cell.date===selDate;return
 function calMove(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}rContent();}
 function selectDate(d){selDate=d;rContent();}
 function setCalMode(m){calMode=m;rContent();}
+
+
+/* ════════════════════════════════════════════════
+   TASKS TAB
+════════════════════════════════════════════════ */
+let taskFilter='all',taskSort='date',taskSearch='';
+
+function rTasks(){
+  const t=today();
+  const priOrder={HIGH:0,MID:1,LOW:2};
+  // 검색+필터
+  let tasks=pTasks.filter(p=>{
+    if(taskFilter==='done')return p.done;
+    if(taskFilter==='HIGH')return !p.done&&p.priority==='HIGH';
+    if(taskFilter==='MID')return !p.done&&(p.priority||'MID')==='MID';
+    if(taskFilter==='LOW')return !p.done&&p.priority==='LOW';
+    const catMatch=PTASK_CATS.includes(taskFilter)?p.category===taskFilter:true;
+    return !p.done&&catMatch;
+  });
+  if(taskSearch){const s=taskSearch.toLowerCase();tasks=tasks.filter(p=>(p.title||'').toLowerCase().includes(s)||(p.notes||'').toLowerCase().includes(s)||(p.category||'').toLowerCase().includes(s));}
+  // 정렬
+  if(taskSort==='priority'){tasks.sort((a,b)=>(priOrder[a.priority||'MID']||1)-(priOrder[b.priority||'MID']||1)||a.date.localeCompare(b.date));}
+  else{tasks.sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));}
+  
+  // 기간별 그룹
+  const groups=[
+    {id:'today',label:'오늘',icon:'🔴',items:[]},
+    {id:'week', label:'이번 주',icon:'📅',items:[]},
+    {id:'month',label:'이번 달',icon:'📆',items:[]},
+    {id:'later',label:'나중에',icon:'🗓️',items:[]},
+    {id:'nodate',label:'날짜 없음',icon:'📌',items:[]},
+  ];
+  const now=new Date(t+'T00:00:00');
+  const endOfWeek=new Date(now);endOfWeek.setDate(now.getDate()+(6-now.getDay()));
+  const endOfMonth=new Date(now.getFullYear(),now.getMonth()+1,0);
+  const ewStr=endOfWeek.toISOString().slice(0,10);
+  const emStr=endOfMonth.toISOString().slice(0,10);
+  tasks.forEach(p=>{
+    if(!p.date){groups[4].items.push(p);return;}
+    const d=p.date;
+    if(d===t)groups[0].items.push(p);
+    else if(d>t&&d<=ewStr)groups[1].items.push(p);
+    else if(d>ewStr&&d<=emStr)groups[2].items.push(p);
+    else groups[3].items.push(p);
+  });
+  const doneTasks=pTasks.filter(p=>p.done).sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||'')).slice(0,10);
+  
+  // 칩 필터
+  const filterChips=[
+    {v:'all',l:'전체'},
+    {v:'HIGH',l:'🔴 긴급'},
+    {v:'MID',l:'🟡 보통'},
+    {v:'LOW',l:'🟢 낮음'},
+    ...PTASK_CATS.map(c=>({v:c,l:c})),
+    {v:'done',l:'✅ 완료'},
+  ];
+  const chips=`<div class="chip-row" style="flex-wrap:wrap;gap:5px 4px">${filterChips.map(f=>`<button class="chip${taskFilter===f.v?' on':''}" onclick="setTaskFilter('${f.v}')">${f.l}</button>`).join('')}</div>`;
+  // 정렬 토글
+  const sortBtns=`<div style="display:flex;gap:6px;margin-bottom:10px;align-items:center">
+    <span style="font-size:11px;color:#94A3B8;font-weight:600">정렬:</span>
+    <button onclick="setTaskSort('date')" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:10px;border:1.5px solid ${taskSort==='date'?'#4F46E5':'#E2E8F0'};background:${taskSort==='date'?'#EEF2FF':'white'};color:${taskSort==='date'?'#4F46E5':'#64748B'};cursor:pointer">날짜순</button>
+    <button onclick="setTaskSort('priority')" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:10px;border:1.5px solid ${taskSort==='priority'?'#4F46E5':'#E2E8F0'};background:${taskSort==='priority'?'#EEF2FF':'white'};color:${taskSort==='priority'?'#4F46E5':'#64748B'};cursor:pointer">중요도순</button>
+  </div>`;
+  
+  function taskCard(p){
+    const c=PTASK_COLORS[p.category]||'#94A3B8';const ico=PTASK_ICOS[p.category]||'📋';
+    const dv=p.date?diffDays(p.date):null;
+    const dvTxt=dv===0?'오늘':dv===1?'내일':dv>0?`D-${dv}`:'';
+    const priLbl={HIGH:'🔴',MID:'🟡',LOW:'🟢'}[p.priority||'MID'];
+    const isRange=p.endDate&&p.endDate!==p.date;
+    const dateTxt=p.date?(isRange?`${fmtDate(p.date)}~${fmtDate(p.endDate)}`:fmtFull(p.date)):'날짜 없음';
+    return`<div class="ptc${p.done?' is-done':''}" onclick="openTaskEdit('${p.id}')" style="opacity:${p.done?.6:1}">
+      <div class="ptc-ico" style="background:${c}35;color:#1E1B4B">${ico}</div>
+      <div class="ptc-body">
+        <div class="ptc-date">${dateTxt}${p.time?` · ${p.time}`:''}</div>
+        <div class="ptc-title" style="${p.done?'text-decoration:line-through;color:#94A3B8':''}">${priLbl} ${p.title}</div>
+        ${p.url?`<div style="font-size:11px;color:#4F46E5;font-weight:600;margin-top:2px">🔗 ${p.url.length>35?p.url.slice(0,35)+'...':p.url}</div>`:''}
+        ${p.notes?`<div class="ptc-memo">"${p.notes.slice(0,55)}${p.notes.length>55?'...':''}"</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        <span class="ptc-badge" style="background:${c}35;color:#1E1B4B;border:1px solid ${c}">${p.category||'기타'}</span>
+        ${dvTxt&&!p.done?`<span style="font-size:12px;font-weight:800;color:${dv===0?'#DC2626':dv<=3?'#D97706':'#94A3B8'}">${dvTxt}</span>`:''}
+        ${p.repeat&&p.repeat!=='none'?`<span style="font-size:9px;color:#94A3B8;font-weight:700">${p.repeat==='weekly'?'매주':'매월'}</span>`:''}
+        ${p.done?`<span style="font-size:10px;color:#059669;font-weight:700">완료</span>`:''}
+      </div>
+    </div>`;
+  }
+  
+  const groupHTML=groups.filter(g=>g.items.length).map(g=>`
+    <div style="margin-bottom:20px">
+      <div style="font-size:13px;font-weight:800;color:#1E293B;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+        ${g.icon} ${g.label} <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:#EEF2FF;color:#4F46E5">${g.items.length}건</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">${g.items.map(taskCard).join('')}</div>
+    </div>`).join('');
+  
+  const doneHTML=doneTasks.length?`<details style="margin-top:8px">
+    <summary style="font-size:13px;font-weight:800;color:#94A3B8;cursor:pointer;padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px">
+      ✅ 완료된 업무 <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:#F1F5F9;color:#64748B">${pTasks.filter(p=>p.done).length}건</span>
+    </summary>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">${doneTasks.map(taskCard).join('')}</div>
+  </details>`:''
+  
+  const emptyMsg=!groups.some(g=>g.items.length)?`<div class="empty-s"><div class="empty-s-ico">📝</div><div class="empty-s-txt">업무 일정이 없어요</div></div>`:'';
+  
+  return`<div class="dash-body">
+    <div style="background:white;border-radius:14px;padding:12px 14px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:0">
+      <input style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:10px;outline:none" 
+        placeholder="제목, 메모, 카테고리 검색..." value="${taskSearch}"
+        oninput="setTaskSearch(this.value)"
+        oncompositionstart="_isComposing=true"
+        oncompositionend="_isComposing=false;setTaskSearch(this.value)">
+      ${chips}
+    </div>
+    <div style="background:white;border-radius:14px;padding:12px 14px;box-shadow:0 2px 10px rgba(0,0,0,.06)">
+      ${sortBtns}${groupHTML}${emptyMsg}${doneHTML}
+    </div>
+  </div>`;
+}
+
+function setTaskFilter(f){taskFilter=f;rContent();}
+function setTaskSort(s){taskSort=s;rContent();}
+let _taskSearchTimer=null;
+function setTaskSearch(v){
+  taskSearch=v;
+  if(_isComposing)return;
+  clearTimeout(_taskSearchTimer);
+  _taskSearchTimer=setTimeout(()=>{rContent();},150);
+}
 
 /* ── INF LIST ── */
 function buildInfListHTML(){
