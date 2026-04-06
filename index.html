@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.1</title>
+<title>공구 매니저 v8.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,13 +452,13 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.2</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
   <div class="sb-nav">
     <button class="sb-link" id="sbn-dash" onclick="setTab('dash')"><span class="sb-link-ico">📊</span>대시보드<span class="sb-nb" id="sb-ub" style="display:none"></span></button>
-    <button class="sb-link" id="sbn-cal"  onclick="setTab('cal')"><span class="sb-link-ico">📅</span>캘린더</button>
+    <button class="sb-link" id="sbn-cal"  onclick="setTab('cal')"><span class="sb-link-ico" id="cal-ico-sb" style="font-size:13px;font-weight:800;line-height:1">📅</span>캘린더</button>
     <button class="sb-link" id="sbn-list" onclick="setTab('list')"><span class="sb-link-ico">👥</span>인플루언서</button>
     <button class="sb-link" id="sbn-tasks" onclick="setTab('tasks')"><span class="sb-link-ico">📝</span>업무</button>
   </div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.2</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -529,7 +529,7 @@ a{text-decoration:none}
   <!-- BOTTOM NAV -->
   <div class="bot-nav">
     <button class="bot-btn" id="mbn-dash" onclick="setTab('dash')"><span class="bot-ico">📊</span><span class="bot-lbl">대시보드</span></button>
-    <button class="bot-btn" id="mbn-cal"  onclick="setTab('cal')"><span class="bot-ico">📅</span><span class="bot-lbl">캘린더</span></button>
+    <button class="bot-btn" id="mbn-cal"  onclick="setTab('cal')"><span class="bot-ico" id="cal-ico-mob">📅</span><span class="bot-lbl">캘린더</span></button>
     <button class="bot-btn" id="mbn-list" onclick="setTab('list')"><span class="bot-ico">👥</span><span class="bot-lbl">인플루언서</span></button>
     <button class="bot-btn" id="mbn-tasks" onclick="setTab('tasks')"><span class="bot-ico">📝</span><span class="bot-lbl">업무</span></button>
   </div>
@@ -1228,6 +1228,7 @@ function rDash(){
       </div>`;
     }).join('')
     :`<div class="empty-s"><div class="empty-s-ico">💬</div><div class="empty-s-txt">소통 대상 없음</div></div>`;
+  const hiddenBtn=hiddenCount>0?`<div style="text-align:center;margin-top:8px"><button onclick="toggleHiddenContact(this)" style="padding:6px 14px;border-radius:8px;border:1px solid #E2E8F0;background:white;font-size:12px;color:#64748B;cursor:pointer;font-weight:600">🙈 무응답 숨긴 ${hiddenCount}명 보기</button></div><div id="hidden-contact-list" style="display:none;margin-top:8px">${contactItems.filter(x=>!x.show).map(item=>`<div class="cc" onclick="openEdit('${item.id}')" style="opacity:.6"><div class="cc-ico" style="background:${CAT_META.contact.bg}">${CAT_META.contact.ico}</div><div class="cc-body"><div class="cc-name">${item.name}${item.nickname?' <span style="color:#5B21B6;font-weight:800">('+item.nickname+')</span>':''}<span class="cc-product">${item.product}</span></div><div class="cc-sub" style="color:#94A3B8">${item.daysSince}일 경과 · 무응답으로 숨김</div></div></div>`).join('')}</div>`:'';
 
   /* ── S6: Personal ── */
   const personalItems=buildPersonal();
@@ -1268,7 +1269,7 @@ function rDash(){
 
     <div class="ds" id="sec-gonggu">
       <div class="ds-hdr h-gonggu">
-        <div class="ds-hdr-ico">📅</div>
+        <div class="ds-hdr-ico" id="cal-ico-dash" style="font-size:13px;font-weight:800;width:32px;height:32px;background:#DBEAFE;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#1D4ED8">?</div>
         <div class="ds-hdr-info"><div class="ds-hdr-title" style="color:#1D4ED8">확정 공구 일정</div><div class="ds-hdr-sub c-blue">진행 중 + 예정 · ${counts.gonggu}건</div></div>
         <button class="ds-add-btn" style="border-color:#BFDBFE;color:#2563EB" onclick="openAdd()">+ 추가</button>
       </div>
@@ -1296,7 +1297,7 @@ function rDash(){
         <div class="ds-hdr-ico">💬</div>
         <div class="ds-hdr-info"><div class="ds-hdr-title" style="color:#5B21B6">소통 관리</div><div class="ds-hdr-sub c-purple">컨택 진행 중 · ${counts.contact}명 (7일 이상 무응답 자동 숨김)</div></div>
       </div>
-      <div class="ds-body">${s5Body}</div>
+      <div class="ds-body">${s5Body}${hiddenBtn||''}</div>
     </div>
 
     <div class="ds" id="sec-personal">
@@ -1810,6 +1811,13 @@ async function deleteGongguHistory(infId,idx){
   closeId('inf-modal');showInfModal();
 }
 async function delInf(id){if(!confirm('삭제할까요?'))return;await dbDel(IS,id);data=await dbAll(IS);gdSave();showToast('🗑️ 삭제됐어요');closeInfModal();}
+function toggleHiddenContact(btn){
+  const list=document.getElementById('hidden-contact-list');
+  if(!list)return;
+  const isOpen=list.style.display!=='none';
+  list.style.display=isOpen?'none':'block';
+  btn.textContent=isOpen?`🙈 무응답 숨긴 ${btn.textContent.match(/\d+/)?.[0]||''}명 보기`:`🙉 숨긴 항목 접기`;
+}
 function closeInfModal(){closeId('inf-modal');editInf=null;modalPh=null;_mi={};render();}
 
 /* ════════════════════════════════════════════════
@@ -1927,6 +1935,14 @@ async function init(){
   render();
 }
 init();
+// 달력 아이콘 오늘 날짜로 업데이트
+function updateCalIcons(){
+  const d=new Date().getDate();
+  const el=document.getElementById('cal-ico-dash');
+  if(el)el.textContent=d;
+}
+updateCalIcons();
+setInterval(updateCalIcons,60000*60); // 1시간마다 갱신
 </script>
 
 <!--
