@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.2</title>
+<title>공구 매니저 v8.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.2</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.3</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.2</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.3</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -543,7 +543,7 @@ a{text-decoration:none}
 ════════════════════════════════════════════════ */
 const PHASES=[
   {id:1,key:'contact',   label:'컨택', ico:'📨',color:'#6366F1',bg:'#EEF2FF',
-   checks:[{k:'dm',lbl:'DM 발송',cat:'contact',urg:false},{k:'reply',lbl:'답장 확인',cat:'contact',urg:true},{k:'proposal',lbl:'제품 제안',cat:'contact',urg:true},{k:'kakao',lbl:'카톡 연결',cat:'contact',urg:true}]},
+   checks:[{k:'dm',lbl:'DM 발송',cat:'contact',urg:false},{k:'reply',lbl:'답장 확인',cat:'contact',urg:false},{k:'proposal',lbl:'제품 제안',cat:'contact',urg:false},{k:'kakao',lbl:'카톡 연결',cat:'contact',urg:false}]},
   {id:2,key:'sample',   label:'샘플', ico:'📦',color:'#D97706',bg:'#FFFBEB',
    checks:[{k:'decided',lbl:'공구 결정',cat:'sample',urg:true},{k:'info',lbl:'샘플 정보 수집',cat:'sample',urg:true},{k:'sent',lbl:'샘플 발송',cat:'sample',urg:true},{k:'tracking',lbl:'송장번호 전달',cat:'sample',urg:false},{k:'received',lbl:'수령 확인',cat:'sample',urg:false}]},
   {id:3,key:'operation',label:'공구확정', ico:'🛍️',color:'#2563EB',bg:'#EFF6FF',
@@ -872,7 +872,7 @@ function buildContact(){
       else if(daysSince>=14&&daysSince<=16){show=true;remindLabel='remind14';}
       else if(daysSince>=21&&daysSince<=23){show=true;remindLabel='remind21';}
       else{show=false;}
-      return{id:inf.id,name:inf.name,product:inf.negotiating_product||inf.product||'',
+      return{id:inf.id,name:inf.name,nickname:inf.nickname||'',instagram:inf.instagram||'',chat_history:inf.chat_history||'',product:inf.negotiating_product||inf.product||'',
         phase:PM[inf.phase||1],na:getNextAct(inf),daysSince,remindLabel,show};
     })
     .filter(x=>x.show);
@@ -1219,8 +1219,12 @@ function rDash(){
       return`<div class="cc${item.remindLabel?' '+item.remindLabel:''}" onclick="openEdit('${item.id}')">
         <div class="cc-ico">💬</div>
         <div class="cc-body">
-          <div class="cc-name">${item.name}</div>
+          <div class="cc-name">
+            ${item.name||item.nickname?`${item.name||''}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''}`:'<span style="color:#94A3B8">이름 미입력</span>'}
+          </div>
+          ${item.instagram?`<div style="font-size:11px;color:#6366F1;font-weight:600;margin-bottom:2px">@${item.instagram.replace('@','')}</div>`:''}
           <div class="cc-product">${item.product||''}</div>
+          ${item.chat_history?`<div style="font-size:11px;color:#64748B;margin:3px 0;padding:4px 8px;background:#F8FAFC;border-radius:6px;border-left:2px solid #CBD5E1">"${item.chat_history.slice(0,60)}${item.chat_history.length>60?'...':''}"</div>`:''}
           ${item.na?`<div class="cc-action">→ ${item.na.action}</div>`:''}
           ${item.remindLabel==='remind14'?`<div class="cc-remind r14">🚨 1차 재연락 (${item.daysSince}일 경과)</div>`:''}
           ${item.remindLabel==='remind21'?`<div class="cc-remind r21">⚠️ 최종 확인 (${item.daysSince}일 경과)</div>`:''}
