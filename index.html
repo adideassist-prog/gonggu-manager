@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.6</title>
+<title>공구 매니저 v8.6.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.6</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.6.2</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.6</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.6.2</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -1327,7 +1327,7 @@ function rDash(){
 
     <div class="ds" id="sec-gonggu">
       <div class="ds-hdr h-gonggu">
-        <div class="ds-hdr-ico" id="cal-ico-dash" style="font-size:13px;font-weight:800;width:32px;height:32px;background:#DBEAFE;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#1D4ED8">?</div>
+        <div class="ds-hdr-ico" style="font-size:13px;font-weight:800;width:32px;height:32px;background:#DBEAFE;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#1D4ED8">${new Date().getDate()}</div>
         <div class="ds-hdr-info"><div class="ds-hdr-title" style="color:#1D4ED8">확정 공구 일정</div><div class="ds-hdr-sub c-blue">진행 중 + 예정 · ${counts.gonggu}건</div></div>
         <button class="ds-add-btn" style="border-color:#BFDBFE;color:#2563EB" onclick="openAdd()">+ 추가</button>
       </div>
@@ -1774,9 +1774,10 @@ async function toggleCk(phId,key,infId){
   modalPh=phId;
   const lbl=document.querySelector(`[data-ck='${phId}-${key}']`);
   if(lbl){
+    // 시각적 업데이트
     lbl.classList.toggle('ckd',newVal);
     const cb=lbl.querySelector('input[type=checkbox]');
-    if(cb)cb.checked=newVal;
+    if(cb){cb.checked=newVal;cb.defaultChecked=newVal;}
     // nxt-tag 재계산
     let nf2=false;
     document.querySelectorAll('.cl-wrap label').forEach(l=>{
@@ -1796,11 +1797,9 @@ async function toggleCk(phId,key,infId){
       if(ck2)ck2.textContent=done+'/'+p.checks.length;
     });
   } else {
-    // fallback
-    closeId('inf-modal');showInfModal();
+    closeId('inf-modal');showInfModal();return;
   }
 }
-
 function toggleCatDrop(){
   const dd=document.getElementById('f-cat-dropdown');
   const box=document.getElementById('f-cat-box');
@@ -2065,13 +2064,7 @@ async function init(){
 }
 init();
 // 달력 아이콘 오늘 날짜로 업데이트
-function updateCalIcons(){
-  const d=new Date().getDate();
-  const el=document.getElementById('cal-ico-dash');
-  if(el)el.textContent=d;
-}
-updateCalIcons();
-setInterval(updateCalIcons,60000*60); // 1시간마다 갱신
+// 캘린더 날짜: rDash에서 직접 렌더링
 </script>
 
 <!--
