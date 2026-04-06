@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v9.1.1</title>
+<title>공구 매니저 v9.5.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v9.1.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v9.5.1</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -472,6 +472,7 @@ a{text-decoration:none}
     <button class="sb-tool" onclick="document.getElementById('imp').click()">📥 백업 불러오기</button>
     <input type="file" id="imp" accept=".json" style="display:none" onchange="importData(event)">
     <div class="sb-hint" id="sb-hint"></div>
+    <button class="sb-tool" id="sb-master-btn" onclick="toggleMasterMode()" style="margin-top:4px;font-size:10px;color:#7C6FCD;border-color:#C4B5FD">${isMaster?'👑 마스터 모드':'👁️ 읽기전용 모드'}</button>
   </div>
 </nav>
 
@@ -481,7 +482,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v9.1.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v9.5.1</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -679,6 +680,8 @@ const GD_FILE='공구매니저_데이터.json',GD_SCOPE='https://www.googleapis.
 let gdClientId=localStorage.getItem('gd_client_id')||'';
 let gdFileId  =localStorage.getItem('gd_file_id')||'';
 let isGD=false,isSyncing=false,tokenClient=null,gapiReady=false,gisReady=false;
+let isMaster=localStorage.getItem('gm_master')==='1'; // 마스터 모드 여부
+let _syncQueue=Promise.resolve(); // 동기화 큐: 순차 실행 보장
 
 function onGapiLoad(){gapi.load('client',async()=>{await gapi.client.init({});await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');gapiReady=true;maybeAutoConnect();});}
 function onGisLoad(){gisReady=true;maybeAutoConnect();}
@@ -696,34 +699,54 @@ async function handleGDToken(resp){
 function gdConnect(){if(isGD){gdDisconnect();return;}if(!gdClientId){showGDModal();return;}if(!gapiReady||!gisReady){showToast('⏳ API 로딩 중...');return;}setupTokenClient();tokenClient.requestAccessToken({prompt:'consent'});}
 async function gdDisconnect(){if(!confirm('연동 해제할까요?'))return;const t=gapi.client.getToken();if(t)google.accounts.oauth2.revoke(t.access_token,()=>{});gapi.client.setToken(null);isGD=false;updateGDUI();render();showToast('🔌 드라이브 연동 해제됨');}
 async function gdLoad(){
-  if(!isGD)return;isSyncing=true;updateGDUI();
+  if(!isGD)return;
+  // 큐에 추가: 이전 작업 완료 후 실행
+  _syncQueue=_syncQueue.then(()=>_gdLoadCore()).catch(()=>{});
+  return _syncQueue;
+}
+async function _gdLoadCore(){
+  if(!isGD||isSyncing)return;isSyncing=true;updateGDUI();
   try{
-    if(!gdFileId){const r=await gapi.client.drive.files.list({q:`name='${GD_FILE}' and trashed=false`,fields:'files(id)',spaces:'drive',pageSize:1});const f=r.result.files;if(f&&f.length){gdFileId=f[0].id;localStorage.setItem('gd_file_id',gdFileId);}}
+    // 항상 파일명으로 검색 (기기 간 캐시 불일치 방지)
+    {const r=await gapi.client.drive.files.list({q:`name='${GD_FILE}' and trashed=false`,fields:'files(id)',spaces:'drive',pageSize:1});const f=r.result.files;if(f&&f.length){gdFileId=f[0].id;localStorage.setItem('gd_file_id',gdFileId);}}
     if(gdFileId){
       const r=await gapi.client.drive.files.get({fileId:gdFileId,alt:'media'});
       const json=JSON.parse(r.body);
       const dInfs=(json.influencers||json||[]).map(migrateInf);
       const dTasks=json.tasks||[];
-      const lInfs=await dbAll(IS);const lTasks=await dbAll(TS);
-      const mInfs=smartMerge(lInfs,dInfs);const mTasks=smartMerge(lTasks,dTasks);
-      await dbClear(IS);for(const i of mInfs)await dbPut(IS,i);
-      await dbClear(TS);for(const t of mTasks)await dbPut(TS,t);
-      data=mInfs;pTasks=mTasks;
+      // Drive 데이터로 로컬 완전 교체
+      await dbClear(IS);for(const i of dInfs)await dbPut(IS,i);
+      await dbClear(TS);for(const t of dTasks)await dbPut(TS,t);
+      data=dInfs;pTasks=dTasks;
       localStorage.setItem('gd_last_sync',new Date().toISOString());
     }else await gdSaveNow();
   }catch(e){console.error('GDrive load:',e);showToast('⚠️ 드라이브 동기화 실패 (로컬 사용)');}
   isSyncing=false;updateGDUI();
 }
+
 let _gdTimer=null;
-function gdSave(){if(!isGD)return;clearTimeout(_gdTimer);_gdTimer=setTimeout(gdSaveNow,1500);}
+function gdSave(){
+  if(!isGD)return;
+  if(!isMaster){return;} // 직원은 저장 안 함
+  clearTimeout(_gdTimer);_gdTimer=setTimeout(gdSaveNow,1500);
+}
 async function gdSaveNow(){
-  if(!isGD)return;isSyncing=true;updateGDUI();
+  if(!isGD)return;
+  _syncQueue=_syncQueue.then(()=>_gdSaveCore()).catch(()=>{});
+  return _syncQueue;
+}
+async function _gdSaveCore(){
+  if(!isGD||isSyncing)return;isSyncing=true;updateGDUI();
   try{
+    // 파일명으로 재검색
+    {const sr=await gapi.client.drive.files.list({q:`name='${GD_FILE}' and trashed=false`,fields:'files(id)',spaces:'drive',pageSize:1});const sf=sr.result.files;if(sf&&sf.length){gdFileId=sf[0].id;localStorage.setItem('gd_file_id',gdFileId);}}
+    // 현재 로컬 데이터를 Drive에 저장
     const payload=JSON.stringify({version:6,influencers:data,tasks:pTasks});
     const b='gm6_bound';
     const body=[`--${b}`,'Content-Type: application/json; charset=UTF-8','',JSON.stringify({name:GD_FILE,mimeType:'application/json'}),`--${b}`,'Content-Type: application/json','',payload,`--${b}--`].join('\r\n');
     if(gdFileId){await gapi.client.request({path:`/upload/drive/v3/files/${gdFileId}`,method:'PATCH',params:{uploadType:'multipart'},headers:{'Content-Type':`multipart/related; boundary=${b}`},body});}
     else{const r=await gapi.client.request({path:'/upload/drive/v3/files',method:'POST',params:{uploadType:'multipart'},headers:{'Content-Type':`multipart/related; boundary=${b}`},body});gdFileId=r.result.id;localStorage.setItem('gd_file_id',gdFileId);}
+    localStorage.setItem('gd_last_sync',new Date().toISOString());
   }catch(e){console.error('GDrive save:',e);showToast('⚠️ 드라이브 저장 실패');}
   isSyncing=false;updateGDUI();
 }
@@ -731,17 +754,15 @@ function mergeArr(local,remote){
   return smartMerge(local,remote);
 }
 function smartMerge(local,remote){
+  // 순수 updatedAt 기준: 더 최신 버전이 항상 이김
+  // isDeleted도 updatedAt이 더 최신이어야만 삭제 상태 유지
   const map={};
-  // 1. 로컬 먼저 등록
-  local.forEach(item=>{map[item.id]=item;});
-  // 2. 원격으로 덮어쓰기: updatedAt이 더 최신이거나, isDeleted가 true면 원격 우선
-  remote.forEach(item=>{
+  [...local,...remote].forEach(item=>{
     const ex=map[item.id];
-    if(!ex){map[item.id]=item;return;} // 원격에만 있으면 추가
+    if(!ex){map[item.id]=item;return;}
     const et=new Date(ex.updatedAt||ex.createdAt||0).getTime();
     const nt=new Date(item.updatedAt||item.createdAt||0).getTime();
-    // 원격이 더 최신이거나, 원격이 삭제됨 마크면 원격 채택
-    if(nt>=et||item.isDeleted)map[item.id]=item;
+    if(nt>et)map[item.id]=item;
   });
   return Object.values(map);
 }
@@ -751,7 +772,8 @@ function updateGDUI(){
   else if(isGD){
     const ls=localStorage.getItem('gd_last_sync');
     const lsTxt=ls?` (${new Date(ls).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})`:'' ;
-    if(sb){sb.innerHTML='☁️ 드라이브 연동됨 ✓'+lsTxt;sb.classList.add('on');}
+    const modeTxt=isMaster?'👑 마스터':'👁️ 읽기전용';
+    if(sb){sb.innerHTML=`☁️ ${modeTxt} ✓${lsTxt}`;sb.classList.add('on');}
     if(mb){mb.innerHTML='☁️✓';mb.classList.add('on');}
   }
   else{if(sb){sb.innerHTML='☁️ 구글드라이브 연동';sb.classList.remove('on');}if(mb){mb.innerHTML='☁️';mb.classList.remove('on');}}
@@ -788,8 +810,7 @@ let tab='dash',phFilter='all',srch='';
 let selDate=today();
 let calY=new Date().getFullYear(),calM=new Date().getMonth(),calMode='gonggu';
 let editInf=null,modalPh=null,_mi={};
-// isDeleted 필터: 실제 화면에 보이는 데이터만
-const activeData=()=>data.filter(d=>!d.isDeleted);
+const activeData=()=>data; // 하드삭제 방식: 전체 data가 곧 활성 데이터
 let _modalCL={contact:{},sample:{},operation:{},closing:{}}; // 모달 체크리스트 캐시
 let editTask=null;
 
@@ -1779,9 +1800,9 @@ function showInfModal(){
     <div class="m-head">${isNew?'✨ 인플루언서 추가':'✏️ 정보 수정'}<button class="m-x" onclick="closeInfModal()">✕</button></div>
     <div class="m-sub">단계 선택 → 체크리스트와 입력칸이 나타나요</div>
     ${phTabs}${clHTML}${s1}${s2}${s3}${s4}${sm}${histHTML}${newGongguBtn}
-    <div class="btn-row">${!isNew?`<button class="btn-d" onclick="delInf('${inf.id}')">삭제</button>`:''}
+    <div class="btn-row">${(!isNew&&isMaster)?`<button class="btn-d" onclick="delInf('${inf.id}')">삭제</button>`:''}
     <button class="btn-c" onclick="closeInfModal()">취소</button>
-    <button class="btn-s" onclick="saveInfModal('${inf.id}')">저장 ✓</button></div>
+    ${isMaster?`<button class="btn-s" onclick="saveInfModal('${inf.id}')">저장 ✓</button>`:'<div style="font-size:11px;color:#94A3B8;text-align:center;padding:8px">👁️ 읽기전용 모드 (저장 불가)</div>'}</div>
   </div>`;
   document.body.appendChild(ov);
 }
@@ -1821,8 +1842,7 @@ async function toggleCk(phId,key,infId){
         showToast('📜 정산 완료 → 공구 이력에 자동 저장됐어요!');
       }
     }
-    await dbPut(IS,editInf);data=await dbAll(IS);
-    gdSave();
+    if(isMaster){await dbPut(IS,editInf);data=await dbAll(IS);gdSave();}
   }
 
   // 5. 모달 닫지 않고 DOM만 업데이트
@@ -1926,7 +1946,7 @@ async function saveInfModal(id){
   if(form.scheduleDate&&finalPh<3)finalPh=3;
   // 신규면 _modalCL, 기존이면 기존 체크리스트 유지
   const finalCL=existing?getCL({...existing,...editInf}):_modalCL;
-  const final={...(existing||{}),...form,id,phase:finalPh,checklist:finalCL,checklist:getCL({...existing,...editInf}),gongguHistory:existing?.gongguHistory||editInf?.gongguHistory||[],createdAt:existing?.createdAt||editInf?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+  const final={...(existing||{}),...form,id,phase:finalPh,checklist:finalCL,gongguHistory:existing?.gongguHistory||editInf?.gongguHistory||[],createdAt:existing?.createdAt||editInf?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
   await dbPut(IS,final);data=await dbAll(IS);gdSave();showToast('✅ 저장됐어요!');closeInfModal();
 }
 
@@ -1971,11 +1991,7 @@ async function deleteGongguHistory(infId,idx){
 }
 async function delInf(id){
   if(!confirm('삭제할까요?'))return;
-  const inf=data.find(x=>x.id===id);
-  if(!inf)return;
-  // 소프트 삭제: 배열에서 제거하지 않고 isDeleted 마크
-  const deleted={...inf,isDeleted:true,updatedAt:new Date().toISOString()};
-  await dbPut(IS,deleted);
+  await dbDel(IS,id);
   data=await dbAll(IS);
   gdSave();showToast('🗑️ 삭제됐어요');closeInfModal();
 }
@@ -1985,6 +2001,76 @@ function toggleHiddenContact(btn){
   const isOpen=list.style.display!=='none';
   list.style.display=isOpen?'none':'block';
   btn.textContent=isOpen?`🙈 무응답 숨긴 ${btn.textContent.match(/\d+/)?.[0]||''}명 보기`:`🙉 숨긴 항목 접기`;
+}
+// Drive 파일에 저장되는 마스터 활성화 시간 키
+const MASTER_KEY='activeMaster'; // {deviceId, activatedAt}
+const DEVICE_ID=localStorage.getItem('gm_device_id')||(()=>{const id=uid();localStorage.setItem('gm_device_id',id);return id;})();
+
+async function checkMasterAvailable(){
+  // Drive 파일에서 activeMaster 상태 확인
+  if(!isGD||!gdFileId)return true; // 드라이브 미연동이면 허용
+  try{
+    const r=await gapi.client.drive.files.get({fileId:gdFileId,alt:'media'});
+    const json=JSON.parse(r.body);
+    const am=json.activeMaster;
+    if(!am)return true; // 마스터 없음 → 허용
+    if(am.deviceId===DEVICE_ID)return true; // 내 기기 → 허용
+    // 다른 기기가 마스터: 30분 이상 지났으면 만료로 간주
+    const elapsed=Date.now()-new Date(am.activatedAt).getTime();
+    if(elapsed>30*60*1000)return true; // 30분 만료 → 허용
+    const mins=Math.ceil((30*60*1000-elapsed)/60000);
+    showToast(`⚠️ 다른 기기에서 마스터 사용 중 (${mins}분 후 만료)`);
+    return false;
+  }catch(e){return true;}
+}
+
+async function setMasterOnDrive(active){
+  if(!isGD||!gdFileId)return;
+  try{
+    const r=await gapi.client.drive.files.get({fileId:gdFileId,alt:'media'});
+    const json=JSON.parse(r.body);
+    if(active){
+      json.activeMaster={deviceId:DEVICE_ID,activatedAt:new Date().toISOString()};
+    } else {
+      delete json.activeMaster;
+    }
+    const payload=JSON.stringify(json);
+    const b='gm_bound';
+    const body=[`--${b}`,'Content-Type: application/json; charset=UTF-8','',JSON.stringify({name:'공구매니저_데이터.json',mimeType:'application/json'}),`--${b}`,'Content-Type: application/json','',payload,`--${b}--`].join('\r\n');
+    await gapi.client.request({path:`/upload/drive/v3/files/${gdFileId}`,method:'PATCH',params:{uploadType:'multipart'},headers:{'Content-Type':`multipart/related; boundary=${b}`},body});
+  }catch(e){console.warn('마스터 상태 Drive 저장 실패',e);}
+}
+
+async function toggleMasterMode(){
+  if(!isMaster){
+    const pw=prompt('마스터 비밀번호를 입력하세요');
+    if(!pw)return;
+    const saved=localStorage.getItem('gm_master_pw');
+    if(!saved){
+      if(!confirm(`비밀번호 "${pw}" 로 마스터 모드를 설정할까요?`))return;
+      localStorage.setItem('gm_master_pw',pw);
+    } else if(pw!==saved){
+      showToast('❌ 비밀번호가 틀렸어요');return;
+    }
+    // Drive에서 다른 기기 마스터 여부 확인
+    const ok=await checkMasterAvailable();
+    if(!ok)return;
+    localStorage.setItem('gm_master','1');
+    isMaster=true;
+    await setMasterOnDrive(true); // Drive에 마스터 활성화 기록
+    showToast('👑 마스터 모드 활성화! 최신 데이터 불러오는 중...');
+    await gdLoad(); render(); // 마스터 전환 즉시 최신 데이터 로드
+    showToast('👑 마스터 모드 준비 완료!');
+  } else {
+    if(!confirm('마스터 모드를 해제할까요?'))return;
+    localStorage.setItem('gm_master','0');
+    isMaster=false;
+    await setMasterOnDrive(false); // Drive에서 마스터 해제
+    showToast('👁️ 읽기전용 모드로 전환됐어요');
+  }
+  updateGDUI();render();
+  const btn=document.getElementById('sb-master-btn');
+  if(btn)btn.textContent=isMaster?'👑 마스터 모드':'👁️ 읽기전용 모드';
 }
 function closeInfModal(){closeId('inf-modal');editInf=null;modalPh=null;_mi={};_modalCL={contact:{},sample:{},operation:{},closing:{}};render();}
 
@@ -2137,13 +2223,10 @@ document.addEventListener('visibilitychange',()=>{
   }
 });
 // 자동 동기화: 5분 주기
-setInterval(async()=>{
-  if(isGD&&!isSyncing){
-    const ls=localStorage.getItem('gd_last_sync');
-    const elapsed=ls?(Date.now()-new Date(ls).getTime()):Infinity;
-    if(elapsed>30000){await gdLoad();render();}  // 30초마다 자동 동기화
-  }
-},30000);
+// 자동 동기화: 60초마다 읽기만 (충돌 방지)
+setInterval(()=>{
+  if(isGD&&!isSyncing)gdLoad().then(()=>render());
+},60000);
 // 달력 아이콘 오늘 날짜로 업데이트
 // 캘린더 날짜: rDash에서 직접 렌더링
 </script>
