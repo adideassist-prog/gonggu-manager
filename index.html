@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.6.3</title>
+<title>공구 매니저 v8.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.6.3</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.7</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.6.3</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.7</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -690,7 +690,8 @@ async function gdDisconnect(){if(!confirm('연동 해제할까요?'))return;cons
 async function gdLoad(){
   if(!isGD)return;isSyncing=true;updateGDUI();
   try{
-    if(!gdFileId){const r=await gapi.client.drive.files.list({q:`name='${GD_FILE}' and trashed=false`,fields:'files(id)',spaces:'drive',pageSize:1});const f=r.result.files;if(f&&f.length){gdFileId=f[0].id;localStorage.setItem('gd_file_id',gdFileId);}}
+    // 매번 파일명으로 검색 (기기 간 fileId 불일치 방지)
+    {const r=await gapi.client.drive.files.list({q:`name='${GD_FILE}' and trashed=false`,fields:'files(id,modifiedTime)',spaces:'drive',pageSize:1});const f=r.result.files;if(f&&f.length){gdFileId=f[0].id;localStorage.setItem('gd_file_id',gdFileId);}}
     if(gdFileId){
       const r=await gapi.client.drive.files.get({fileId:gdFileId,alt:'media'});
       const json=JSON.parse(r.body);
@@ -817,6 +818,28 @@ function buildUrgent(){
         issue:'📦 공구확정인데 샘플 미발송',suggest:'샘플을 발송하고 체크리스트를 업데이트하세요'});
   });
 
+  /* ── ②-B 종료일 지났는데 공구 완료 미체크 ── */
+  data.forEach(inf=>{
+    if(!inf.scheduleEndDate)return;
+    const cl=getCL(inf);
+    const dv=diffDays(inf.scheduleEndDate);
+    if(dv!==null&&dv<0&&!cl.closing.done) // 종료일 지남 + 미완료
+      items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
+        product:inf.negotiating_product||inf.product||'',
+        issue:`🏁 공구 종료 ${Math.abs(dv)}일 경과, 공구 완료 체크 필요`,
+        suggest:'마감 단계에서 공구 완료를 체크해주세요'});
+  });
+  /* ── ②-C 정산 기한 지남 (30일 초과) ── */
+  data.forEach(inf=>{
+    const sd=calcSettleDate(inf);if(!sd)return;
+    const dv=diffDays(sd);if(dv===null||dv>=0)return; // 기한 안 지남
+    if(getCL(inf).closing.settled)return;
+    items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
+      product:inf.negotiating_product||inf.product||'',
+      issue:`💰 정산 기한 ${Math.abs(dv)}일 초과! 정산 완료 처리 필요`,
+      suggest:'정산을 완료하고 체크리스트를 업데이트하세요'});
+  });
+
   /* ── ③ 오래 방치된 것 (14일/21일 무응답) ── */
   data.filter(inf=>(inf.phase||1)===1).forEach(inf=>{
     const ref=new Date(inf.updatedAt||inf.createdAt||Date.now());
@@ -853,7 +876,7 @@ function catTagsHTML(category,fontSize,inline){
 function buildGonggu(){
   const t=today();
   return data
-    .filter(inf=>inf.scheduleDate&&inf.scheduleEndDate&&inf.scheduleEndDate>=t)
+    .filter(inf=>inf.scheduleDate&&inf.scheduleEndDate&&inf.scheduleEndDate>=t&&!getCL(inf).closing.done)
     .sort((a,b)=>a.scheduleDate.localeCompare(b.scheduleDate))
     .map(inf=>({
       id:inf.id,name:inf.name,
