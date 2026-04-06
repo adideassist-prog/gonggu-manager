@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.4.6</title>
+<title>공구 매니저 v8.4.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.4.6</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.4.7</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.4.6</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.4.7</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -1733,28 +1733,29 @@ function switchPh(ph){const f=collectInf();_mi={..._mi,...f,phase:ph};modalPh=ph
 
 async function toggleCk(phId,key,infId){
   const isNew=!data.find(x=>x.id===infId);
-  // 현재 입력값 먼저 수집 (모달 닫기 전에 보존)
-  const formData=collectInf();
-  // inf 찾기: 기존 → editInf → _mi 순
+  // inf 찾기: DB → editInf → _mi 순
   let inf=data.find(x=>x.id===infId)
     ||(editInf?.id===infId?editInf:null)
     ||(_mi?.id===infId?{..._mi,checklist:{contact:{},sample:{},operation:{},closing:{}}}:null);
   if(!inf)return;
-  const ph=PM[phId];const cl=getCL(inf);cl[ph.key][key]=!cl[ph.key][key];
-  let updated={...inf,...formData,checklist:cl,updatedAt:new Date().toISOString()};
+  // 체크리스트만 토글 (나머지 inf 필드 그대로 유지)
+  const ph=PM[phId];
+  const cl=getCL(inf); // 현재 inf의 체크리스트 읽기
+  cl[ph.key][key]=!cl[ph.key][key]; // 해당 항목만 토글
+  const updated={...inf,checklist:cl,updatedAt:new Date().toISOString()};
   // 정산 완료 체크 시 이력 자동 저장 (기존만)
   if(!isNew&&key==='settled'&&cl.closing.settled){
-    const hist=updated.gongguHistory||[];
+    const hist=[...(updated.gongguHistory||[])];
     const alreadySaved=hist.some(h=>h.product===(inf.negotiating_product||inf.product)&&h.endDate===inf.scheduleEndDate);
     if(!alreadySaved){
       hist.push({product:inf.negotiating_product||inf.product||'',startDate:inf.scheduleDate||'',endDate:inf.scheduleEndDate||'',settleDate:inf.settlement_date||'',amount:inf.settlementAmount||'',notes:'정산 완료 자동 저장',savedAt:new Date().toISOString()});
-      updated={...updated,gongguHistory:hist};
+      updated.gongguHistory=hist;
       showToast('📜 정산 완료 → 공구 이력에 자동 저장됐어요!');
     }
   }
-  // 메모리 업데이트 (저장 버튼 눌러야 DB 반영)
+  // 메모리만 업데이트
   editInf=updated;
-  _mi={..._mi,...updated};
+  _mi={..._mi,id:infId,checklist:cl};
   modalPh=phId;
   closeId('inf-modal');showInfModal();
 }
