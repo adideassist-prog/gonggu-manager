@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v9.1</title>
+<title>공구 매니저 v9.1.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v9.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v9.1.1</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v9.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v9.1.1</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -695,56 +695,37 @@ async function handleGDToken(resp){
 }
 function gdConnect(){if(isGD){gdDisconnect();return;}if(!gdClientId){showGDModal();return;}if(!gapiReady||!gisReady){showToast('⏳ API 로딩 중...');return;}setupTokenClient();tokenClient.requestAccessToken({prompt:'consent'});}
 async function gdDisconnect(){if(!confirm('연동 해제할까요?'))return;const t=gapi.client.getToken();if(t)google.accounts.oauth2.revoke(t.access_token,()=>{});gapi.client.setToken(null);isGD=false;updateGDUI();render();showToast('🔌 드라이브 연동 해제됨');}
-/* Drive 파일 ID 조회 */
-async function gdFindFile(){
-  const r=await gapi.client.drive.files.list({q:`name='${GD_FILE}' and trashed=false`,fields:'files(id)',spaces:'drive',pageSize:1});
-  const f=r.result.files;
-  if(f&&f.length){gdFileId=f[0].id;localStorage.setItem('gd_file_id',gdFileId);}
-  return gdFileId;
-}
-
-/* Drive에서 불러오기 */
 async function gdLoad(){
-  if(!isGD||isSyncing)return;
-  isSyncing=true;updateGDUI();
+  if(!isGD)return;isSyncing=true;updateGDUI();
   try{
-    await gdFindFile();
-    if(!gdFileId){await gdSaveNow();return;}
-    const r=await gapi.client.drive.files.get({fileId:gdFileId,alt:'media'});
-    const json=JSON.parse(r.body);
-    const dInfs=(json.influencers||json||[]).map(migrateInf);
-    const dTasks=json.tasks||[];
-    const lInfs=await dbAll(IS);const lTasks=await dbAll(TS);
-    const mInfs=smartMerge(lInfs,dInfs);
-    const mTasks=smartMerge(lTasks,dTasks);
-    await dbClear(IS);for(const x of mInfs)await dbPut(IS,x);
-    await dbClear(TS);for(const x of mTasks)await dbPut(TS,x);
-    data=mInfs;pTasks=mTasks;
-    localStorage.setItem('gd_last_sync',new Date().toISOString());
-  }catch(e){console.error('GDrive load:',e);showToast('⚠️ 드라이브 불러오기 실패');}
-  finally{isSyncing=false;updateGDUI();}
+    if(!gdFileId){const r=await gapi.client.drive.files.list({q:`name='${GD_FILE}' and trashed=false`,fields:'files(id)',spaces:'drive',pageSize:1});const f=r.result.files;if(f&&f.length){gdFileId=f[0].id;localStorage.setItem('gd_file_id',gdFileId);}}
+    if(gdFileId){
+      const r=await gapi.client.drive.files.get({fileId:gdFileId,alt:'media'});
+      const json=JSON.parse(r.body);
+      const dInfs=(json.influencers||json||[]).map(migrateInf);
+      const dTasks=json.tasks||[];
+      const lInfs=await dbAll(IS);const lTasks=await dbAll(TS);
+      const mInfs=smartMerge(lInfs,dInfs);const mTasks=smartMerge(lTasks,dTasks);
+      await dbClear(IS);for(const i of mInfs)await dbPut(IS,i);
+      await dbClear(TS);for(const t of mTasks)await dbPut(TS,t);
+      data=mInfs;pTasks=mTasks;
+      localStorage.setItem('gd_last_sync',new Date().toISOString());
+    }else await gdSaveNow();
+  }catch(e){console.error('GDrive load:',e);showToast('⚠️ 드라이브 동기화 실패 (로컬 사용)');}
+  isSyncing=false;updateGDUI();
 }
-
-/* Drive에 저장 */
 let _gdTimer=null;
 function gdSave(){if(!isGD)return;clearTimeout(_gdTimer);_gdTimer=setTimeout(gdSaveNow,1500);}
 async function gdSaveNow(){
-  if(!isGD||isSyncing)return;
-  isSyncing=true;updateGDUI();
+  if(!isGD)return;isSyncing=true;updateGDUI();
   try{
-    await gdFindFile();
     const payload=JSON.stringify({version:6,influencers:data,tasks:pTasks});
-    const b='gm6b';
-    const body=['--'+b,'Content-Type: application/json; charset=UTF-8','',JSON.stringify({name:GD_FILE,mimeType:'application/json'}),'--'+b,'Content-Type: application/json','',payload,'--'+b+'--'].join('\r\n');
-    if(gdFileId){
-      await gapi.client.request({path:`/upload/drive/v3/files/${gdFileId}`,method:'PATCH',params:{uploadType:'multipart'},headers:{'Content-Type':'multipart/related; boundary='+b},body});
-    }else{
-      const r=await gapi.client.request({path:'/upload/drive/v3/files',method:'POST',params:{uploadType:'multipart'},headers:{'Content-Type':'multipart/related; boundary='+b},body});
-      gdFileId=r.result.id;localStorage.setItem('gd_file_id',gdFileId);
-    }
-    localStorage.setItem('gd_last_sync',new Date().toISOString());
+    const b='gm6_bound';
+    const body=[`--${b}`,'Content-Type: application/json; charset=UTF-8','',JSON.stringify({name:GD_FILE,mimeType:'application/json'}),`--${b}`,'Content-Type: application/json','',payload,`--${b}--`].join('\r\n');
+    if(gdFileId){await gapi.client.request({path:`/upload/drive/v3/files/${gdFileId}`,method:'PATCH',params:{uploadType:'multipart'},headers:{'Content-Type':`multipart/related; boundary=${b}`},body});}
+    else{const r=await gapi.client.request({path:'/upload/drive/v3/files',method:'POST',params:{uploadType:'multipart'},headers:{'Content-Type':`multipart/related; boundary=${b}`},body});gdFileId=r.result.id;localStorage.setItem('gd_file_id',gdFileId);}
   }catch(e){console.error('GDrive save:',e);showToast('⚠️ 드라이브 저장 실패');}
-  finally{isSyncing=false;updateGDUI();}
+  isSyncing=false;updateGDUI();
 }
 function mergeArr(local,remote){
   return smartMerge(local,remote);
