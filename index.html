@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v9.5.5</title>
+<title>공구 매니저 v9.5.6</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -454,7 +454,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v9.5.5</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v9.5.6</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -484,7 +484,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v9.5.5</div>
+      <div class="mob-title">🛍️ 공구 매니저 v9.5.6</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -2013,7 +2013,7 @@ const DEVICE_ID=localStorage.getItem('gm_device_id')||(()=>{const id=uid();local
 
 async function checkMasterAvailable(){
   // Drive 파일에서 activeMaster 상태 확인
-  if(!isGD||!gdFileId)return true; // 드라이브 미연동이면 허용
+  if(!isGD||!gdFileId)return false; // 드라이브 미연동이면 마스터 불가
   try{
     const r=await gapi.client.drive.files.get({fileId:gdFileId,alt:'media'});
     const json=JSON.parse(r.body);
@@ -2048,21 +2048,29 @@ async function setMasterOnDrive(active){
 
 async function toggleMasterMode(){
   if(!isMaster){
+    // 1. 드라이브 연동 필수
+    if(!isGD||!gdFileId){
+      showToast('⚠️ 마스터 모드는 드라이브 연동 후 사용 가능해요');return;
+    }
+    // 2. Drive에서 먼저 마스터 상태 확인 (비밀번호 전에)
+    const ok=await checkMasterAvailable();
+    if(!ok)return; // 다른 기기가 마스터면 비밀번호 입력창도 안 뜸
+    // 3. 비밀번호 확인
     const pw=prompt('마스터 비밀번호를 입력하세요');
     if(!pw)return;
-    // 기본 비밀번호 0505
     if(!localStorage.getItem('gm_master_pw'))localStorage.setItem('gm_master_pw','0505');
     const saved=localStorage.getItem('gm_master_pw');
     if(pw!==saved){showToast('❌ 비밀번호가 틀렸어요');return;}
-    // Drive에서 다른 기기 마스터 여부 확인
-    const ok=await checkMasterAvailable();
-    if(!ok)return;
+    // 4. Drive 재확인 (비밀번호 입력 사이에 다른 기기가 마스터 됐을 수 있음)
+    const ok2=await checkMasterAvailable();
+    if(!ok2)return;
+    // 5. Drive에 마스터 등록
     localStorage.setItem('gm_master','1');
-    localStorage.setItem('gm_master_activated', new Date().toISOString()); // 활성화 시간 기록
+    localStorage.setItem('gm_master_activated', new Date().toISOString());
     isMaster=true;
-    await setMasterOnDrive(true); // Drive에 마스터 활성화 기록
+    await setMasterOnDrive(true);
     showToast('👑 마스터 모드 활성화! 최신 데이터 불러오는 중...');
-    await gdLoad(); render(); // 마스터 전환 즉시 최신 데이터 로드
+    await gdLoad(); render();
     showToast('👑 마스터 모드 준비 완료!');
   } else {
     if(!confirm('마스터 모드를 해제할까요?'))return;
