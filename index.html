@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.6.2</title>
+<title>공구 매니저 v8.6.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.6.2</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.6.3</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.6.2</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.6.3</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -1664,7 +1664,7 @@ function showInfModal(){
   const cl=editInf?getCL(inf):{contact:{..._modalCL.contact},sample:{..._modalCL.sample},operation:{..._modalCL.operation},closing:{..._modalCL.closing}};const phCl=cl[phObj.key];
   const phTabs=`<div class="ph-tabs">${PHASES.map(p=>{const pcl=cl[p.key];const done=p.checks.filter(c=>pcl[c.k]).length;const total=p.checks.length;const isA=p.id===ph;return`<button class="ph-tab${isA?' on':''}" style="--pc:${p.color};--pb:${p.bg}" data-ph="${p.id}" onclick="switchPh(${p.id})"><div class="ph-tab-ico">${p.ico}</div><span class="ph-tab-lbl">${p.label}</span><span class="ph-tab-ck">${done}/${total}</span></button>`;}).join('')}</div>`;
   let nf=false;
-  const clHTML=`<div class="cl-wrap"><div class="cl-title">✅ ${phObj.label} 체크리스트</div>${phObj.checks.map(c=>{const ck=!!phCl[c.k];const isN=!ck&&!nf;if(isN)nf=true;return`<label class="cl-item${ck?' ckd':''}${isN?' nxt-item':''}" data-ck="${ph}-${c.k}" onclick="event.preventDefault();toggleCk(${ph},'${c.k}','${inf.id}')"><input type="checkbox" ${ck?'checked':''} readonly><span class="cl-lbl">${c.lbl}</span>${isN?`<span class="nxt-tag">다음</span>`:''}</label>`;}).join('')}</div>`;
+  const clHTML=`<div class="cl-wrap"><div class="cl-title">✅ ${phObj.label} 체크리스트</div>${phObj.checks.map(c=>{const ck=!!phCl[c.k];const isN=!ck&&!nf;if(isN)nf=true;return`<label class="cl-item${ck?' ckd':''}${isN?' nxt-item':''}" data-ck="${ph}-${c.k}" onclick="event.preventDefault();toggleCk(${ph},'${c.k}','${inf.id}')"><input type="checkbox" ${ck?'checked':''} style="pointer-events:none"><span class="cl-lbl">${c.lbl}</span>${isN?`<span class="nxt-tag">다음</span>`:''}</label>`;}).join('')}</div>`;
   const s1=`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">1</div><div><div class="fsec-lbl">기본 정보</div><div class="fsec-sub">채널 및 연락처</div></div></div>
     <div class="field-row"><div class="field"><label>이름 *</label><input id="f-name" value="${inf.name||''}" placeholder="홍길동"></div><div class="field"><label>별명/채널명</label><input id="f-nick" value="${inf.nickname||''}"></div></div>
     <div class="field-row"><div class="field"><label>인스타그램 아이디</label><input id="f-insta" value="${inf.instagram||''}" placeholder="@username"></div><div class="field"><label>팔로워 수</label><input id="f-flw" type="number" value="${inf.followers||''}"></div></div>
