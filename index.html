@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.4.4</title>
+<title>공구 매니저 v8.4.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.4.4</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.4.5</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.4.4</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.4.5</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -1749,8 +1749,8 @@ async function toggleCk(phId,key,infId){
     }
   }
   // 신규/기존 모두 메모리만 업데이트 → 저장 버튼 눌러야 DB 반영
-  editInf={...(editInf||{}),id:infId,checklist:cl};
-  if(isNew)_mi={..._mi,id:infId,checklist:cl};
+  editInf={...(editInf||{}),id:infId,...updated,checklist:cl};
+  if(isNew)_mi={..._mi,id:infId,...updated,checklist:cl};
   modalPh=phId;
   closeId('inf-modal');showInfModal();
 }
