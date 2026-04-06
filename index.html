@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.3</title>
+<title>공구 매니저 v8.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.3</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.4</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.3</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.4</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -766,32 +766,77 @@ let editTask=null;
 /* Section 1: Urgent + Today */
 function buildUrgent(){
   const t=today();const items=[];
+  const addDays3=addDays(3);
+
+  /* ── ① 날짜 임박 ── */
+  // 공구 시작일 D-3 이내
   data.forEach(inf=>{
-    const na=getNextAct(inf);if(!na)return;
+    if(!inf.scheduleDate)return;
+    const dv=diffDays(inf.scheduleDate);
+    if(dv===null||dv<0||dv>3)return;
+    const dvTxt=dv===0?'오늘 시작!':dv===1?'내일 시작':`D-${dv} 시작`;
     const ph=PM[inf.phase||1];
-    if(!na.urg)return;
-    const urgReason=`[${ph.label}] ${na.action} 필요`;
-    items.push({type:'inf',id:inf.id,name:inf.name,nickname:inf.nickname||'',product:inf.negotiating_product||inf.product||'',phase:ph,action:na.action,urgReason,cat:na.cat,date:t,isToday:true});
+    items.push({type:'inf',id:inf.id,name:inf.name,nickname:inf.nickname||'',
+      product:inf.negotiating_product||inf.product||'',phase:ph,
+      urgReason:`🗓️ 공구 ${dvTxt} — ${fmtDate(inf.scheduleDate)}`,
+      cat:'operation',date:t,isToday:dv===0,dv});
   });
-  // 오늘 개인 업무일정 + 긴급(HIGH) 업무
-  pTasks.filter(p=>!p.done&&(p.date===t||p.priority==='HIGH')).forEach(p=>{
-    if(items.some(i=>i.id===p.id))return; // 중복 방지
-    items.push({type:'personal',id:p.id,title:p.title,category:p.category,priority:p.priority||'MID',time:p.time,notes:p.notes,url:p.url,date:p.date,isToday:p.date===t});
-  });
-  // 샘플 미발송 경고: 공구확정 단계인데 샘플 미발송
-  data.forEach(inf=>{
-    if((inf.phase||1)>=3&&!getCL(inf).sample.sent)
-      items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',product:inf.negotiating_product||inf.product||'',issue:'공구확정 단계인데 샘플 미발송',suggest:'샘플 발송 후 체크리스트를 업데이트하세요'});
-  });
-  // 3일 내 정산 마감 (D-3 이하)
+  // 3일 내 정산 마감
   data.forEach(inf=>{
     const sd=calcSettleDate(inf);if(!sd)return;
     const dv=diffDays(sd);if(dv===null||dv>3||dv<0)return;
     if(getCL(inf).closing.settled)return;
-    const dvTxt=dv===0?'오늘 정산':dv===1?'내일 정산':`D-${dv} 정산`;
-    items.push({type:'settle',id:inf.id,name:inf.name,nickname:inf.nickname||'',product:inf.negotiating_product||inf.product||'',settleDate:sd,dv,dvTxt,isToday:dv===0});
+    const dvTxt=dv===0?'오늘 정산!':dv===1?'내일 정산':`D-${dv} 정산`;
+    items.push({type:'settle',id:inf.id,name:inf.name,nickname:inf.nickname||'',
+      product:inf.negotiating_product||inf.product||'',
+      settleDate:sd,dv,dvTxt,isToday:dv===0,
+      urgReason:`💰 정산 ${dvTxt} — ${fmtDate(sd)}`});
   });
-  return items;
+  // 오늘 개인 업무 + HIGH 우선순위
+  pTasks.filter(p=>!p.done&&(p.date===t||p.priority==='HIGH')).forEach(p=>{
+    if(items.some(i=>i.id===p.id))return;
+    items.push({type:'personal',id:p.id,title:p.title,category:p.category,
+      priority:p.priority||'MID',time:p.time,notes:p.notes,url:p.url,
+      date:p.date,isToday:p.date===t});
+  });
+
+  /* ── ② 공구 일정 있는데 빠진 것 ── */
+  data.forEach(inf=>{
+    const cl=getCL(inf);const ph=inf.phase||1;
+    const dv=inf.scheduleDate?diffDays(inf.scheduleDate):null;
+    // 공구 시작 D-3 이내인데 결제링크 없음
+    if(inf.scheduleDate&&dv!==null&&dv>=0&&dv<=3&&!inf.paymentLink&&!cl.operation.schedule)
+      items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
+        product:inf.negotiating_product||inf.product||'',
+        issue:`🔗 공구 D-${dv}, 결제링크 미전달`,suggest:'결제링크를 인플루언서에게 전달하세요'});
+    // 공구확정인데 샘플 미발송
+    if(ph>=3&&!cl.sample.sent)
+      items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
+        product:inf.negotiating_product||inf.product||'',
+        issue:'📦 공구확정인데 샘플 미발송',suggest:'샘플을 발송하고 체크리스트를 업데이트하세요'});
+  });
+
+  /* ── ③ 오래 방치된 것 (14일/21일 무응답) ── */
+  data.filter(inf=>(inf.phase||1)===1).forEach(inf=>{
+    const ref=new Date(inf.updatedAt||inf.createdAt||Date.now());
+    const daysSince=Math.floor((new Date()-ref)/86400000);
+    if(daysSince>=14&&daysSince<=16)
+      items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
+        product:inf.negotiating_product||inf.product||'',
+        issue:`🚨 1차 재연락 필요 (${daysSince}일 경과)`,suggest:'한 번 더 연락해보세요'});
+    else if(daysSince>=21&&daysSince<=23)
+      items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
+        product:inf.negotiating_product||inf.product||'',
+        issue:`⚠️ 최종 확인 필요 (${daysSince}일 경과)`,suggest:'마지막으로 연락 후 미응답 시 보류 고려'});
+  });
+
+  // 중요도 순 정렬: 오늘 > D-1 > D-2 > D-3
+  return items.sort((a,b)=>{
+    const da=a.dv??99,db=b.dv??99;
+    if(a.isToday&&!b.isToday)return -1;
+    if(!a.isToday&&b.isToday)return 1;
+    return da-db;
+  });
 }
 
 /* Section 2: Gonggu Schedule — only active/future (not past end) */
