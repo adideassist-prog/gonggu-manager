@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v9.0.4</title>
+<title>공구 매니저 v9.0.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v9.0.4</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v9.0.5</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v9.0.4</div>
+      <div class="mob-title">🛍️ 공구 매니저 v9.0.5</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -710,6 +710,7 @@ async function gdLoad(){
       const dTasks=json.tasks||[];
       const lInfs=await dbAll(IS);const lTasks=await dbAll(TS);
       // smartMerge: 양쪽 데이터 병합 (isDeleted 포함, updatedAt 기준)
+      // Drive = 원격, 로컬 = local → smartMerge(local, remote)
       const mInfs=smartMerge(lInfs,dInfs);
       const mTasks=smartMerge(lTasks,dTasks);
       await dbClear(IS);for(const i of mInfs)await dbPut(IS,i);
@@ -739,7 +740,7 @@ async function gdSaveNow(){
         const dj=JSON.parse(dr.body);
         const dInfs=(dj.influencers||dj||[]).map(migrateInf);
         const dTasks=dj.tasks||[];
-        data=smartMerge(data,dInfs);
+        data=smartMerge(data,dInfs);   // local=data, remote=dInfs
         pTasks=smartMerge(pTasks,dTasks);
         await dbClear(IS);for(const i of data)await dbPut(IS,i);
         await dbClear(TS);for(const t of pTasks)await dbPut(TS,t);
@@ -757,15 +758,17 @@ function mergeArr(local,remote){
   return smartMerge(local,remote);
 }
 function smartMerge(local,remote){
-  // updatedAt 기준 최신 데이터 우선, 한쪽에만 있으면 포함, isDeleted도 타임스탬프로 판단
   const map={};
-  const allItems=[...local,...remote];
-  allItems.forEach(item=>{
+  // 1. 로컬 먼저 등록
+  local.forEach(item=>{map[item.id]=item;});
+  // 2. 원격으로 덮어쓰기: updatedAt이 더 최신이거나, isDeleted가 true면 원격 우선
+  remote.forEach(item=>{
     const ex=map[item.id];
-    if(!ex){map[item.id]=item;return;}
+    if(!ex){map[item.id]=item;return;} // 원격에만 있으면 추가
     const et=new Date(ex.updatedAt||ex.createdAt||0).getTime();
     const nt=new Date(item.updatedAt||item.createdAt||0).getTime();
-    if(nt>et)map[item.id]=item; // 더 최신 버전 채택
+    // 원격이 더 최신이거나, 원격이 삭제됨 마크면 원격 채택
+    if(nt>=et||item.isDeleted)map[item.id]=item;
   });
   return Object.values(map);
 }
