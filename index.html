@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.9</title>
+<title>공구 매니저 v9.0.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.9</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v9.0.1</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.9</div>
+      <div class="mob-title">🛍️ 공구 매니저 v9.0.1</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -698,7 +698,7 @@ async function gdDisconnect(){if(!confirm('연동 해제할까요?'))return;cons
 async function gdLoad(){
   if(!isGD)return;isSyncing=true;updateGDUI();
   try{
-    // 항상 파일명으로 검색 (기기 간 fileId 불일치 방지)
+    // 항상 파일명으로 검색
     const sr=await gapi.client.drive.files.list({q:`name='${GD_FILE}' and trashed=false`,fields:'files(id)',spaces:'drive',pageSize:1});
     const sf=sr.result.files;
     if(sf&&sf.length){gdFileId=sf[0].id;localStorage.setItem('gd_file_id',gdFileId);}
@@ -708,13 +708,14 @@ async function gdLoad(){
       const json=JSON.parse(r.body);
       const dInfs=(json.influencers||json||[]).map(migrateInf);
       const dTasks=json.tasks||[];
-      // Drive 데이터로 로컬 완전 교체 (merge 없음 → 삭제도 동기화됨)
-      await dbClear(IS);for(const i of dInfs)await dbPut(IS,i);
-      await dbClear(TS);for(const t of dTasks)await dbPut(TS,t);
-      data=dInfs;pTasks=dTasks;
-      showToast('☁️ 드라이브에서 불러왔어요');
+      const lInfs=await dbAll(IS);const lTasks=await dbAll(TS);
+      // smartMerge: 양쪽 데이터 병합 (isDeleted 포함, updatedAt 기준)
+      const mInfs=smartMerge(lInfs,dInfs);
+      const mTasks=smartMerge(lTasks,dTasks);
+      await dbClear(IS);for(const i of mInfs)await dbPut(IS,i);
+      await dbClear(TS);for(const t of mTasks)await dbPut(TS,t);
+      data=mInfs;pTasks=mTasks;
     }else{
-      // Drive에 파일 없으면 현재 로컬 데이터를 Drive에 저장
       await gdSaveNow();
     }
   }catch(e){console.error('GDrive load:',e);showToast('⚠️ 드라이브 동기화 실패 (로컬 사용)');}
@@ -725,11 +726,24 @@ function gdSave(){if(!isGD)return;clearTimeout(_gdTimer);_gdTimer=setTimeout(gdS
 async function gdSaveNow(){
   if(!isGD)return;isSyncing=true;updateGDUI();
   try{
-    // 저장 전 파일 ID 재확인 (기기 간 불일치 방지)
+    // 파일 ID 확인
     if(!gdFileId){
       const sr=await gapi.client.drive.files.list({q:`name='${GD_FILE}' and trashed=false`,fields:'files(id)',spaces:'drive',pageSize:1});
       const sf=sr.result.files;
       if(sf&&sf.length){gdFileId=sf[0].id;localStorage.setItem('gd_file_id',gdFileId);}
+    }
+    // 저장 전 Drive 최신본 병합 (데이터 유실 방지)
+    if(gdFileId){
+      try{
+        const dr=await gapi.client.drive.files.get({fileId:gdFileId,alt:'media'});
+        const dj=JSON.parse(dr.body);
+        const dInfs=(dj.influencers||dj||[]).map(migrateInf);
+        const dTasks=dj.tasks||[];
+        data=smartMerge(data,dInfs);
+        pTasks=smartMerge(pTasks,dTasks);
+        await dbClear(IS);for(const i of data)await dbPut(IS,i);
+        await dbClear(TS);for(const t of pTasks)await dbPut(TS,t);
+      }catch(e){console.warn('pre-save merge 실패, 로컬 데이터로 저장');}
     }
     const content=JSON.stringify({version:6,influencers:data,tasks:pTasks});
     const b='gm6_bound';
@@ -740,14 +754,18 @@ async function gdSaveNow(){
   isSyncing=false;updateGDUI();
 }
 function mergeArr(local,remote){
-  // 더 최신 updatedAt을 가진 항목 우선 (같으면 remote 우선)
+  return smartMerge(local,remote);
+}
+function smartMerge(local,remote){
+  // updatedAt 기준 최신 데이터 우선, 한쪽에만 있으면 포함, isDeleted도 타임스탬프로 판단
   const map={};
-  [...local,...remote].forEach(item=>{
+  const allItems=[...local,...remote];
+  allItems.forEach(item=>{
     const ex=map[item.id];
     if(!ex){map[item.id]=item;return;}
     const et=new Date(ex.updatedAt||ex.createdAt||0).getTime();
     const nt=new Date(item.updatedAt||item.createdAt||0).getTime();
-    if(nt>et)map[item.id]=item; // 원격이 더 최신이면 원격으로
+    if(nt>et)map[item.id]=item; // 더 최신 버전 채택
   });
   return Object.values(map);
 }
@@ -794,6 +812,8 @@ let tab='dash',phFilter='all',srch='';
 let selDate=today();
 let calY=new Date().getFullYear(),calM=new Date().getMonth(),calMode='gonggu';
 let editInf=null,modalPh=null,_mi={};
+// isDeleted 필터: 실제 화면에 보이는 데이터만
+const activeData=()=>data.filter(d=>!d.isDeleted);
 let _modalCL={contact:{},sample:{},operation:{},closing:{}}; // 모달 체크리스트 캐시
 let editTask=null;
 
@@ -808,7 +828,7 @@ function buildUrgent(){
 
   /* ── ① 날짜 임박 ── */
   // 공구 시작일 D-3 이내
-  data.forEach(inf=>{
+  activeData().forEach(inf=>{
     if(!inf.scheduleDate)return;
     const dv=diffDays(inf.scheduleDate);
     if(dv===null||dv<0||dv>3)return;
@@ -820,7 +840,7 @@ function buildUrgent(){
       cat:'operation',date:t,isToday:dv===0,dv});
   });
   // 3일 내 정산 마감
-  data.forEach(inf=>{
+  activeData().forEach(inf=>{
     const sd=calcSettleDate(inf);if(!sd)return;
     const dv=diffDays(sd);if(dv===null||dv>3||dv<0)return;
     if(getCL(inf).closing.settled)return;
@@ -839,7 +859,7 @@ function buildUrgent(){
   });
 
   /* ── ② 공구 일정 있는데 빠진 것 ── */
-  data.forEach(inf=>{
+  activeData().forEach(inf=>{
     const cl=getCL(inf);const ph=inf.phase||1;
     const dv=inf.scheduleDate?diffDays(inf.scheduleDate):null;
     // 공구 시작 D-3 이내인데 결제링크 없음
@@ -855,7 +875,7 @@ function buildUrgent(){
   });
 
   /* ── ②-B 종료일 지났는데 공구 완료 미체크 ── */
-  data.forEach(inf=>{
+  activeData().forEach(inf=>{
     if(!inf.scheduleEndDate)return;
     const cl=getCL(inf);
     const dv=diffDays(inf.scheduleEndDate);
@@ -866,7 +886,7 @@ function buildUrgent(){
         suggest:'마감 단계에서 공구 완료를 체크해주세요'});
   });
   /* ── ②-C 정산 기한 지남 (30일 초과) ── */
-  data.forEach(inf=>{
+  activeData().forEach(inf=>{
     const sd=calcSettleDate(inf);if(!sd)return;
     const dv=diffDays(sd);if(dv===null||dv>=0)return; // 기한 안 지남
     if(getCL(inf).closing.settled)return;
@@ -877,7 +897,7 @@ function buildUrgent(){
   });
 
   /* ── ③ 오래 방치된 것 (14일/21일 무응답) ── */
-  data.filter(inf=>(inf.phase||1)===1).forEach(inf=>{
+  activeData().filter(inf=>(inf.phase||1)===1).forEach(inf=>{
     const ref=new Date(inf.updatedAt||inf.createdAt||Date.now());
     const daysSince=Math.floor((new Date()-ref)/86400000);
     if(daysSince>=14&&daysSince<=16)
@@ -927,7 +947,7 @@ function buildGonggu(){
 
 /* Section 3: Sample — not-sent OR not-received regardless of date */
 function buildSample(){
-  return data.filter(inf=>{
+  return activeData().filter(inf=>{
     const cl=getCL(inf);
     // Phase 2+ and either sent or received not completed
     return inf.phase>=2&&(!cl.sample.sent||!cl.sample.received);
@@ -943,7 +963,7 @@ function buildSample(){
 /* Section 4: Settlement — next 30 days */
 function buildSettlement(){
   const t=today();const e=addDays(30);
-  return data.filter(inf=>{
+  return activeData().filter(inf=>{
     const sd=calcSettleDate(inf);
     const cl=getCL(inf);
     return sd&&sd>=t&&sd<=e&&!cl.closing.settled;
@@ -1021,18 +1041,18 @@ function render(){rChrome();rContent();updateGDUI();updateInfBadge();}
 
 function rChrome(){
   const now=new Date();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
-  const cntContact=data.filter(d=>d.phase===1).length;
-  const cntSample=data.filter(d=>d.phase===2).length;
-  const cntOp=data.filter(d=>d.phase===3).length;
-  const cntClose=data.filter(d=>d.phase===4).length;
+  const cntContact=activeData().filter(d=>d.phase===1).length;
+  const cntSample=activeData().filter(d=>d.phase===2).length;
+  const cntOp=activeData().filter(d=>d.phase===3).length;
+  const cntClose=activeData().filter(d=>d.phase===4).length;
   const t0=today();const e30=addDays(30);
-  const ongoing=data.filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0&&e>=t0;}).length;
-  const upcoming=data.filter(d=>{const s=d.scheduleDate;return s&&s>t0&&s<=e30;}).length;
+  const ongoing=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0&&e>=t0;}).length;
+  const upcoming=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0&&s<=e30;}).length;
   // 30일 내 정산 예정
-  const settleN=data.filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0&&sd<=e30&&!getCL(d).closing.settled;}).length;
+  const settleN=activeData().filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0&&sd<=e30&&!getCL(d).closing.settled;}).length;
   // 이달 공구 완료 (scheduleEndDate가 이번달 내)
   const now2=new Date();const ym=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
-  const doneN=data.filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ym)&&getCL(d).closing.done).length;
+  const doneN=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ym)&&getCL(d).closing.done).length;
   // 오늘 처리 필요 (긴급 + 오늘 개인일정 + 3일내 정산)
   const urgItems=buildUrgent();
   const todayN=urgItems.length;
@@ -1432,7 +1452,7 @@ function rDash(){
 function rCal(){
   warmProductColors(data);
   const spans=[],points=[];
-  data.forEach(inf=>{
+  activeData().forEach(inf=>{
     const pc=getProductColor(inf.negotiating_product||inf.product);
     if(inf.scheduleDate){const e=inf.scheduleEndDate||inf.scheduleDate;spans.push({id:inf.id,label:`${inf.name} · ${inf.negotiating_product||inf.product||''}`,shortLabel:inf.name+(inf.nickname?`(${inf.nickname})`:'')+' ',product:inf.negotiating_product||inf.product||'',name:inf.name,nickname:inf.nickname||'',start:inf.scheduleDate,end:e,color:pc,cat:'gonggu'});}
     if(inf.sampleSentDate){const tr=inf.trackingNumber?` (${inf.trackingNumber})`:'';const infNickS=inf.nickname?`(${inf.nickname})`:'';points.push({id:inf.id,label:`샘플 · ${inf.name}${infNickS}${tr}`,shortLabel:`${inf.name}${infNickS}`,ptCategory:'샘플',date:inf.sampleSentDate,color:'#FED7AA',cat:'work'});points.push({id:inf.id,label:`배송확인 · ${inf.name}${infNickS}`,shortLabel:`${inf.name}${infNickS}`,ptCategory:'배송확인',date:addDays(2,inf.sampleSentDate),color:'#FBCFE8',cat:'work'});}
@@ -1670,11 +1690,11 @@ function setTaskSearch(v){
 
 /* ── INF LIST ── */
 function buildInfListHTML(){
-  const filtered=data.filter(inf=>{
+  const filtered=activeData().filter(inf=>{
     const ms=(inf.name||'').includes(srch)||(inf.instagram||'').includes(srch)||(inf.negotiating_product||inf.product||'').includes(srch)||(inf.nickname||'').includes(srch)||(inf.category||'').includes(srch);
     return ms&&(phFilter==='all'||inf.phase===parseInt(phFilter));
   });
-  const chips=`<div class="chip-row"><button class="chip${phFilter==='all'?' on':''}" onclick="setFilter('all')">전체 ${data.length}</button>${PHASES.map(ph=>{const cnt=data.filter(d=>d.phase===ph.id).length;return cnt?`<button class="chip${phFilter==ph.id?' on':''}" onclick="setFilter(${ph.id})" style="${phFilter==ph.id?'':'border-left:3px solid '+ph.color+';padding-left:8px'}">${ph.ico} ${ph.label} ${cnt}</button>`:''}).join('')}</div>`;
+  const chips=`<div class="chip-row"><button class="chip${phFilter==='all'?' on':''}" onclick="setFilter('all')">전체 ${activeData().length}</button>${PHASES.map(ph=>{const cnt=activeData().filter(d=>d.phase===ph.id).length;return cnt?`<button class="chip${phFilter==ph.id?' on':''}" onclick="setFilter(${ph.id})" style="${phFilter==ph.id?'':'border-left:3px solid '+ph.color+';padding-left:8px'}">${ph.ico} ${ph.label} ${cnt}</button>`:''}).join('')}</div>`;
   const cards=filtered.length?buildInfCards(filtered):`<div class="empty-s"><div class="empty-s-ico">👥</div><div class="empty-s-txt">인플루언서가 없어요</div></div>`;
   return chips+cards;
 }
@@ -1973,7 +1993,16 @@ async function deleteGongguHistory(infId,idx){
   gdSave();showToast('🗑️ 이력 삭제됐어요');
   closeId('inf-modal');showInfModal();
 }
-async function delInf(id){if(!confirm('삭제할까요?'))return;await dbDel(IS,id);data=await dbAll(IS);gdSave();showToast('🗑️ 삭제됐어요');closeInfModal();}
+async function delInf(id){
+  if(!confirm('삭제할까요?'))return;
+  const inf=data.find(x=>x.id===id);
+  if(!inf)return;
+  // 소프트 삭제: 배열에서 제거하지 않고 isDeleted 마크
+  const deleted={...inf,isDeleted:true,updatedAt:new Date().toISOString()};
+  await dbPut(IS,deleted);
+  data=await dbAll(IS);
+  gdSave();showToast('🗑️ 삭제됐어요');closeInfModal();
+}
 function toggleHiddenContact(btn){
   const list=document.getElementById('hidden-contact-list');
   if(!list)return;
@@ -2071,18 +2100,18 @@ function showBadgeModal(type){
   const t0=today();const e30=addDays(30);
   const t0b=today();const e30b=addDays(30);const now3=new Date();const ymb=`${now3.getFullYear()}-${String(now3.getMonth()+1).padStart(2,'0')}`;const cfg={contact:{title:'📨 컨택 단계',color:'#6366F1',desc:'현재 컨택 진행 중'},sample:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},operation:{title:'🛍️ 공구확정 단계',color:'#2563EB',desc:'공구확정 진행 중'},closing:{title:'💰 마감 단계',color:'#059669',desc:'정산 진행 중'},ongoing:{title:'🛍️ 공구 진행중',color:'#2563EB',desc:'오늘 기준 판매 중'},upcoming:{title:'📅 공구 예정',color:'#7C3AED',desc:'30일 내 공구 예정'},settle:{title:'💰 정산 예정',color:'#059669',desc:'30일 내 정산 예정'},done:{title:'✅ 이달 완료',color:'#0369A1',desc:'이번 달 공구 완료'},urgent:{title:'🚨 오늘 처리 필요',color:'#DC2626',desc:'긴급 업무 + 3일내 정산'}};
   const c=cfg[type]||cfg.urgent;let filtered=[];
-  if(type==='contact')filtered=data.filter(d=>d.phase===1);
-  else if(type==='sample')filtered=data.filter(d=>d.phase===2);
-  else if(type==='operation')filtered=data.filter(d=>d.phase===3);
-  else if(type==='closing')filtered=data.filter(d=>d.phase===4);
-  else if(type==='ongoing')filtered=data.filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0b&&e>=t0b;});
-  else if(type==='upcoming')filtered=data.filter(d=>{const s=d.scheduleDate;return s&&s>t0b&&s<=e30b;});
-  else if(type==='settle')filtered=data.filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0b&&sd<=e30b&&!getCL(d).closing.settled;});
-  else if(type==='done')filtered=data.filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb)&&getCL(d).closing.done);
+  if(type==='contact')filtered=activeData().filter(d=>d.phase===1);
+  else if(type==='sample')filtered=activeData().filter(d=>d.phase===2);
+  else if(type==='operation')filtered=activeData().filter(d=>d.phase===3);
+  else if(type==='closing')filtered=activeData().filter(d=>d.phase===4);
+  else if(type==='ongoing')filtered=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0b&&e>=t0b;});
+  else if(type==='upcoming')filtered=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0b&&s<=e30b;});
+  else if(type==='settle')filtered=activeData().filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0b&&sd<=e30b&&!getCL(d).closing.settled;});
+  else if(type==='done')filtered=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb)&&getCL(d).closing.done);
   else if(type==='urgent'){
     const urgItems=buildUrgent();
     const ids=new Set(urgItems.filter(i=>i.id&&i.type!=='personal').map(i=>i.id));
-    filtered=data.filter(d=>ids.has(d.id));
+    filtered=activeData().filter(d=>ids.has(d.id));
     // 개인일정(personal) 항목은 별도 렌더링
     const personalItems=urgItems.filter(i=>i.type==='personal');
     const PTASK_COLORS2={'미팅':'#FBCFE8','업체연락':'#BFDBFE','샘플신청':'#FED7AA','장기 업무':'#E9D5FF','개인 약속':'#BBF7D0','개인메모':'#FEF08A','기타':'#E2E8F0'};
@@ -2122,6 +2151,17 @@ async function init(){
   render();
 }
 init();
+
+// 자동 동기화: 탭 전환 시
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&isGD){
+    const ls=localStorage.getItem('gd_last_sync');
+    const elapsed=ls?(Date.now()-new Date(ls).getTime()):Infinity;
+    if(elapsed>60000)gdLoad().then(()=>render()); // 1분 이상 지났으면 동기화
+  }
+});
+// 자동 동기화: 5분 주기
+setInterval(()=>{if(isGD)gdLoad().then(()=>render());},5*60*1000);
 // 달력 아이콘 오늘 날짜로 업데이트
 // 캘린더 날짜: rDash에서 직접 렌더링
 </script>
