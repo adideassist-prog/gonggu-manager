@@ -1966,7 +1966,12 @@ function showBadgeModal(type){
   else if(type==='upcoming')filtered=data.filter(d=>{const s=d.scheduleDate;return s&&s>t0b&&s<=e30b;});
   else if(type==='settle')filtered=data.filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0b&&sd<=e30b&&!getCL(d).closing.settled;});
   else if(type==='done')filtered=data.filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb)&&getCL(d).closing.done);
-  else if(type==='urgent'){const urgItems=buildUrgent();const ids=new Set(urgItems.filter(i=>i.type==='inf').map(i=>i.id));filtered=data.filter(d=>ids.has(d.id));}
+  else if(type==='urgent'){
+    const urgItems=buildUrgent();
+    // inf/settle/warn 타입 모두 → 해당 인플루언서 표시
+    const ids=new Set(urgItems.filter(i=>i.id&&i.type!=='personal').map(i=>i.id));
+    filtered=data.filter(d=>ids.has(d.id));
+  }
   const listHTML=filtered.length?filtered.map(inf=>{const ph=PM[inf.phase||1];const na=getNextAct(inf);const schedInfo=inf.scheduleDate?`<span style="font-size:11px;font-weight:700;color:#2563EB;background:#EFF6FF;padding:2px 7px;border-radius:5px;margin-left:4px">📅 ${fmtDate(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmtDate(inf.scheduleEndDate)}`:''}</span>`:'';return`<div class="bm-item" style="border-left-color:${ph.color}" onclick="closeBM();openEdit('${inf.id}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap"><b style="font-size:14px">${inf.name}${inf.nickname?` <span style="color:#5B21B6;font-weight:800">(${inf.nickname})</span>`:''}</b><span style="font-size:10px;font-weight:700;background:${ph.bg};color:${ph.color};padding:2px 6px;border-radius:4px">${ph.ico} ${ph.label}</span>${schedInfo}</div><div style="font-size:11px;color:#94A3B8;margin-bottom:3px">${inf.instagram||''}${inf.negotiating_product||inf.product?` · ${inf.negotiating_product||inf.product}`:''}</div>${na?`<div style="font-size:12px;font-weight:700;color:${na.urg?'#DC2626':'#475569'}">→ ${na.action}</div>`:''}</div>`;}).join(''):`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">해당 항목이 없어요</div></div>`;
   const ov=mkOv('bm-modal');ov.innerHTML=`<div class="modal" onclick="event.stopPropagation()"><div class="m-hnd"></div><div class="m-head" style="color:${c.color}">${c.title}<button class="m-x" onclick="closeBM()">✕</button></div><div style="font-size:12px;color:#94A3B8;margin-bottom:12px">${c.desc} · <b style="color:${c.color}">${filtered.length}명</b></div>${listHTML}</div>`;document.body.appendChild(ov);
 }
