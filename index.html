@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v9.0.1</title>
+<title>공구 매니저 v9.0.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v9.0.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v9.0.2</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v9.0.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v9.0.2</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -931,7 +931,7 @@ function catTagsHTML(category,fontSize,inline){
 }
 function buildGonggu(){
   const t=today();
-  return data
+  return activeData()
     .filter(inf=>inf.scheduleDate&&inf.scheduleEndDate&&inf.scheduleEndDate>=t&&!getCL(inf).closing.done)
     .sort((a,b)=>a.scheduleDate.localeCompare(b.scheduleDate))
     .map(inf=>({
@@ -2161,7 +2161,13 @@ document.addEventListener('visibilitychange',()=>{
   }
 });
 // 자동 동기화: 5분 주기
-setInterval(()=>{if(isGD)gdLoad().then(()=>render());},5*60*1000);
+setInterval(async()=>{
+  if(isGD&&!isSyncing){
+    const ls=localStorage.getItem('gd_last_sync');
+    const elapsed=ls?(Date.now()-new Date(ls).getTime()):Infinity;
+    if(elapsed>30000){await gdLoad();render();}  // 30초마다 자동 동기화
+  }
+},30000);
 // 달력 아이콘 오늘 날짜로 업데이트
 // 캘린더 날짜: rDash에서 직접 렌더링
 </script>
