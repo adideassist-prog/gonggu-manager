@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.7</title>
+<title>공구 매니저 v8.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.7</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.8</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.7</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.8</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -684,7 +684,15 @@ function onGapiLoad(){gapi.load('client',async()=>{await gapi.client.init({});aw
 function onGisLoad(){gisReady=true;maybeAutoConnect();}
 function maybeAutoConnect(){if(!gapiReady||!gisReady||!gdClientId)return;setupTokenClient();tokenClient.requestAccessToken({prompt:''});}
 function setupTokenClient(){if(!window.google?.accounts?.oauth2)return;tokenClient=google.accounts.oauth2.initTokenClient({client_id:gdClientId,scope:GD_SCOPE,callback:handleGDToken,error_callback:err=>{if(err.type==='popup_closed'||err.type==='popup_failed_to_open')return;isGD=false;updateGDUI();}});}
-async function handleGDToken(resp){if(resp.error){isGD=false;updateGDUI();return;}isGD=true;gapi.client.setToken({access_token:resp.access_token});updateGDUI();await gdLoad();render();showToast('☁️ 구글드라이브 연동 완료!',3000);}
+async function handleGDToken(resp){
+  if(resp.error){isGD=false;updateGDUI();return;}
+  isGD=true;
+  gapi.client.setToken({access_token:resp.access_token});
+  updateGDUI();
+  await gdLoad();  // Drive 데이터 먼저 로드 (로컬 덮어쓰기 방지)
+  render();
+  showToast('☁️ 구글드라이브 연동 완료!',3000);
+}
 function gdConnect(){if(isGD){gdDisconnect();return;}if(!gdClientId){showGDModal();return;}if(!gapiReady||!gisReady){showToast('⏳ API 로딩 중...');return;}setupTokenClient();tokenClient.requestAccessToken({prompt:'consent'});}
 async function gdDisconnect(){if(!confirm('연동 해제할까요?'))return;const t=gapi.client.getToken();if(t)google.accounts.oauth2.revoke(t.access_token,()=>{});gapi.client.setToken(null);isGD=false;updateGDUI();render();showToast('🔌 드라이브 연동 해제됨');}
 async function gdLoad(){
@@ -704,13 +712,19 @@ async function gdLoad(){
       data=mInfs;pTasks=mTasks;
     }else await gdSaveNow();
   }catch(e){console.error('GDrive load:',e);showToast('⚠️ 드라이브 동기화 실패 (로컬 사용)');}
-  isSyncing=false;updateGDUI();
+  isSyncing=false;localStorage.setItem('gd_last_sync',new Date().toISOString());updateGDUI();
 }
 let _gdTimer=null;
 function gdSave(){if(!isGD)return;clearTimeout(_gdTimer);_gdTimer=setTimeout(gdSaveNow,1500);}
 async function gdSaveNow(){
   if(!isGD)return;isSyncing=true;updateGDUI();
   try{
+    // 저장 전 파일 ID 재확인 (기기 간 불일치 방지)
+    if(!gdFileId){
+      const sr=await gapi.client.drive.files.list({q:`name='${GD_FILE}' and trashed=false`,fields:'files(id)',spaces:'drive',pageSize:1});
+      const sf=sr.result.files;
+      if(sf&&sf.length){gdFileId=sf[0].id;localStorage.setItem('gd_file_id',gdFileId);}
+    }
     const content=JSON.stringify({version:6,influencers:data,tasks:pTasks});
     const b='gm6_bound';
     const body=[`--${b}`,'Content-Type: application/json; charset=UTF-8','',JSON.stringify({name:GD_FILE,mimeType:'application/json'}),`--${b}`,'Content-Type: application/json','',content,`--${b}--`].join('\r\n');
@@ -719,11 +733,27 @@ async function gdSaveNow(){
   }catch(e){console.error('GDrive save:',e);showToast('⚠️ 드라이브 저장 실패');}
   isSyncing=false;updateGDUI();
 }
-function mergeArr(local,remote){const map={};[...remote,...local].forEach(item=>{const ex=map[item.id];if(!ex){map[item.id]=item;return;}const et=new Date(ex.updatedAt||ex.createdAt||0).getTime();const nt=new Date(item.updatedAt||item.createdAt||0).getTime();if(nt>=et)map[item.id]=item;});return Object.values(map);}
+function mergeArr(local,remote){
+  // 더 최신 updatedAt을 가진 항목 우선 (같으면 remote 우선)
+  const map={};
+  [...local,...remote].forEach(item=>{
+    const ex=map[item.id];
+    if(!ex){map[item.id]=item;return;}
+    const et=new Date(ex.updatedAt||ex.createdAt||0).getTime();
+    const nt=new Date(item.updatedAt||item.createdAt||0).getTime();
+    if(nt>et)map[item.id]=item; // 원격이 더 최신이면 원격으로
+  });
+  return Object.values(map);
+}
 function updateGDUI(){
   const sb=document.getElementById('sb-gd'),mb=document.getElementById('m-gd');
   if(isSyncing){const t='<span class="sdot" style="background:#60A5FA"></span>동기화 중...';if(sb)sb.innerHTML=t;if(mb)mb.innerHTML='🔄';}
-  else if(isGD){if(sb){sb.innerHTML='☁️ 드라이브 연동됨 ✓';sb.classList.add('on');}if(mb){mb.innerHTML='☁️✓';mb.classList.add('on');}}
+  else if(isGD){
+    const ls=localStorage.getItem('gd_last_sync');
+    const lsTxt=ls?` (${new Date(ls).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})`:'' ;
+    if(sb){sb.innerHTML='☁️ 드라이브 연동됨 ✓'+lsTxt;sb.classList.add('on');}
+    if(mb){mb.innerHTML='☁️✓';mb.classList.add('on');}
+  }
   else{if(sb){sb.innerHTML='☁️ 구글드라이브 연동';sb.classList.remove('on');}if(mb){mb.innerHTML='☁️';mb.classList.remove('on');}}
 }
 function showGDModal(){
