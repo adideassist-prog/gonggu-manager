@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v9.5.1</title>
+<title>공구 매니저 v9.5.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -67,6 +67,8 @@ a{text-decoration:none}
 .mob-acts{display:flex;gap:4px}
 .mob-act{background:rgba(255,255,255,.5);border:none;border-radius:7px;padding:5px 8px;color:#3D2B8C;font-size:11px;font-weight:700;cursor:pointer}
 .mob-gd.on{background:rgba(74,222,128,.35);color:#157A4A}
+.mob-master{background:rgba(139,92,246,.2);color:#5B21B6;border:1.5px solid rgba(139,92,246,.3)}
+.mob-master.on{background:rgba(234,179,8,.35);color:#92400E;border-color:rgba(234,179,8,.5)}
 /* 오늘처리 큰 박스 */
 .mob-today{background:rgba(255,100,100,.2);border:1px solid rgba(255,100,100,.25);border-radius:10px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
 .mob-today-lbl{font-size:11px;font-weight:700;color:rgba(140,20,20,.85)}
@@ -452,7 +454,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v9.5.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v9.5.5</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -472,7 +474,7 @@ a{text-decoration:none}
     <button class="sb-tool" onclick="document.getElementById('imp').click()">📥 백업 불러오기</button>
     <input type="file" id="imp" accept=".json" style="display:none" onchange="importData(event)">
     <div class="sb-hint" id="sb-hint"></div>
-    <button class="sb-tool" id="sb-master-btn" onclick="toggleMasterMode()" style="margin-top:4px;font-size:10px;color:#7C6FCD;border-color:#C4B5FD">${isMaster?'👑 마스터 모드':'👁️ 읽기전용 모드'}</button>
+    <button class="sb-tool" id="sb-master-btn" onclick="toggleMasterMode()" style="margin-top:4px;font-size:11px;font-weight:800;color:#5B21B6;border-color:#C4B5FD;background:rgba(139,92,246,.1)">${isMaster?'👑 마스터 모드 (클릭하여 해제)':'👁️ 읽기전용 → 마스터 전환'}</button>
   </div>
 </nav>
 
@@ -482,9 +484,10 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v9.5.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v9.5.5</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
+        <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
         <button class="mob-act" onclick="exportData()">📤</button>
         <button class="mob-act" onclick="document.getElementById('imp').click()">📥</button>
@@ -507,6 +510,7 @@ a{text-decoration:none}
       <div class="pc-tb-right">
         <div id="pc-today"></div>
         <div class="pc-btns">
+          <button class="pc-btn pc-btn-master" id="pc-master" onclick="toggleMasterMode()">👁️ 읽기전용</button>
           <button class="pc-btn" onclick="openAdd()">＋ 인플루언서</button>
           <button class="pc-btn" onclick="openTaskAdd()">📝 업무</button>
           <button class="pc-btn" onclick="exportData()">📤</button>
@@ -533,6 +537,7 @@ a{text-decoration:none}
     <button class="bot-btn" id="mbn-cal"  onclick="setTab('cal')"><span class="bot-ico" id="cal-ico-mob">📅</span><span class="bot-lbl">캘린더</span></button>
     <button class="bot-btn" id="mbn-list" onclick="setTab('list')"><span class="bot-ico">👥</span><span class="bot-lbl">인플루언서</span><span id="inf-count-badge-mob" style="font-size:9px;font-weight:800;background:#EEF2FF;color:#4F46E5;padding:1px 5px;border-radius:6px;margin-left:2px"></span></button>
     <button class="bot-btn" id="mbn-tasks" onclick="setTab('tasks')"><span class="bot-ico">📝</span><span class="bot-lbl">업무</span></button>
+    <button class="bot-btn" id="mbn-master" onclick="toggleMasterMode()" style="color:#5B21B6"><span class="bot-ico" id="mob-master-ico">👁️</span><span class="bot-lbl" id="mob-master-lbl">읽기전용</span></button>
   </div>
   <button class="fab" onclick="openAdd()">＋</button>
 </div>
@@ -1034,7 +1039,7 @@ function buildCounts(){
 /* ════════════════════════════════════════════════
    11. RENDER ENGINE
 ════════════════════════════════════════════════ */
-function render(){rChrome();rContent();updateGDUI();updateInfBadge();}
+function render(){rChrome();rContent();updateGDUI();updateInfBadge();updateMasterUI();}
 
 function rChrome(){
   const now=new Date();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
@@ -2045,17 +2050,15 @@ async function toggleMasterMode(){
   if(!isMaster){
     const pw=prompt('마스터 비밀번호를 입력하세요');
     if(!pw)return;
+    // 기본 비밀번호 0505
+    if(!localStorage.getItem('gm_master_pw'))localStorage.setItem('gm_master_pw','0505');
     const saved=localStorage.getItem('gm_master_pw');
-    if(!saved){
-      if(!confirm(`비밀번호 "${pw}" 로 마스터 모드를 설정할까요?`))return;
-      localStorage.setItem('gm_master_pw',pw);
-    } else if(pw!==saved){
-      showToast('❌ 비밀번호가 틀렸어요');return;
-    }
+    if(pw!==saved){showToast('❌ 비밀번호가 틀렸어요');return;}
     // Drive에서 다른 기기 마스터 여부 확인
     const ok=await checkMasterAvailable();
     if(!ok)return;
     localStorage.setItem('gm_master','1');
+    localStorage.setItem('gm_master_activated', new Date().toISOString()); // 활성화 시간 기록
     isMaster=true;
     await setMasterOnDrive(true); // Drive에 마스터 활성화 기록
     showToast('👑 마스터 모드 활성화! 최신 데이터 불러오는 중...');
@@ -2063,14 +2066,30 @@ async function toggleMasterMode(){
     showToast('👑 마스터 모드 준비 완료!');
   } else {
     if(!confirm('마스터 모드를 해제할까요?'))return;
+    showToast('💾 최종 저장 중...');
+    await gdSaveNow(); // 해제 전 Drive에 즉시 저장
     localStorage.setItem('gm_master','0');
     isMaster=false;
-    await setMasterOnDrive(false); // Drive에서 마스터 해제
-    showToast('👁️ 읽기전용 모드로 전환됐어요');
+    await setMasterOnDrive(false); // Drive에서 마스터 잠금 해제
+    showToast('👁️ 저장 완료 후 읽기전용으로 전환됐어요');
   }
-  updateGDUI();render();
-  const btn=document.getElementById('sb-master-btn');
-  if(btn)btn.textContent=isMaster?'👑 마스터 모드':'👁️ 읽기전용 모드';
+  updateGDUI();updateMasterUI();render();
+}
+function updateMasterUI(){
+  const sb=document.getElementById('sb-master-btn');
+  const pc=document.getElementById('pc-master');
+  const mob=document.getElementById('m-master'); // 헤더 버튼
+  const mobIco=document.getElementById('mob-master-ico'); // 하단 네비 아이콘
+  const mobLbl=document.getElementById('mob-master-lbl'); // 하단 네비 라벨
+  const mobNav=document.getElementById('mbn-master'); // 하단 네비 버튼
+  if(sb){sb.textContent=isMaster?'👑 마스터 모드 (클릭하여 해제)':'👁️ 읽기전용 → 마스터 전환';
+    sb.style.background=isMaster?'rgba(234,179,8,.15)':'rgba(139,92,246,.1)';
+    sb.style.color=isMaster?'#92400E':'#5B21B6';}
+  if(pc){pc.textContent=isMaster?'👑 마스터':'👁️ 읽기전용';pc.classList.toggle('on',isMaster);}
+  if(mob){mob.textContent=isMaster?'👑':'👁️';mob.classList.toggle('on',isMaster);}
+  if(mobIco)mobIco.textContent=isMaster?'👑':'👁️';
+  if(mobLbl){mobLbl.textContent=isMaster?'마스터':'읽기전용';mobLbl.style.color=isMaster?'#92400E':'#5B21B6';}
+  if(mobNav)mobNav.style.color=isMaster?'#92400E':'#5B21B6';
 }
 function closeInfModal(){closeId('inf-modal');editInf=null;modalPh=null;_mi={};_modalCL={contact:{},sample:{},operation:{},closing:{}};render();}
 
@@ -2223,9 +2242,31 @@ document.addEventListener('visibilitychange',()=>{
   }
 });
 // 자동 동기화: 5분 주기
-// 자동 동기화: 60초마다 읽기만 (충돌 방지)
-setInterval(()=>{
-  if(isGD&&!isSyncing)gdLoad().then(()=>render());
+// 자동 동기화: 60초마다
+setInterval(async()=>{
+  if(!isGD||isSyncing)return;
+  if(isMaster){
+    // 마스터: 30분 만료 체크
+    const activatedAt=localStorage.getItem('gm_master_activated');
+    if(activatedAt){
+      const elapsed=Date.now()-new Date(activatedAt).getTime();
+      if(elapsed>30*60*1000){
+        // 30분 만료 → 저장 후 자동 해제
+        showToast('⏰ 마스터 30분 만료 → 자동 저장 후 해제');
+        await gdSaveNow();
+        localStorage.setItem('gm_master','0');
+        isMaster=false;
+        await setMasterOnDrive(false);
+        updateGDUI();updateMasterUI();render();
+        showToast('👁️ 마스터 자동 해제됐어요');
+        return;
+      }
+    }
+    // 마스터는 읽기 안 함 (쓰기만)
+  } else {
+    // 읽기전용: Drive에서 최신 데이터 불러오기
+    gdLoad().then(()=>render());
+  }
 },60000);
 // 달력 아이콘 오늘 날짜로 업데이트
 // 캘린더 날짜: rDash에서 직접 렌더링
