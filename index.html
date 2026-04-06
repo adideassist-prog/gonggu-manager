@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.4.7</title>
+<title>공구 매니저 v8.6</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,7 +452,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.4.7</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.6</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.4.7</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.6</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -757,6 +757,7 @@ let tab='dash',phFilter='all',srch='';
 let selDate=today();
 let calY=new Date().getFullYear(),calM=new Date().getMonth(),calMode='gonggu';
 let editInf=null,modalPh=null,_mi={};
+let _modalCL={contact:{},sample:{},operation:{},closing:{}}; // 모달 체크리스트 캐시
 let editTask=null;
 
 /* ════════════════════════════════════════════════
@@ -1651,16 +1652,19 @@ function setSrch(v){srch=v;} // 하위 호환용
 /* ════════════════════════════════════════════════
    12. INFLUENCER MODAL
 ════════════════════════════════════════════════ */
-function openAdd(){editInf=null;modalPh=1;_mi={id:uid()};showInfModal();}
+function openAdd(){editInf=null;modalPh=1;_mi={id:uid()};_modalCL={contact:{},sample:{},operation:{},closing:{}};showInfModal();}
 function openEdit(id){editInf=data.find(x=>x.id===id)||null;modalPh=editInf?.phase||1;showInfModal();}
 
 function showInfModal(){
   const isNew=!editInf;
   const def={id:_mi.id||uid(),name:'',nickname:'',instagram:'',instagramUrl:'',followers:'',category:'',kakaoId:'',kakao_email:'',negotiating_product:'',chat_history:'',phase:1,checklist:{contact:{},sample:{},operation:{},closing:{}},sample_detail:'',recipient_name:'',recipient_phone:'',recipient_address:'',sampleSentDate:'',trackingNumber:'',scheduleDate:'',scheduleEndDate:'',settlement_date:'',settlementAmount:'',notes:'',gongguHistory:[],createdAt:new Date().toISOString()};
-  const inf={...def,...(editInf||{})};const ph=modalPh||inf.phase||1;const phObj=PM[ph];const cl=getCL(inf);const phCl=cl[phObj.key];
-  const phTabs=`<div class="ph-tabs">${PHASES.map(p=>{const pcl=cl[p.key];const done=p.checks.filter(c=>pcl[c.k]).length;const total=p.checks.length;const isA=p.id===ph;return`<button class="ph-tab${isA?' on':''}" style="--pc:${p.color};--pb:${p.bg}" onclick="switchPh(${p.id})"><div class="ph-tab-ico">${p.ico}</div><span class="ph-tab-lbl">${p.label}</span><span class="ph-tab-ck">${done}/${total}</span></button>`;}).join('')}</div>`;
+  const inf={...def,...(editInf||{})};const ph=modalPh||inf.phase||1;const phObj=PM[ph];
+  // 기존 인플루언서면 DB값, 신규면 _modalCL 사용
+  if(editInf)_modalCL=getCL(inf); else _modalCL=_modalCL||{contact:{},sample:{},operation:{},closing:{}};
+  const cl=editInf?getCL(inf):{contact:{..._modalCL.contact},sample:{..._modalCL.sample},operation:{..._modalCL.operation},closing:{..._modalCL.closing}};const phCl=cl[phObj.key];
+  const phTabs=`<div class="ph-tabs">${PHASES.map(p=>{const pcl=cl[p.key];const done=p.checks.filter(c=>pcl[c.k]).length;const total=p.checks.length;const isA=p.id===ph;return`<button class="ph-tab${isA?' on':''}" style="--pc:${p.color};--pb:${p.bg}" data-ph="${p.id}" onclick="switchPh(${p.id})"><div class="ph-tab-ico">${p.ico}</div><span class="ph-tab-lbl">${p.label}</span><span class="ph-tab-ck">${done}/${total}</span></button>`;}).join('')}</div>`;
   let nf=false;
-  const clHTML=`<div class="cl-wrap"><div class="cl-title">✅ ${phObj.label} 체크리스트</div>${phObj.checks.map(c=>{const ck=!!phCl[c.k];const isN=!ck&&!nf;if(isN)nf=true;return`<label class="cl-item${ck?' ckd':''}${isN?' nxt-item':''}" onclick="event.preventDefault();toggleCk(${ph},'${c.k}','${inf.id}')"><input type="checkbox" ${ck?'checked':''} readonly><span class="cl-lbl">${c.lbl}</span>${isN?`<span class="nxt-tag">다음</span>`:''}</label>`;}).join('')}</div>`;
+  const clHTML=`<div class="cl-wrap"><div class="cl-title">✅ ${phObj.label} 체크리스트</div>${phObj.checks.map(c=>{const ck=!!phCl[c.k];const isN=!ck&&!nf;if(isN)nf=true;return`<label class="cl-item${ck?' ckd':''}${isN?' nxt-item':''}" data-ck="${ph}-${c.k}" onclick="event.preventDefault();toggleCk(${ph},'${c.k}','${inf.id}')"><input type="checkbox" ${ck?'checked':''} readonly><span class="cl-lbl">${c.lbl}</span>${isN?`<span class="nxt-tag">다음</span>`:''}</label>`;}).join('')}</div>`;
   const s1=`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">1</div><div><div class="fsec-lbl">기본 정보</div><div class="fsec-sub">채널 및 연락처</div></div></div>
     <div class="field-row"><div class="field"><label>이름 *</label><input id="f-name" value="${inf.name||''}" placeholder="홍길동"></div><div class="field"><label>별명/채널명</label><input id="f-nick" value="${inf.nickname||''}"></div></div>
     <div class="field-row"><div class="field"><label>인스타그램 아이디</label><input id="f-insta" value="${inf.instagram||''}" placeholder="@username"></div><div class="field"><label>팔로워 수</label><input id="f-flw" type="number" value="${inf.followers||''}"></div></div>
@@ -1732,32 +1736,69 @@ function onScheduleEndChange(val){const el=document.getElementById('f-settle');i
 function switchPh(ph){const f=collectInf();_mi={..._mi,...f,phase:ph};modalPh=ph;if(editInf)editInf={...editInf,...f,phase:ph};else editInf={..._mi,id:_mi.id||uid()};closeId('inf-modal');showInfModal();}
 
 async function toggleCk(phId,key,infId){
+  // 1. 현재 inf 찾기
+  let inf=data.find(x=>x.id===infId)||(editInf?.id===infId?editInf:null);
   const isNew=!data.find(x=>x.id===infId);
-  // inf 찾기: DB → editInf → _mi 순
-  let inf=data.find(x=>x.id===infId)
-    ||(editInf?.id===infId?editInf:null)
-    ||(_mi?.id===infId?{..._mi,checklist:{contact:{},sample:{},operation:{},closing:{}}}:null);
-  if(!inf)return;
-  // 체크리스트만 토글 (나머지 inf 필드 그대로 유지)
-  const ph=PM[phId];
-  const cl=getCL(inf); // 현재 inf의 체크리스트 읽기
-  cl[ph.key][key]=!cl[ph.key][key]; // 해당 항목만 토글
-  const updated={...inf,checklist:cl,updatedAt:new Date().toISOString()};
-  // 정산 완료 체크 시 이력 자동 저장 (기존만)
-  if(!isNew&&key==='settled'&&cl.closing.settled){
-    const hist=[...(updated.gongguHistory||[])];
-    const alreadySaved=hist.some(h=>h.product===(inf.negotiating_product||inf.product)&&h.endDate===inf.scheduleEndDate);
-    if(!alreadySaved){
-      hist.push({product:inf.negotiating_product||inf.product||'',startDate:inf.scheduleDate||'',endDate:inf.scheduleEndDate||'',settleDate:inf.settlement_date||'',amount:inf.settlementAmount||'',notes:'정산 완료 자동 저장',savedAt:new Date().toISOString()});
-      updated.gongguHistory=hist;
-      showToast('📜 정산 완료 → 공구 이력에 자동 저장됐어요!');
-    }
+  if(!inf&&isNew){
+    // 신규: editInf가 없으면 기본값으로 생성
+    inf={id:infId,phase:1,checklist:{contact:{},sample:{},operation:{},closing:{}},gongguHistory:[]};
   }
-  // 메모리만 업데이트
-  editInf=updated;
-  _mi={..._mi,id:infId,checklist:cl};
+  if(!inf)return;
+
+  // 2. 체크리스트 토글
+  const ph=PM[phId];
+  const cl=getCL(inf);
+  const newVal=!cl[ph.key][key];
+  cl[ph.key][key]=newVal;
+
+  // 3. 상태 업데이트
+  const updated={...inf,checklist:cl,updatedAt:new Date().toISOString()};
+  editInf={...(editInf||{}), ...updated};
+
+  // 4. 기존 인플루언서: DB 저장
+  if(!isNew){
+    // 정산 완료 이력 자동 저장
+    if(key==='settled'&&cl.closing.settled){
+      const hist=[...(updated.gongguHistory||[])];
+      if(!hist.some(h=>h.product===(inf.negotiating_product||inf.product)&&h.endDate===inf.scheduleEndDate)){
+        hist.push({product:inf.negotiating_product||inf.product||'',startDate:inf.scheduleDate||'',endDate:inf.scheduleEndDate||'',settleDate:inf.settlement_date||'',amount:inf.settlementAmount||'',notes:'정산 완료 자동 저장',savedAt:new Date().toISOString()});
+        editInf={...editInf,gongguHistory:hist};
+        showToast('📜 정산 완료 → 공구 이력에 자동 저장됐어요!');
+      }
+    }
+    await dbPut(IS,editInf);data=await dbAll(IS);
+    gdSave();
+  }
+
+  // 5. 모달 닫지 않고 DOM만 업데이트
   modalPh=phId;
-  closeId('inf-modal');showInfModal();
+  const lbl=document.querySelector(`[data-ck='${phId}-${key}']`);
+  if(lbl){
+    lbl.classList.toggle('ckd',newVal);
+    const cb=lbl.querySelector('input[type=checkbox]');
+    if(cb)cb.checked=newVal;
+    // nxt-tag 재계산
+    let nf2=false;
+    document.querySelectorAll('.cl-wrap label').forEach(l=>{
+      const chk=l.querySelector('input[type=checkbox]');
+      const checked=chk&&chk.checked;
+      l.classList.remove('nxt-item');
+      const t=l.querySelector('.nxt-tag');if(t)t.remove();
+      if(!checked&&!nf2){nf2=true;l.classList.add('nxt-item');const s=document.createElement('span');s.className='nxt-tag';s.textContent='다음';l.appendChild(s);}
+    });
+    // 탭 카운트 업데이트
+    PHASES.forEach(p=>{
+      const tab=document.querySelector(`.ph-tab[data-ph="${p.id}"]`);
+      if(!tab)return;
+      const pcl=getCL(editInf)[p.key];
+      const done=p.checks.filter(c=>pcl[c.k]).length;
+      const ck2=tab.querySelector('.ph-tab-ck');
+      if(ck2)ck2.textContent=done+'/'+p.checks.length;
+    });
+  } else {
+    // fallback
+    closeId('inf-modal');showInfModal();
+  }
 }
 
 function toggleCatDrop(){
@@ -1829,7 +1870,9 @@ async function saveInfModal(id){
   const form=collectInf();const existing=data.find(x=>x.id===id);
   let finalPh=modalPh||editInf?.phase||1;
   if(form.scheduleDate&&finalPh<3)finalPh=3;
-  const final={...(existing||{}),...form,id,phase:finalPh,checklist:getCL({...existing,...editInf}),gongguHistory:existing?.gongguHistory||editInf?.gongguHistory||[],createdAt:existing?.createdAt||editInf?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+  // 신규면 _modalCL, 기존이면 기존 체크리스트 유지
+  const finalCL=existing?getCL({...existing,...editInf}):_modalCL;
+  const final={...(existing||{}),...form,id,phase:finalPh,checklist:finalCL,checklist:getCL({...existing,...editInf}),gongguHistory:existing?.gongguHistory||editInf?.gongguHistory||[],createdAt:existing?.createdAt||editInf?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
   await dbPut(IS,final);data=await dbAll(IS);gdSave();showToast('✅ 저장됐어요!');closeInfModal();
 }
 
@@ -1880,7 +1923,7 @@ function toggleHiddenContact(btn){
   list.style.display=isOpen?'none':'block';
   btn.textContent=isOpen?`🙈 무응답 숨긴 ${btn.textContent.match(/\d+/)?.[0]||''}명 보기`:`🙉 숨긴 항목 접기`;
 }
-function closeInfModal(){closeId('inf-modal');editInf=null;modalPh=null;_mi={};render();}
+function closeInfModal(){closeId('inf-modal');editInf=null;modalPh=null;_mi={};_modalCL={contact:{},sample:{},operation:{},closing:{}};render();}
 
 /* ════════════════════════════════════════════════
    13. PERSONAL TASK MODAL
