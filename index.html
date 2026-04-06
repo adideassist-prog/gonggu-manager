@@ -1212,6 +1212,7 @@ function rDash(){
 
   /* ── S5: Contact ── */
   const contactItems=buildContact();
+  const hiddenCount=contactItems.filter(x=>!x.show).length;
   const s5Body=contactItems.length
     ?contactItems.map(item=>{
       const ph=item.phase;
