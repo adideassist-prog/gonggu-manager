@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v9.5.6</title>
+<title>공구 매니저 v9.5.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -454,7 +454,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v9.5.6</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v9.5.7</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -484,7 +484,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v9.5.6</div>
+      <div class="mob-title">🛍️ 공구 매니저 v9.5.7</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -829,11 +829,11 @@ function buildUrgent(){
   const addDays3=addDays(3);
 
   /* ── ① 날짜 임박 ── */
-  // 공구 시작일 D-3 이내
+  // 공구 시작일 D-1 이내 (하루 전부터 알림)
   activeData().forEach(inf=>{
     if(!inf.scheduleDate)return;
     const dv=diffDays(inf.scheduleDate);
-    if(dv===null||dv<0||dv>3)return;
+    if(dv===null||dv<0||dv>1)return;
     const dvTxt=dv===0?'오늘 시작!':dv===1?'내일 시작':`D-${dv} 시작`;
     const ph=PM[inf.phase||1];
     items.push({type:'inf',id:inf.id,name:inf.name,nickname:inf.nickname||'',
@@ -841,10 +841,10 @@ function buildUrgent(){
       urgReason:`🗓️ 공구 ${dvTxt} — ${fmtDate(inf.scheduleDate)}`,
       cat:'operation',date:t,isToday:dv===0,dv});
   });
-  // 3일 내 정산 마감
+  // 정산 마감 D-1 이내 (하루 전부터 알림)
   activeData().forEach(inf=>{
     const sd=calcSettleDate(inf);if(!sd)return;
-    const dv=diffDays(sd);if(dv===null||dv>3||dv<0)return;
+    const dv=diffDays(sd);if(dv===null||dv>1||dv<0)return;
     if(getCL(inf).closing.settled)return;
     const dvTxt=dv===0?'오늘 정산!':dv===1?'내일 정산':`D-${dv} 정산`;
     items.push({type:'settle',id:inf.id,name:inf.name,nickname:inf.nickname||'',
@@ -865,10 +865,10 @@ function buildUrgent(){
     const cl=getCL(inf);const ph=inf.phase||1;
     const dv=inf.scheduleDate?diffDays(inf.scheduleDate):null;
     // 공구 시작 D-3 이내인데 결제링크 없음
-    if(inf.scheduleDate&&dv!==null&&dv>=0&&dv<=3&&!inf.paymentLink&&!cl.operation.schedule)
+    if(inf.scheduleDate&&dv!==null&&dv>=0&&dv<=1&&!inf.paymentLink&&!cl.operation.schedule)
       items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
         product:inf.negotiating_product||inf.product||'',
-        issue:`🔗 공구 D-${dv}, 결제링크 미전달`,suggest:'결제링크를 인플루언서에게 전달하세요'});
+        issue:`🔗 공구 ${dv===0?'오늘':dv===1?'내일':'D-'+dv}, 결제링크 미전달`,suggest:'결제링크를 인플루언서에게 전달하세요'});
     // 공구확정인데 샘플 미발송
     if(ph>=3&&!cl.sample.sent)
       items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
