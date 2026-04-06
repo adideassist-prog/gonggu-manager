@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v8.4.2</title>
+<title>공구 매니저 v8.4.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -452,14 +452,14 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v8.4.2</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v8.4.4</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
   <div class="sb-nav">
     <button class="sb-link" id="sbn-dash" onclick="setTab('dash')"><span class="sb-link-ico">📊</span>대시보드<span class="sb-nb" id="sb-ub" style="display:none"></span></button>
     <button class="sb-link" id="sbn-cal"  onclick="setTab('cal')"><span class="sb-link-ico" id="cal-ico-sb" style="font-size:13px;font-weight:800;line-height:1">📅</span>캘린더</button>
-    <button class="sb-link" id="sbn-list" onclick="setTab('list')"><span class="sb-link-ico">👥</span>인플루언서</button>
+    <button class="sb-link" id="sbn-list" onclick="setTab('list')"><span class="sb-link-ico">👥</span>인플루언서<span id="inf-count-badge" style="font-size:10px;font-weight:800;background:#EEF2FF;color:#4F46E5;padding:1px 6px;border-radius:8px;margin-left:4px"></span></button>
     <button class="sb-link" id="sbn-tasks" onclick="setTab('tasks')"><span class="sb-link-ico">📝</span>업무</button>
   </div>
   <div class="sb-foot">
@@ -481,7 +481,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v8.4.2</div>
+      <div class="mob-title">🛍️ 공구 매니저 v8.4.4</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act" onclick="openTaskAdd()">📝</button>
@@ -530,7 +530,7 @@ a{text-decoration:none}
   <div class="bot-nav">
     <button class="bot-btn" id="mbn-dash" onclick="setTab('dash')"><span class="bot-ico">📊</span><span class="bot-lbl">대시보드</span></button>
     <button class="bot-btn" id="mbn-cal"  onclick="setTab('cal')"><span class="bot-ico" id="cal-ico-mob">📅</span><span class="bot-lbl">캘린더</span></button>
-    <button class="bot-btn" id="mbn-list" onclick="setTab('list')"><span class="bot-ico">👥</span><span class="bot-lbl">인플루언서</span></button>
+    <button class="bot-btn" id="mbn-list" onclick="setTab('list')"><span class="bot-ico">👥</span><span class="bot-lbl">인플루언서</span><span id="inf-count-badge-mob" style="font-size:9px;font-weight:800;background:#EEF2FF;color:#4F46E5;padding:1px 5px;border-radius:6px;margin-left:2px"></span></button>
     <button class="bot-btn" id="mbn-tasks" onclick="setTab('tasks')"><span class="bot-ico">📝</span><span class="bot-lbl">업무</span></button>
   </div>
   <button class="fab" onclick="openAdd()">＋</button>
@@ -665,7 +665,7 @@ async function importData(event){
       if(!confirm(`인플루언서 ${infs.length}명 + 업무 ${tasks.length}건 불러올까요?`))return;
       for(const i of infs)await dbPut(IS,i);
       for(const t of tasks)await dbPut(TS,t);
-      data=await dbAll(IS);pTasks=await dbAll(TS);render();showToast('✅ 불러오기 완료!');
+      data=await dbAll(IS);pTasks=await dbAll(TS);render();updateInfBadge();showToast('✅ 불러오기 완료!');
     }catch{alert('파일 형식이 올바르지 않아요.');}
     event.target.value='';
   };reader.readAsText(file);
@@ -957,7 +957,7 @@ function buildCounts(){
 /* ════════════════════════════════════════════════
    11. RENDER ENGINE
 ════════════════════════════════════════════════ */
-function render(){rChrome();rContent();updateGDUI();}
+function render(){rChrome();rContent();updateGDUI();updateInfBadge();}
 
 function rChrome(){
   const now=new Date();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
@@ -1067,6 +1067,13 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
       </div>
     </div>`;
   ['dash','cal','list','tasks'].forEach(t=>{const b=el('mbn-'+t);if(b)b.classList.toggle('on',tab===t);});
+}
+function updateInfBadge(){
+  const n=data.length;
+  ['inf-count-badge','inf-count-badge-mob'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.textContent=n>0?n:'';
+  });
 }
 function setTab(t){
   tab=t;
