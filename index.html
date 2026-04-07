@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v10.0</title>
+<title>공구 매니저 v10.0.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -454,7 +454,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v10.0</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v10.0.1</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -484,7 +484,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v10.0</div>
+      <div class="mob-title">🛍️ 공구 매니저 v10.0.1</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -2030,7 +2030,15 @@ async function checkMasterAvailable(){
 }
 
 async function setMasterOnDrive(active){
-  if(!isGD||!gdFileId)return;
+  if(!isGD)return;
+  // gdFileId 없으면 먼저 파일 검색
+  if(!gdFileId){
+    try{
+      const sr=await gapi.client.drive.files.list({q:"name='공구매니저_데이터.json' and trashed=false",fields:'files(id)',spaces:'drive',pageSize:1});
+      if(sr.result.files.length){gdFileId=sr.result.files[0].id;localStorage.setItem('gd_file_id',gdFileId);}
+    }catch(e){}
+  }
+  if(!gdFileId)return;
   try{
     const r=await gapi.client.drive.files.get({fileId:gdFileId,alt:'media'});
     const json=JSON.parse(r.body);
