@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v10.0.1</title>
+<title>공구 매니저 v10.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -454,7 +454,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v10.0.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v10.1</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -484,7 +484,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v10.0.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v10.1</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -2240,6 +2240,10 @@ function closeBM(){closeId('bm-modal');}
 ════════════════════════════════════════════════ */
 async function init(){
   await openDB();
+  // localStorage의 마스터 상태는 임시 캐시 — 앱 시작 시 항상 읽기전용으로 시작
+  // (마스터는 드라이브 연동 후 명시적으로 전환해야 함)
+  localStorage.setItem('gm_master','0');
+  isMaster=false;
   const raw=await dbAll(IS);
   data=raw.map(migrateInf);
   for(const item of data)await dbPut(IS,item);
