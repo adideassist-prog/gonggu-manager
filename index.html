@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v9.5.7</title>
+<title>공구 매니저 v9.5.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -454,7 +454,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v9.5.7</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v9.5.8</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -484,7 +484,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v9.5.7</div>
+      <div class="mob-title">🛍️ 공구 매니저 v9.5.8</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -2020,11 +2020,11 @@ async function checkMasterAvailable(){
     const am=json.activeMaster;
     if(!am)return true; // 마스터 없음 → 허용
     if(am.deviceId===DEVICE_ID)return true; // 내 기기 → 허용
-    // 다른 기기가 마스터: 30분 이상 지났으면 만료로 간주
+    // 다른 기기가 마스터: 2시간 이상 지났으면 만료로 간주
     const elapsed=Date.now()-new Date(am.activatedAt).getTime();
-    if(elapsed>30*60*1000)return true; // 30분 만료 → 허용
-    const mins=Math.ceil((30*60*1000-elapsed)/60000);
-    showToast(`⚠️ 다른 기기에서 마스터 사용 중 (${mins}분 후 만료)`);
+    if(elapsed>120*60*1000)return true; // 2시간 만료 → 허용
+    const mins=Math.ceil((120*60*1000-elapsed)/60000);
+    showToast(`⚠️ 다른 기기에서 마스터 사용 중 (${Math.ceil((120*60*1000-elapsed)/60000)}분 후 만료)`);
     return false;
   }catch(e){return true;}
 }
@@ -2254,13 +2254,13 @@ document.addEventListener('visibilitychange',()=>{
 setInterval(async()=>{
   if(!isGD||isSyncing)return;
   if(isMaster){
-    // 마스터: 30분 만료 체크
+    // 마스터: 2시간 만료 체크
     const activatedAt=localStorage.getItem('gm_master_activated');
     if(activatedAt){
       const elapsed=Date.now()-new Date(activatedAt).getTime();
-      if(elapsed>30*60*1000){
-        // 30분 만료 → 저장 후 자동 해제
-        showToast('⏰ 마스터 30분 만료 → 자동 저장 후 해제');
+      if(elapsed>120*60*1000){
+        // 2시간 만료 → 저장 후 자동 해제
+        showToast('⏰ 마스터 2시간 만료 → 자동 저장 후 해제');
         await gdSaveNow();
         localStorage.setItem('gm_master','0');
         isMaster=false;
