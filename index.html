@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v11.0.6</title>
+<title>공구 매니저 v11.0.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -455,7 +455,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v11.0.6</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v11.0.7</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -485,7 +485,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v11.0.6</div>
+      <div class="mob-title">🛍️ 공구 매니저 v11.0.7</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -618,15 +618,14 @@ function getNextAct(inf){
    3. MIGRATION (v3/v4/v5 → v6)
 ════════════════════════════════════════════════ */
 function migrateInf(inf){
-  // 구버전 operation(phase3) → sample(phase2) 마이그레이션
-  if(inf.phase===3&&inf.checklist?.operation){
-    const op=inf.checklist.operation||{};
+  // v11 마이그레이션: phase3(구 공구확정) → phase2(샘플), phase4(구 마감) → phase3(마감/정산)
+  if(inf.phase===3){
+    const op=inf.checklist?.operation||{};
     return {...inf, phase:2,
       checklist:{...inf.checklist,
-        sample:{...(inf.checklist.sample||{}),schedule:op.schedule||false,link_sent:op.link_sent||false},
+        sample:{...(inf.checklist?.sample||{}),schedule:op.schedule||false,link_sent:op.link_sent||false},
         operation:undefined}};
   }
-  // 구버전 closing(phase4) → closing(phase3)
   if(inf.phase===4) return {...inf, phase:3};
   if(inf.phase)return inf;
   const sm={dm_sent:{phase:1,contact:{dm:true}},replied:{phase:1,contact:{dm:true,reply:true}},kakao_req:{phase:1,contact:{dm:true,reply:true,proposal:true}},proposal:{phase:1,contact:{dm:true,reply:true,proposal:true}},decided:{phase:2,sample:{decided:true}},delivery_info:{phase:2,sample:{decided:true,info:true}},sample_req:{phase:2,sample:{decided:true,info:true}},tracking:{phase:2,sample:{decided:true,info:true,sent:true,tracking:true}},delivery_ok:{phase:2,sample:{decided:true,info:true,sent:true,tracking:true,received:true}},sch_set:{phase:3,operation:{schedule:true}},link_sent:{phase:3,operation:{schedule:true}},ongoing:{phase:3,operation:{schedule:true,ongoing:true}},done:{phase:4,closing:{done:true}},settle_soon:{phase:4,closing:{done:true,settlement_info:true}},settled:{phase:4,closing:{done:true,settlement_info:true,settled:true}}};
