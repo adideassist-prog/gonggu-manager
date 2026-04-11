@@ -578,7 +578,7 @@ const MONTHS_=['1월','2월','3월','4월','5월','6월','7월','8월','9월','1
    2. HELPERS (no name conflicts — calcSettleDate, not autoSettle)
 ════════════════════════════════════════════════ */
 const uid    = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const today  = ()=>new Date().toISOString().split('T')[0];
+const today  = ()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 const addDays= (n,b)=>{const d=new Date((b||today())+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]};
 const fmtDate= s=>{if(!s)return'';const d=new Date(s+'T00:00:00');return`${d.getMonth()+1}/${d.getDate()}`};
 const fmtFull= s=>{if(!s)return'';const d=new Date(s+'T00:00:00');return`${d.getMonth()+1}월 ${d.getDate()}일 ${DAYS_[d.getDay()]}`;};
