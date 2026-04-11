@@ -304,9 +304,9 @@ a{text-decoration:none}
 .ev-pt{position:absolute;height:36px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:2px 7px;gap:1px;overflow:hidden;pointer-events:all;cursor:pointer;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.12);opacity:.88}.evp-c{font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:#1E1B4B;line-height:1.3}.evp-t{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:rgba(30,27,75,.65);line-height:1.3}
 .ev-pt:hover{opacity:1;box-shadow:0 3px 10px rgba(0,0,0,.18)}
 /* Day detail */
-.day-detail-panel{background:white;border-radius:16px 16px 0 0;padding:10px 14px 40px;box-shadow:0 -3px 20px rgba(0,0,0,.12);position:fixed;bottom:0;left:0;right:0;z-index:450;transition:transform .25s ease;max-height:55vh}
-.day-detail-panel .dd-drag{width:40px;height:4px;background:#CBD5E1;border-radius:2px;margin:0 auto 10px;cursor:grab;touch-action:none}
-.day-detail-panel .dd-scroll{max-height:calc(55vh - 60px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.day-detail-panel{background:white;border-radius:13px;padding:12px 14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.08);margin-top:10px}
+.day-detail-panel .dd-drag{width:36px;height:4px;background:#E2E8F0;border-radius:2px;margin:0 auto 10px;cursor:pointer}
+.day-detail-panel .dd-scroll{max-height:260px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .dd-hdr{font-size:14px;font-weight:800;margin-bottom:12px;color:#1E293B}
 .dd-ev{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;margin-bottom:5px;cursor:pointer}
 .dd-ev:hover{opacity:.85}
@@ -411,7 +411,7 @@ a{text-decoration:none}
   /* Calendar body fills remaining space */
   .cal-body-pc{flex:1;display:flex;flex-direction:column;gap:0;min-height:0;padding-bottom:0}
   .cal-main-pc{flex:1;display:flex;flex-direction:column;min-height:0}
-  .cal-side-pc{display:none}
+  .cal-side-pc{flex-shrink:0}
   .cal-wrap{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0}
   .cal-grid-box{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
   .cal-weeks-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
@@ -1220,7 +1220,7 @@ function updateInfBadge(){
     if(el)el.textContent=n>0?n:'';
   });
 }
-function setTab(t){document.getElementById('cal-dd-panel')?.remove();
+function setTab(t){
   tab=t;
   const sw=document.getElementById('srch-wrap');
   if(sw){sw.style.display=(t==='list')?'block':'none';}
@@ -1634,36 +1634,7 @@ function rCal(){
     <div class="cal-grid-box"><div class="cal-dow-row">${['일','월','화','수','목','금','토'].map(d=>`<div>${d}</div>`).join('')}</div><div class="cal-weeks-wrap">${weeksHTML}</div></div>`;
 
   // 캘린더 풀 width + 일자 상세 하단 배치 (PC/모바일 동일)
-  // 달력 패널: fixed bottom으로 body에 직접 추가
-  const existPanel=document.getElementById('cal-dd-panel');
-  if(existPanel)existPanel.remove();
-  if(ddPanel){
-    const pel=document.createElement('div');
-    pel.id='cal-dd-panel';
-    pel.innerHTML=ddPanel;
-    document.body.appendChild(pel);
-    // 드래그로 닫기 (터치/마우스)
-    const panel=pel.querySelector('.day-detail-panel');
-    const drag=pel.querySelector('.dd-drag');
-    if(panel&&drag){
-      let startY=0,startT=0;
-      const onStart=e=>{startY=(e.touches?e.touches[0]:e).clientY;startT=Date.now();panel.style.transition='none';};
-      const onMove=e=>{const dy=(e.touches?e.touches[0]:e).clientY-startY;if(dy>0)panel.style.transform=`translateY(${dy}px)`;};
-      const onEnd=e=>{
-        panel.style.transition='transform .25s ease';
-        const dy=(e.changedTouches?e.changedTouches[0]:e).clientY-startY;
-        if(dy>80||Date.now()-startT<300&&dy>30){panel.style.transform='translateY(100%)';setTimeout(()=>{pel.remove();selDate=null;},250);}
-        else panel.style.transform='';
-      };
-      drag.addEventListener('touchstart',onStart,{passive:true});
-      drag.addEventListener('touchmove',onMove,{passive:true});
-      drag.addEventListener('touchend',onEnd);
-      drag.addEventListener('mousedown',onStart);
-      document.addEventListener('mousemove',onMove);
-      document.addEventListener('mouseup',onEnd,{once:true});
-    }
-  }
-  return`<div class="cal-body-pc"><div class="cal-main-pc"><div class="cal-wrap">${calCore}</div></div></div>`;
+  return`<div class="cal-body-pc"><div class="cal-main-pc"><div class="cal-wrap">${calCore}</div></div>${ddPanel?`<div class="cal-side-pc">${ddPanel}</div>`:''}</div>`;
 }
 function cellH(cell,t){const isTd=cell.date===t,isSel=cell.date===selDate;return`<div class="cal-cell${isTd?' today-cell':''}${isSel&&!isTd?' sel-cell':''}${cell.dim?' dim-cell':''}" onclick="${cell.date?`selectDate('${cell.date}')`:''}" ><div class="day-num">${cell.d}</div></div>`;}
 function calMove(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}rContent();}
@@ -1870,7 +1841,7 @@ function setSrch(v){srch=v;} // 하위 호환용
 function openAdd(){
   const newId=uid();
   editInf=null;modalPh=1;_mi={id:newId};
-  _modalCL={contact:{},sample:{},closing:{}};
+  _modalCL={contact:{},sample:{},imminent:{},closing:{}};
   modal={inf:null,cl:{contact:{},sample:{},closing:{}},ph:1,isNew:true,id:newId};
   showInfModal();
 }
@@ -1889,8 +1860,8 @@ function showInfModal(){
   const def={id:_mi.id||uid(),name:'',nickname:'',instagram:'',instagramUrl:'',followers:'',category:'',kakaoId:'',kakao_email:'',negotiating_product:'',chat_history:'',phase:1,checklist:{contact:{},sample:{},operation:{},closing:{}},sample_detail:'',recipient_name:'',recipient_phone:'',recipient_address:'',sampleSentDate:'',trackingNumber:'',scheduleDate:'',scheduleEndDate:'',settlement_date:'',settlementAmount:'',notes:'',gongguHistory:[],createdAt:new Date().toISOString()};
   const inf={...def,...(editInf||{})};const ph=modalPh||inf.phase||1;const phObj=PM[ph];
   // 기존 인플루언서면 DB값, 신규면 _modalCL 사용
-  if(editInf)_modalCL=getCL(inf); else _modalCL=_modalCL||{contact:{},sample:{},operation:{},closing:{}};
-  const cl=editInf?getCL(inf):{contact:{..._modalCL.contact},sample:{..._modalCL.sample},operation:{..._modalCL.operation},closing:{..._modalCL.closing}};const phCl=cl[phObj.key];
+  if(editInf)_modalCL=getCL(inf); else _modalCL=_modalCL||{contact:{},sample:{},imminent:{},closing:{}};
+  const cl=editInf?getCL(inf):{contact:{..._modalCL.contact},sample:{..._modalCL.sample},imminent:{...(_modalCL.imminent||{})},closing:{..._modalCL.closing}};const phCl=cl[phObj?.key]||{};
   const phTabs=`<div class="ph-tabs">${PHASES.map(p=>{const pcl=cl[p.key];const done=p.checks.filter(c=>pcl[c.k]).length;const total=p.checks.length;const isA=p.id===ph;return`<button class="ph-tab${isA?' on':''}" style="--pc:${p.color};--pb:${p.bg}" data-ph="${p.id}" onclick="switchPh(${p.id})"><div class="ph-tab-ico">${p.ico}</div><span class="ph-tab-lbl">${p.label}</span><span class="ph-tab-ck">${done}/${total}</span></button>`;}).join('')}</div>`;
   let nf=false;
   const clHTML=`<div class="cl-wrap"><div class="cl-title">✅ ${phObj.label} 체크리스트</div>${phObj.checks.map(c=>{const ck=!!phCl[c.k];const isN=!ck&&!nf;if(isN)nf=true;return`<label class="cl-item${ck?' ckd':''}${isN?' nxt-item':''}" data-ck="${ph}-${c.k}" onclick="event.preventDefault();toggleCk(${ph},'${c.k}','${inf.id}')"><input type="checkbox" ${ck?'checked':''} style="pointer-events:none"><span class="cl-lbl">${c.lbl}</span>${isN?`<span class="nxt-tag">다음</span>`:''}</label>`;}).join('')}</div>`;
@@ -2265,7 +2236,7 @@ function updateMasterUI(){
   if(mobLbl){mobLbl.textContent=isMaster?'마스터':'읽기전용';mobLbl.style.color=isMaster?'#92400E':'#5B21B6';}
   if(mobNav)mobNav.style.color=isMaster?'#92400E':'#5B21B6';
 }
-function closeInfModal(){closeId('inf-modal');editInf=null;modalPh=null;_mi={};_modalCL={contact:{},sample:{},closing:{}};modal={inf:null,cl:{contact:{},sample:{},closing:{}},ph:1,isNew:true,id:null};render();}
+function closeInfModal(){closeId('inf-modal');editInf=null;modalPh=null;_mi={};_modalCL={contact:{},sample:{},imminent:{},closing:{}};modal={inf:null,cl:{contact:{},sample:{},closing:{}},ph:1,isNew:true,id:null};render();}
 
 /* ════════════════════════════════════════════════
    13. PERSONAL TASK MODAL
