@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v12.0</title>
+<title>공구 매니저 v12.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -304,9 +304,9 @@ a{text-decoration:none}
 .ev-pt{position:absolute;height:36px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:2px 7px;gap:1px;overflow:hidden;pointer-events:all;cursor:pointer;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.12);opacity:.88}.evp-c{font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:#1E1B4B;line-height:1.3}.evp-t{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:rgba(30,27,75,.65);line-height:1.3}
 .ev-pt:hover{opacity:1;box-shadow:0 3px 10px rgba(0,0,0,.18)}
 /* Day detail */
-.day-detail-panel{background:white;border-radius:13px;padding:12px 14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.08);margin-top:10px}
+.day-detail-panel{background:white;border-radius:13px;padding:12px 14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.08);margin-top:10px;flex-shrink:0}
 .day-detail-panel .dd-drag{width:36px;height:4px;background:#E2E8F0;border-radius:2px;margin:0 auto 10px;cursor:pointer}
-.day-detail-panel .dd-scroll{max-height:260px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.day-detail-panel .dd-scroll{max-height:220px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .dd-hdr{font-size:14px;font-weight:800;margin-bottom:12px;color:#1E293B}
 .dd-ev{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;margin-bottom:5px;cursor:pointer}
 .dd-ev:hover{opacity:.85}
@@ -409,8 +409,8 @@ a{text-decoration:none}
   /* 캘린더 탭일 때만 page도 flex로 */
   .page.cal-page{display:flex;flex-direction:column;overflow:hidden;padding-bottom:12px}
   /* Calendar body fills remaining space */
-  .cal-body-pc{flex:1;display:flex;flex-direction:column;gap:0;min-height:0;padding-bottom:0}
-  .cal-main-pc{flex:1;display:flex;flex-direction:column;min-height:0}
+  .cal-body-pc{display:flex;flex-direction:column;gap:0}
+  .cal-main-pc{flex-shrink:0;display:flex;flex-direction:column}
   .cal-side-pc{flex-shrink:0}
   .cal-wrap{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0}
   .cal-grid-box{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v12.0</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v12.3</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v12.0</div>
+      <div class="mob-title">🛍️ 공구 매니저 v12.3</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -2070,7 +2070,7 @@ function collectInf(){
 async function saveInfModal(id){
   const form=collectInf();const existing=data.find(x=>x.id===id);
   let finalPh=modalPh||editInf?.phase||1;
-  if(form.scheduleDate&&finalPh<3)finalPh=3;
+  // scheduleDate는 phase에 영향 없음 — 캘린더/공구현황만 사용
   // modal.cl 우선 사용 (신규/기존 모두 toggleCk 시 업데이트됨)
   const finalCL=modal.cl && Object.keys(modal.cl).length ? modal.cl : (existing?getCL({...existing,...editInf}):_modalCL);
   const final={...(existing||{}),...form,id,phase:finalPh,checklist:finalCL,gongguHistory:existing?.gongguHistory||editInf?.gongguHistory||[],createdAt:existing?.createdAt||editInf?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
