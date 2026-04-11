@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v11.3</title>
+<title>공구 매니저 v12.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -304,9 +304,9 @@ a{text-decoration:none}
 .ev-pt{position:absolute;height:36px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:2px 7px;gap:1px;overflow:hidden;pointer-events:all;cursor:pointer;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.12);opacity:.88}.evp-c{font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:#1E1B4B;line-height:1.3}.evp-t{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:rgba(30,27,75,.65);line-height:1.3}
 .ev-pt:hover{opacity:1;box-shadow:0 3px 10px rgba(0,0,0,.18)}
 /* Day detail */
-.day-detail-panel{background:white;border-radius:13px;padding:12px 14px 20px;box-shadow:0 2px 10px rgba(0,0,0,.08);margin-top:10px}
-.day-detail-panel .dd-drag{width:36px;height:4px;background:#E2E8F0;border-radius:2px;margin:0 auto 10px;cursor:pointer}
-.day-detail-panel .dd-scroll{max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.day-detail-panel{background:white;border-radius:16px 16px 0 0;padding:10px 14px 40px;box-shadow:0 -3px 20px rgba(0,0,0,.12);position:fixed;bottom:0;left:0;right:0;z-index:450;transition:transform .25s ease;max-height:55vh}
+.day-detail-panel .dd-drag{width:40px;height:4px;background:#CBD5E1;border-radius:2px;margin:0 auto 10px;cursor:grab;touch-action:none}
+.day-detail-panel .dd-scroll{max-height:calc(55vh - 60px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .dd-hdr{font-size:14px;font-weight:800;margin-bottom:12px;color:#1E293B}
 .dd-ev{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;margin-bottom:5px;cursor:pointer}
 .dd-ev:hover{opacity:.85}
@@ -411,7 +411,7 @@ a{text-decoration:none}
   /* Calendar body fills remaining space */
   .cal-body-pc{flex:1;display:flex;flex-direction:column;gap:0;min-height:0;padding-bottom:0}
   .cal-main-pc{flex:1;display:flex;flex-direction:column;min-height:0}
-  .cal-side-pc{flex-shrink:0}
+  .cal-side-pc{display:none}
   .cal-wrap{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0}
   .cal-grid-box{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
   .cal-weeks-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v11.3</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v12.0</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v11.3</div>
+      <div class="mob-title">🛍️ 공구 매니저 v12.0</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -1071,7 +1071,7 @@ function buildCounts(){
     settle:   buildSettlement().length,
     contact:  buildContact().length,
     personal: buildPersonal().length,
-    imminent: activeData().filter(d=>d.phase===3).length,
+    imminent: activeData().filter(d=>{if(!d.scheduleDate)return false;const dv=diffDays(d.scheduleDate);return dv!==null&&dv>=0&&dv<=3;}).length,
     tasks:    pTasks.filter(p=>!p.done&&p.date&&p.date>=t0&&p.date<=e30).length,
   };
 }
@@ -1086,7 +1086,10 @@ function rChrome(){
   const counts=buildCounts();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
   const cntContact=activeData().filter(d=>d.phase===1).length;
   const cntSample=activeData().filter(d=>d.phase===2).length;
-  const cntImminent=activeData().filter(d=>d.phase===3).length;
+  const cntImminent=activeData().filter(d=>{
+    if(!d.scheduleDate)return false;
+    const dv=diffDays(d.scheduleDate);return dv!==null&&dv>=0&&dv<=3;
+  }).length;
   const cntClose=activeData().filter(d=>d.phase===4).length;
   const t0=today();const e30=addDays(30);
   const ongoing=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0&&e>=t0;}).length;
@@ -1142,11 +1145,7 @@ function rChrome(){
           <span class="sb-kpi-lbl">💰 마감/정산</span>
           <span style="font-size:9px;color:rgba(61,43,140,.45);margin-top:1px">완료→정산안내→정산완료</span>
         </div>
-        <div class="sb-kpi" onclick="setTab('tasks')">
-          <span class="sb-kpi-num">${counts.tasks}</span>
-          <span class="sb-kpi-lbl">📝 업무</span>
-          <span style="font-size:9px;color:rgba(61,43,140,.45);margin-top:1px">30일 내 미완료 업무</span>
-        </div>
+
       </div>
     </div>`;
   ['dash','cal','list','tasks'].forEach(t=>{const b=el('sbn-'+t);if(b)b.classList.toggle('on',tab===t);});
@@ -1182,7 +1181,7 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
       <div class="pc-kpi" onclick="showBadgeModal('sample')"><span class="pc-kpi-n">${cntSample}</span><span class="pc-kpi-lbl">샘플</span></div>
       <div class="pc-kpi" onclick="showBadgeModal('imminent')"><span class="pc-kpi-n">${cntImminent}</span><span class="pc-kpi-lbl">공구임박</span></div>
       <div class="pc-kpi" onclick="showBadgeModal('closing')"><span class="pc-kpi-n">${cntClose}</span><span class="pc-kpi-lbl">마감/정산</span></div>
-      <div class="pc-kpi" onclick="setTab('tasks')"><span class="pc-kpi-n">${counts.tasks}</span><span class="pc-kpi-lbl">업무</span></div>
+
     </div>
   </div>
 `;
@@ -1209,7 +1208,7 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
         <div class="mob-kpi" onclick="showBadgeModal('sample')"><b>${cntSample}</b><span>샘플</span></div>
         <div class="mob-kpi" onclick="showBadgeModal('imminent')"><b>${cntImminent}</b><span>공구임박</span></div>
         <div class="mob-kpi" onclick="showBadgeModal('closing')"><b>${cntClose}</b><span>마감/정산</span></div>
-        <div class="mob-kpi" onclick="setTab('tasks')"><b>${counts.tasks}</b><span>업무</span></div>
+
       </div>
     </div>`;
   ['dash','cal','list','tasks'].forEach(t=>{const b=el('mbn-'+t);if(b)b.classList.toggle('on',tab===t);});
@@ -1221,7 +1220,7 @@ function updateInfBadge(){
     if(el)el.textContent=n>0?n:'';
   });
 }
-function setTab(t){
+function setTab(t){document.getElementById('cal-dd-panel')?.remove();
   tab=t;
   const sw=document.getElementById('srch-wrap');
   if(sw){sw.style.display=(t==='list')?'block':'none';}
@@ -1607,7 +1606,7 @@ function rCal(){
   const ddContent=selEvs.length
     ?`<div class="dd-hdr">📌 ${selLbl} · ${selEvs.length}건</div>${selEvs.map(e=>ddCard(e)).join('')}`
     :(selDate?`<div class="dd-hdr">🗓️ ${selLbl}</div><div style="font-size:12px;color:#94A3B8;padding:8px 0">일정 없음</div>`:'');
-  const ddPanel=ddContent?`<div class="day-detail-panel"><div class="dd-drag" title="닫으려면 클릭"></div><div class="dd-scroll">${ddContent}</div></div>`:'';
+  const ddPanel=ddContent?`<div class="day-detail-panel"><div class="dd-drag"></div><div class="dd-scroll">${ddContent}</div></div>`:'';
 
   // 제품별 공구 건수 집계
   const t_leg=today();const prodCounts={};activeData().forEach(inf=>{const p=inf.negotiating_product||inf.product;if(p&&inf.scheduleDate&&(inf.scheduleEndDate?inf.scheduleEndDate>=t_leg:inf.scheduleDate>=t_leg)){prodCounts[p]=(prodCounts[p]||0)+1;}});
@@ -1635,7 +1634,36 @@ function rCal(){
     <div class="cal-grid-box"><div class="cal-dow-row">${['일','월','화','수','목','금','토'].map(d=>`<div>${d}</div>`).join('')}</div><div class="cal-weeks-wrap">${weeksHTML}</div></div>`;
 
   // 캘린더 풀 width + 일자 상세 하단 배치 (PC/모바일 동일)
-  return`<div class="cal-body-pc"><div class="cal-main-pc"><div class="cal-wrap">${calCore}</div></div>${ddPanel?`<div class="cal-side-pc">${ddPanel}</div>`:''}</div>`;
+  // 달력 패널: fixed bottom으로 body에 직접 추가
+  const existPanel=document.getElementById('cal-dd-panel');
+  if(existPanel)existPanel.remove();
+  if(ddPanel){
+    const pel=document.createElement('div');
+    pel.id='cal-dd-panel';
+    pel.innerHTML=ddPanel;
+    document.body.appendChild(pel);
+    // 드래그로 닫기 (터치/마우스)
+    const panel=pel.querySelector('.day-detail-panel');
+    const drag=pel.querySelector('.dd-drag');
+    if(panel&&drag){
+      let startY=0,startT=0;
+      const onStart=e=>{startY=(e.touches?e.touches[0]:e).clientY;startT=Date.now();panel.style.transition='none';};
+      const onMove=e=>{const dy=(e.touches?e.touches[0]:e).clientY-startY;if(dy>0)panel.style.transform=`translateY(${dy}px)`;};
+      const onEnd=e=>{
+        panel.style.transition='transform .25s ease';
+        const dy=(e.changedTouches?e.changedTouches[0]:e).clientY-startY;
+        if(dy>80||Date.now()-startT<300&&dy>30){panel.style.transform='translateY(100%)';setTimeout(()=>{pel.remove();selDate=null;},250);}
+        else panel.style.transform='';
+      };
+      drag.addEventListener('touchstart',onStart,{passive:true});
+      drag.addEventListener('touchmove',onMove,{passive:true});
+      drag.addEventListener('touchend',onEnd);
+      drag.addEventListener('mousedown',onStart);
+      document.addEventListener('mousemove',onMove);
+      document.addEventListener('mouseup',onEnd,{once:true});
+    }
+  }
+  return`<div class="cal-body-pc"><div class="cal-main-pc"><div class="cal-wrap">${calCore}</div></div></div>`;
 }
 function cellH(cell,t){const isTd=cell.date===t,isSel=cell.date===selDate;return`<div class="cal-cell${isTd?' today-cell':''}${isSel&&!isTd?' sel-cell':''}${cell.dim?' dim-cell':''}" onclick="${cell.date?`selectDate('${cell.date}')`:''}" ><div class="day-num">${cell.d}</div></div>`;}
 function calMove(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}rContent();}
@@ -2331,10 +2359,10 @@ function showBadgeModal(type){
   if(type==='contact')filtered=activeData().filter(d=>d.phase===1);
   else if(type==='sample'||type==='operation')filtered=activeData().filter(d=>d.phase===2);
   
-  else if(type==='imminent')filtered=activeData().filter(d=>d.phase===3);
+  else if(type==='imminent'){filtered=activeData().filter(d=>{if(!d.scheduleDate)return false;const dv=diffDays(d.scheduleDate);return dv!==null&&dv>=0&&dv<=3;});filtered.sort((a,b)=>a.scheduleDate.localeCompare(b.scheduleDate));}
   else if(type==='closing')filtered=activeData().filter(d=>d.phase===4);
   else if(type==='ongoing')filtered=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0b&&e>=t0b;});
-  else if(type==='upcoming')filtered=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0b&&s<=e30b;});
+  else if(type==='upcoming'){filtered=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0b&&s<=e30b;});filtered.sort((a,b)=>a.scheduleDate.localeCompare(b.scheduleDate));}
   else if(type==='settle')filtered=activeData().filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0b&&sd<=e30b&&!getCL(d).closing.settled;});
   else if(type==='done')filtered=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb)&&getCL(d).closing.done);
   else if(type==='urgent'){
@@ -2356,13 +2384,17 @@ function showBadgeModal(type){
         ${p.notes?`<div style="font-size:12px;color:#475569;margin-top:2px">${p.notes.slice(0,50)}</div>`:''}
       </div>`;
     }).join('');
-    const infHTML=filtered.length?filtered.map(inf=>{const ph=PM[inf.phase||1];const na=getNextAct(inf);const schedInfo=inf.scheduleDate?`<span style="font-size:11px;font-weight:700;color:#2563EB;background:#EFF6FF;padding:2px 7px;border-radius:5px;margin-left:4px">📅 ${fmtDate(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmtDate(inf.scheduleEndDate)}`:''}</span>`:'';return`<div class="bm-item" style="border-left-color:${ph.color}" onclick="closeBM();openEdit('${inf.id}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap"><b style="font-size:14px">${inf.name}${inf.nickname?` <span style="color:#5B21B6;font-weight:800">(${inf.nickname})</span>`:''}</b><span style="font-size:10px;font-weight:700;background:${ph.bg};color:${ph.color};padding:2px 6px;border-radius:4px">${ph.ico} ${ph.label}</span>${schedInfo}</div><div style="font-size:11px;color:#94A3B8;margin-bottom:3px">${inf.instagram||''}${inf.negotiating_product||inf.product?` · ${inf.negotiating_product||inf.product}`:''}</div>${na?`<div style="font-size:12px;font-weight:700;color:#475569">→ ${na.action}</div>`:''}</div>`;}).join(''):'';
+    const infHTML=filtered.length?filtered.map(inf=>{const ph=PM[inf.phase||1];const na=getNextAct(inf);const dv_=inf.scheduleDate?diffDays(inf.scheduleDate):null;
+    const dvBadge=dv_!==null?`<span style="font-size:10px;font-weight:900;color:${dv_<=3?'#DC2626':dv_<=7?'#D97706':'#2563EB'};background:${dv_<=3?'#FFF5F5':dv_<=7?'#FFFBEB':'#EFF6FF'};padding:2px 6px;border-radius:4px;margin-left:3px">D-${dv_}</span>`:'';
+    const schedInfo=inf.scheduleDate?`<span style="font-size:11px;font-weight:700;color:#2563EB;background:#EFF6FF;padding:2px 7px;border-radius:5px;margin-left:4px">📅 ${fmtDate(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmtDate(inf.scheduleEndDate)}`:''}</span>${dvBadge}`:'';return`<div class="bm-item" style="border-left-color:${ph.color}" onclick="closeBM();openEdit('${inf.id}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap"><b style="font-size:14px">${inf.name}${inf.nickname?` <span style="color:#5B21B6;font-weight:800">(${inf.nickname})</span>`:''}</b><span style="font-size:10px;font-weight:700;background:${ph.bg};color:${ph.color};padding:2px 6px;border-radius:4px">${ph.ico} ${ph.label}</span>${schedInfo}</div><div style="font-size:11px;color:#94A3B8;margin-bottom:3px">${inf.instagram||''}${inf.negotiating_product||inf.product?` · ${inf.negotiating_product||inf.product}`:''}</div>${na?`<div style="font-size:12px;font-weight:700;color:#475569">→ ${na.action}</div>`:''}</div>`;}).join(''):'';
     const listHTML=(infHTML+personalHTML)||`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">해당 항목이 없어요</div></div>`;
     const totalN=filtered.length+personalItems.length;
     const ov=mkOv('bm-modal');ov.innerHTML=`<div class="modal" onclick="event.stopPropagation()"><div class="m-hnd"></div><div class="m-head" style="color:${c.color}">${c.title}<button class="m-x" onclick="closeBM()">✕</button></div><div style="font-size:12px;color:#94A3B8;margin-bottom:12px">${c.desc} · <b style="color:${c.color}">${totalN}건</b></div>${listHTML}</div>`;document.body.appendChild(ov);
     return;
   }
-  const listHTML=filtered.length?filtered.map(inf=>{const ph=PM[inf.phase||1];const na=getNextAct(inf);const schedInfo=inf.scheduleDate?`<span style="font-size:11px;font-weight:700;color:#2563EB;background:#EFF6FF;padding:2px 7px;border-radius:5px;margin-left:4px">📅 ${fmtDate(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmtDate(inf.scheduleEndDate)}`:''}</span>`:'';return`<div class="bm-item" style="border-left-color:${ph.color}" onclick="closeBM();openEdit('${inf.id}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap"><b style="font-size:14px">${inf.name}${inf.nickname?` <span style="color:#5B21B6;font-weight:800">(${inf.nickname})</span>`:''}</b><span style="font-size:10px;font-weight:700;background:${ph.bg};color:${ph.color};padding:2px 6px;border-radius:4px">${ph.ico} ${ph.label}</span>${schedInfo}</div><div style="font-size:11px;color:#94A3B8;margin-bottom:3px">${inf.instagram||''}${inf.negotiating_product||inf.product?` · ${inf.negotiating_product||inf.product}`:''}</div>${na?`<div style="font-size:12px;font-weight:700;color:${na.urg?'#DC2626':'#475569'}">→ ${na.action}</div>`:''}</div>`;}).join(''):`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">해당 항목이 없어요</div></div>`;
+  const listHTML=filtered.length?filtered.map(inf=>{const ph=PM[inf.phase||1];const na=getNextAct(inf);const dv_=inf.scheduleDate?diffDays(inf.scheduleDate):null;
+    const dvBadge=dv_!==null?`<span style="font-size:10px;font-weight:900;color:${dv_<=3?'#DC2626':dv_<=7?'#D97706':'#2563EB'};background:${dv_<=3?'#FFF5F5':dv_<=7?'#FFFBEB':'#EFF6FF'};padding:2px 6px;border-radius:4px;margin-left:3px">D-${dv_}</span>`:'';
+    const schedInfo=inf.scheduleDate?`<span style="font-size:11px;font-weight:700;color:#2563EB;background:#EFF6FF;padding:2px 7px;border-radius:5px;margin-left:4px">📅 ${fmtDate(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmtDate(inf.scheduleEndDate)}`:''}</span>${dvBadge}`:'';return`<div class="bm-item" style="border-left-color:${ph.color}" onclick="closeBM();openEdit('${inf.id}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap"><b style="font-size:14px">${inf.name}${inf.nickname?` <span style="color:#5B21B6;font-weight:800">(${inf.nickname})</span>`:''}</b><span style="font-size:10px;font-weight:700;background:${ph.bg};color:${ph.color};padding:2px 6px;border-radius:4px">${ph.ico} ${ph.label}</span>${schedInfo}</div><div style="font-size:11px;color:#94A3B8;margin-bottom:3px">${inf.instagram||''}${inf.negotiating_product||inf.product?` · ${inf.negotiating_product||inf.product}`:''}</div>${na?`<div style="font-size:12px;font-weight:700;color:${na.urg?'#DC2626':'#475569'}">→ ${na.action}</div>`:''}</div>`;}).join(''):`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">해당 항목이 없어요</div></div>`;
   const ov=mkOv('bm-modal');ov.innerHTML=`<div class="modal" onclick="event.stopPropagation()"><div class="m-hnd"></div><div class="m-head" style="color:${c.color}">${c.title}<button class="m-x" onclick="closeBM()">✕</button></div><div style="font-size:12px;color:#94A3B8;margin-bottom:12px">${c.desc} · <b style="color:${c.color}">${filtered.length}명</b></div>${listHTML}</div>`;document.body.appendChild(ov);
 }
 function closeBM(){closeId('bm-modal');}
