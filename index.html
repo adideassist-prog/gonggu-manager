@@ -115,7 +115,7 @@ a{text-decoration:none}
 .pc-btn{padding:7px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:white;color:#64748B;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
 .pc-btn:hover{border-color:#A5B4FC;color:#4F46E5}
 
-.page{padding:12px 14px 88px;flex:1}
+.page{padding:12px 14px 88px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
 /* BOTTOM NAV */
 .bot-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #E2E8F0;display:flex;padding:7px 0 max(7px,env(safe-area-inset-bottom));z-index:150;box-shadow:0 -2px 10px rgba(0,0,0,.07)}
@@ -306,7 +306,7 @@ a{text-decoration:none}
 /* Day detail */
 .day-detail-panel{background:white;border-radius:13px;padding:12px 14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.08);margin-top:10px;flex-shrink:0}
 .day-detail-panel .dd-drag{width:36px;height:4px;background:#E2E8F0;border-radius:2px;margin:0 auto 10px;cursor:pointer}
-.day-detail-panel .dd-scroll{max-height:220px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.day-detail-panel .dd-scroll{}
 .dd-hdr{font-size:14px;font-weight:800;margin-bottom:12px;color:#1E293B}
 .dd-ev{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;margin-bottom:5px;cursor:pointer}
 .dd-ev:hover{opacity:.85}
@@ -409,7 +409,7 @@ a{text-decoration:none}
   /* 캘린더 탭일 때만 page도 flex로 */
   .page.cal-page{display:flex;flex-direction:column;overflow:hidden;padding-bottom:12px}
   /* Calendar body fills remaining space */
-  .cal-body-pc{display:flex;flex-direction:column;gap:0}
+  .cal-body-pc{display:flex;flex-direction:column;gap:0;width:100%}
   .cal-main-pc{flex-shrink:0;display:flex;flex-direction:column}
   .cal-side-pc{flex-shrink:0}
   .cal-wrap{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0}
@@ -2331,10 +2331,10 @@ function showBadgeModal(type){
   else if(type==='sample'||type==='operation')filtered=activeData().filter(d=>d.phase===2);
   
   else if(type==='imminent'){filtered=activeData().filter(d=>{if(!d.scheduleDate)return false;const dv=diffDays(d.scheduleDate);return dv!==null&&dv>=0&&dv<=3;});filtered.sort((a,b)=>a.scheduleDate.localeCompare(b.scheduleDate));}
-  else if(type==='closing')filtered=activeData().filter(d=>d.phase===4);
+  else if(type==='closing'){filtered=activeData().filter(d=>d.phase===4);filtered.sort((a,b)=>(calcSettleDate(a)||'').localeCompare(calcSettleDate(b)||''));}
   else if(type==='ongoing')filtered=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0b&&e>=t0b;});
   else if(type==='upcoming'){filtered=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0b&&s<=e30b;});filtered.sort((a,b)=>a.scheduleDate.localeCompare(b.scheduleDate));}
-  else if(type==='settle')filtered=activeData().filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0b&&sd<=e30b&&!getCL(d).closing.settled;});
+  else if(type==='settle'){filtered=activeData().filter(d=>{const sd=calcSettleDate(d);return sd&&sd<=addDays(30)&&!getCL(d).closing.settled;});filtered.sort((a,b)=>(calcSettleDate(a)||'').localeCompare(calcSettleDate(b)||''));}
   else if(type==='done')filtered=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb)&&getCL(d).closing.done);
   else if(type==='urgent'){
     const urgItems=buildUrgent();
@@ -2365,7 +2365,11 @@ function showBadgeModal(type){
   }
   const listHTML=filtered.length?filtered.map(inf=>{const ph=PM[inf.phase||1];const na=getNextAct(inf);const dv_=inf.scheduleDate?diffDays(inf.scheduleDate):null;
     const dvBadge=dv_!==null?`<span style="font-size:10px;font-weight:900;color:${dv_<=3?'#DC2626':dv_<=7?'#D97706':'#2563EB'};background:${dv_<=3?'#FFF5F5':dv_<=7?'#FFFBEB':'#EFF6FF'};padding:2px 6px;border-radius:4px;margin-left:3px">D-${dv_}</span>`:'';
-    const schedInfo=inf.scheduleDate?`<span style="font-size:11px;font-weight:700;color:#2563EB;background:#EFF6FF;padding:2px 7px;border-radius:5px;margin-left:4px">📅 ${fmtDate(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmtDate(inf.scheduleEndDate)}`:''}</span>${dvBadge}`:'';return`<div class="bm-item" style="border-left-color:${ph.color}" onclick="closeBM();openEdit('${inf.id}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap"><b style="font-size:14px">${inf.name}${inf.nickname?` <span style="color:#5B21B6;font-weight:800">(${inf.nickname})</span>`:''}</b><span style="font-size:10px;font-weight:700;background:${ph.bg};color:${ph.color};padding:2px 6px;border-radius:4px">${ph.ico} ${ph.label}</span>${schedInfo}</div><div style="font-size:11px;color:#94A3B8;margin-bottom:3px">${inf.instagram||''}${inf.negotiating_product||inf.product?` · ${inf.negotiating_product||inf.product}`:''}</div>${na?`<div style="font-size:12px;font-weight:700;color:${na.urg?'#DC2626':'#475569'}">→ ${na.action}</div>`:''}</div>`;}).join(''):`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">해당 항목이 없어요</div></div>`;
+    const schedInfo=inf.scheduleDate?`<span style="font-size:11px;font-weight:700;color:#2563EB;background:#EFF6FF;padding:2px 7px;border-radius:5px;margin-left:4px">📅 ${fmtDate(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmtDate(inf.scheduleEndDate)}`:''}</span>${dvBadge}`:'';
+    // 정산 날짜 배지 (settle/closing 타입)
+    const sd_=calcSettleDate(inf);
+    const sdv=sd_?diffDays(sd_):null;
+    const settleBadge=(type==='settle'||type==='closing')&&sd_?`<span style="font-size:10px;font-weight:900;color:${sdv<0?'#DC2626':sdv===0?'#DC2626':sdv<=3?'#D97706':'#059669'};background:${sdv<0?'#FFF5F5':sdv===0?'#FFF5F5':sdv<=3?'#FFFBEB':'#ECFDF5'};padding:2px 6px;border-radius:4px;margin-left:3px">${sdv<0?Math.abs(sdv)+'일 경과':sdv===0?'오늘 마감':'D-'+sdv}</span> <span style="font-size:10px;color:#94A3B8">💰${fmtDate(sd_)}</span>`:'';return`<div class="bm-item" style="border-left-color:${ph.color}" onclick="closeBM();openEdit('${inf.id}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap"><b style="font-size:14px">${inf.name}${inf.nickname?` <span style="color:#5B21B6;font-weight:800">(${inf.nickname})</span>`:''}</b><span style="font-size:10px;font-weight:700;background:${ph.bg};color:${ph.color};padding:2px 6px;border-radius:4px">${ph.ico} ${ph.label}</span>${schedInfo}${settleBadge}</div><div style="font-size:11px;color:#94A3B8;margin-bottom:3px">${inf.instagram||''}${inf.negotiating_product||inf.product?` · ${inf.negotiating_product||inf.product}`:''}</div>${na?`<div style="font-size:12px;font-weight:700;color:${na.urg?'#DC2626':'#475569'}">→ ${na.action}</div>`:''}</div>`;}).join(''):`<div class="empty-s"><div class="empty-s-ico">✅</div><div class="empty-s-txt">해당 항목이 없어요</div></div>`;
   const ov=mkOv('bm-modal');ov.innerHTML=`<div class="modal" onclick="event.stopPropagation()"><div class="m-hnd"></div><div class="m-head" style="color:${c.color}">${c.title}<button class="m-x" onclick="closeBM()">✕</button></div><div style="font-size:12px;color:#94A3B8;margin-bottom:12px">${c.desc} · <b style="color:${c.color}">${filtered.length}명</b></div>${listHTML}</div>`;document.body.appendChild(ov);
 }
 function closeBM(){closeId('bm-modal');}
