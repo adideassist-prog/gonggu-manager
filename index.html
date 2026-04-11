@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v11.1.1</title>
+<title>공구 매니저 v11.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v11.1.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v11.2</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v11.1.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v11.2</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -553,10 +553,8 @@ const PHASES=[
   {id:1,key:'contact', label:'컨택',    ico:'📨',color:'#6366F1',bg:'#EEF2FF',
    checks:[{k:'dm',lbl:'DM 발송',cat:'contact',urg:false},{k:'reply',lbl:'답장 확인',cat:'contact',urg:false},{k:'proposal',lbl:'제품 제안',cat:'contact',urg:false},{k:'kakao',lbl:'카톡 연결',cat:'contact',urg:false},{k:'decided',lbl:'공구 결정',cat:'contact',urg:true}]},
   {id:2,key:'sample',  label:'샘플',    ico:'📦',color:'#D97706',bg:'#FFFBEB',
-   checks:[{k:'info',lbl:'샘플 정보 수집',cat:'sample',urg:true},{k:'sent',lbl:'샘플 발송',cat:'sample',urg:true},{k:'tracking',lbl:'송장번호 전달',cat:'sample',urg:false},{k:'received',lbl:'수령 확인',cat:'sample',urg:false},{k:'schedule',lbl:'공구 일정 확정',cat:'sample',urg:true}]},
-  {id:3,key:'gonggu',  label:'공구중',   ico:'🛍️',color:'#2563EB',bg:'#EFF6FF',
-   checks:[{k:'link_sent',lbl:'결제링크 전달',cat:'groupbuy',urg:true},{k:'ongoing',lbl:'공구 진행 중',cat:'groupbuy',urg:false}]},
-  {id:4,key:'closing', label:'마감/정산',ico:'💰',color:'#059669',bg:'#ECFDF5',
+   checks:[{k:'info',lbl:'샘플 정보 수집',cat:'sample',urg:true},{k:'sent',lbl:'샘플 발송',cat:'sample',urg:true},{k:'tracking',lbl:'송장번호 전달',cat:'sample',urg:false},{k:'received',lbl:'수령 확인',cat:'sample',urg:false},{k:'schedule',lbl:'공구 일정 확정',cat:'sample',urg:true},{k:'link_sent',lbl:'결제링크 전달',cat:'sample',urg:false}]},
+  {id:3,key:'closing', label:'마감/정산',ico:'💰',color:'#059669',bg:'#ECFDF5',
    checks:[{k:'done',lbl:'공구 완료',cat:'settlement',urg:false},{k:'settlement_info',lbl:'정산 일정 안내',cat:'settlement',urg:false},{k:'settled',lbl:'정산 완료',cat:'settlement',urg:true},{k:'next_recommend',lbl:'다음 제품 추천',cat:'contact',urg:false}]},
 ];
 const PM=Object.fromEntries(PHASES.map(p=>[p.id,p]));
@@ -595,8 +593,9 @@ const getCL=inf=>{
   return{
     contact: {dm:false,reply:false,proposal:false,kakao:false,decided:false,...(cl.contact||{})},
     sample:  {info:false,sent:false,tracking:false,received:false,
-              schedule:op.schedule||false,...(cl.sample||{})},
-    gonggu:  {link_sent:op.link_sent||op.ongoing||false,ongoing:false,...(cl.gonggu||{})},
+              schedule:op.schedule||false,
+              link_sent:op.link_sent||(cl.gonggu?.link_sent)||false,
+              ...(cl.sample||{})},
     closing: {done:false,settlement_info:false,settled:false,next_recommend:false,...(cl.closing||{})},
   };
 };
@@ -621,26 +620,17 @@ function getNextAct(inf){
    3. MIGRATION (v3/v4/v5 → v6)
 ════════════════════════════════════════════════ */
 function migrateInf(inf){
-  // v11.1 마이그레이션: 4단계 구조
-  if(inf.phase===3&&!inf.checklist?.gonggu){
-    // 구 공구확정(operation) → 공구중(gonggu) 또는 샘플(sample)
-    const op=inf.checklist?.operation||{};
-    const sm=inf.checklist?.sample||{};
-    if(op.link_sent||sm.link_sent){
-      // 결제링크 전달됐으면 공구중(3)으로
-      return {...inf, phase:3,
-        checklist:{...inf.checklist,
-          gonggu:{link_sent:true,ongoing:op.ongoing||false},
-          sample:{...sm,schedule:op.schedule||sm.schedule||false},
-          operation:undefined}};
-    }
-    return {...inf, phase:2,
+  // v11.2 마이그레이션: 3단계 구조
+  const mop=inf.checklist?.operation||{};
+  const msm=inf.checklist?.sample||{};
+  const mgg=inf.checklist?.gonggu||{};
+  if(inf.phase===3||inf.phase===4){
+    return {...inf, phase:3,
       checklist:{...inf.checklist,
-        sample:{...sm,schedule:op.schedule||false},
-        gonggu:{link_sent:false,ongoing:false},
-        operation:undefined}};
+        sample:{...msm, schedule:mop.schedule||msm.schedule||false, link_sent:mop.link_sent||mgg.link_sent||msm.link_sent||false},
+        gonggu:undefined, operation:undefined}};
   }
-  if(inf.phase===4) return {...inf, phase:4}; // 마감/정산 유지
+  if(inf.phase===1||inf.phase===2) return inf;
   if(inf.phase)return inf;
   const sm={dm_sent:{phase:1,contact:{dm:true}},replied:{phase:1,contact:{dm:true,reply:true}},kakao_req:{phase:1,contact:{dm:true,reply:true,proposal:true}},proposal:{phase:1,contact:{dm:true,reply:true,proposal:true}},decided:{phase:2,sample:{decided:true}},delivery_info:{phase:2,sample:{decided:true,info:true}},sample_req:{phase:2,sample:{decided:true,info:true}},tracking:{phase:2,sample:{decided:true,info:true,sent:true,tracking:true}},delivery_ok:{phase:2,sample:{decided:true,info:true,sent:true,tracking:true,received:true}},sch_set:{phase:3,operation:{schedule:true}},link_sent:{phase:3,operation:{schedule:true}},ongoing:{phase:3,operation:{schedule:true,ongoing:true}},done:{phase:4,closing:{done:true}},settle_soon:{phase:4,closing:{done:true,settlement_info:true}},settled:{phase:4,closing:{done:true,settlement_info:true,settled:true}}};
   const m=sm[inf.stage]||{phase:1};const cl={contact:{},sample:{},operation:{},closing:{}};
@@ -1076,7 +1066,7 @@ function rChrome(){
   const counts=buildCounts();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
   const cntContact=activeData().filter(d=>d.phase===1).length;
   const cntSample=activeData().filter(d=>d.phase===2).length;
-  const cntClose=activeData().filter(d=>d.phase===4).length;
+  const cntClose=activeData().filter(d=>d.phase===3).length;
   const t0=today();const e30=addDays(30);
   const ongoing=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0&&e>=t0;}).length;
   const upcoming=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0&&s<=e30;}).length;
@@ -1594,7 +1584,21 @@ function rCal(){
   // 제품별 공구 건수 집계
   const t_leg=today();const prodCounts={};activeData().forEach(inf=>{const p=inf.negotiating_product||inf.product;if(p&&inf.scheduleDate&&(inf.scheduleEndDate?inf.scheduleEndDate>=t_leg:inf.scheduleDate>=t_leg)){prodCounts[p]=(prodCounts[p]||0)+1;}});
   const prodLeg=calMode==='gonggu'?getProductLegend(activeData()).map(p=>`<div class="leg-it" onclick="showProductDetail('${encodeURIComponent(p.name)}')" style="cursor:pointer" title="${p.name} 클릭 시 상세보기"><div class="leg-dot" style="background:${p.color}"></div><span style="max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>${prodCounts[p]?`<span style="background:${p.color};color:#1E1B4B;font-size:9px;font-weight:800;padding:1px 4px;border-radius:6px;margin-left:2px">${prodCounts[p]}</span>`:''}</div>`).join(''):'';
-  const workLeg=calMode==='work'?`<div class="leg-it"><div class="leg-dot" style="background:#FED7AA"></div>샘플</div><div class="leg-it"><div class="leg-dot" style="background:#A7F3D0"></div>정산</div>${Object.entries(PTASK_COLORS).map(([k,v])=>`<div class="leg-it"><div class="leg-dot" style="background:${v}"></div>${k}</div>`).join('')}`:'';
+  // 업무 캘린더 범례: 카테고리별 미완료 건수
+  const t_work=today();const e_work=addDays(30);
+  const taskCatCounts={};
+  pTasks.filter(p=>!p.done&&p.date&&p.date>=t_work&&p.date<=e_work).forEach(p=>{
+    const cat=p.category||'기타';
+    taskCatCounts[cat]=(taskCatCounts[cat]||0)+1;
+  });
+  // 샘플/정산 업무 건수
+  const sampleCnt=activeData().filter(d=>d.sampleSentDate&&addDays(2,d.sampleSentDate)>=t_work).length;
+  const settleCnt=activeData().filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t_work&&sd<=e_work&&!getCL(d).closing.settled;}).length;
+  const workLeg=calMode==='work'?[
+    sampleCnt?`<div class="leg-it"><div class="leg-dot" style="background:#FED7AA"></div>샘플<span style="background:#FED7AA;color:#1E1B4B;font-size:9px;font-weight:800;padding:1px 5px;border-radius:8px;margin-left:3px">${sampleCnt}</span></div>`:'<div class="leg-it" style="opacity:.4"><div class="leg-dot" style="background:#FED7AA"></div>샘플</div>',
+    settleCnt?`<div class="leg-it"><div class="leg-dot" style="background:#A7F3D0"></div>정산<span style="background:#A7F3D0;color:#1E1B4B;font-size:9px;font-weight:800;padding:1px 5px;border-radius:8px;margin-left:3px">${settleCnt}</span></div>`:'<div class="leg-it" style="opacity:.4"><div class="leg-dot" style="background:#A7F3D0"></div>정산</div>',
+    ...Object.entries(PTASK_COLORS).map(([k,v])=>{const cnt=taskCatCounts[k]||0;return cnt?`<div class="leg-it"><div class="leg-dot" style="background:${v}"></div>${k}<span style="background:${v};color:#1E1B4B;font-size:9px;font-weight:800;padding:1px 5px;border-radius:8px;margin-left:3px">${cnt}</span></div>`:`<div class="leg-it" style="opacity:.4"><div class="leg-dot" style="background:${v}"></div>${k}</div>`;})
+  ].join(''):'';
 
   const calCore=`
     <div class="cal-mode-row"><button class="cal-mode-btn${calMode==='gonggu'?' on':''}" onclick="setCalMode('gonggu')">🛍️ 공구 캘린더</button><button class="cal-mode-btn${calMode==='work'?' on':''}" onclick="setCalMode('work')">📝 업무 캘린더</button></div>
@@ -2298,8 +2302,8 @@ function showBadgeModal(type){
   const c=cfg[type]||cfg.urgent;let filtered=[];
   if(type==='contact')filtered=activeData().filter(d=>d.phase===1);
   else if(type==='sample'||type==='operation')filtered=activeData().filter(d=>d.phase===2);
-  else if(type==='gonggu')filtered=activeData().filter(d=>d.phase===3);
-  else if(type==='closing')filtered=activeData().filter(d=>d.phase===4);
+  
+  else if(type==='closing')filtered=activeData().filter(d=>d.phase===3);
   else if(type==='ongoing')filtered=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0b&&e>=t0b;});
   else if(type==='upcoming')filtered=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0b&&s<=e30b;});
   else if(type==='settle')filtered=activeData().filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0b&&sd<=e30b&&!getCL(d).closing.settled;});
