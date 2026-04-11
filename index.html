@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v11.0.9</title>
+<title>공구 매니저 v11.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -304,8 +304,10 @@ a{text-decoration:none}
 .ev-pt{position:absolute;height:36px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:2px 7px;gap:1px;overflow:hidden;pointer-events:all;cursor:pointer;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.12);opacity:.88}.evp-c{font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:#1E1B4B;line-height:1.3}.evp-t{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:rgba(30,27,75,.65);line-height:1.3}
 .ev-pt:hover{opacity:1;box-shadow:0 3px 10px rgba(0,0,0,.18)}
 /* Day detail */
-.day-detail-panel{background:white;border-radius:13px 13px 0 0;padding:14px 14px 30px;box-shadow:0 -4px 20px rgba(0,0,0,.12);margin-top:10px}
-.day-detail-panel .dd-scroll{max-height:40vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.day-detail-panel{background:white;border-radius:16px 16px 0 0;padding:12px 14px 40px;box-shadow:0 -4px 24px rgba(0,0,0,.15);position:fixed;bottom:0;left:0;right:0;z-index:400;max-height:60vh;transform:translateY(0);transition:transform .3s ease}
+.day-detail-panel .dd-drag{width:36px;height:4px;background:#E2E8F0;border-radius:2px;margin:0 auto 12px;cursor:grab}
+.day-detail-panel .dd-scroll{max-height:calc(60vh - 60px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.day-detail-panel.hidden{transform:translateY(100%)}
 .dd-hdr{font-size:14px;font-weight:800;margin-bottom:12px;color:#1E293B}
 .dd-ev{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;margin-bottom:5px;cursor:pointer}
 .dd-ev:hover{opacity:.85}
@@ -408,9 +410,9 @@ a{text-decoration:none}
   /* 캘린더 탭일 때만 page도 flex로 */
   .page.cal-page{display:flex;flex-direction:column;overflow:hidden;padding-bottom:12px}
   /* Calendar body fills remaining space */
-  .cal-body-pc{flex:1;display:flex;flex-direction:column;gap:0;min-height:0}
+  .cal-body-pc{flex:1;display:flex;flex-direction:column;gap:0;min-height:0;padding-bottom:0}
   .cal-main-pc{flex:1;display:flex;flex-direction:column;min-height:0}
-  .cal-side-pc{flex-shrink:0}
+  .cal-side-pc{display:none}/* fixed bottom panel 사용 */
   .cal-wrap{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0}
   .cal-grid-box{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
   .cal-weeks-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
@@ -455,7 +457,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v11.0.9</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v11.1</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -485,7 +487,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v11.0.9</div>
+      <div class="mob-title">🛍️ 공구 매니저 v11.1</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -552,8 +554,10 @@ const PHASES=[
   {id:1,key:'contact', label:'컨택',    ico:'📨',color:'#6366F1',bg:'#EEF2FF',
    checks:[{k:'dm',lbl:'DM 발송',cat:'contact',urg:false},{k:'reply',lbl:'답장 확인',cat:'contact',urg:false},{k:'proposal',lbl:'제품 제안',cat:'contact',urg:false},{k:'kakao',lbl:'카톡 연결',cat:'contact',urg:false},{k:'decided',lbl:'공구 결정',cat:'contact',urg:true}]},
   {id:2,key:'sample',  label:'샘플',    ico:'📦',color:'#D97706',bg:'#FFFBEB',
-   checks:[{k:'info',lbl:'샘플 정보 수집',cat:'sample',urg:true},{k:'sent',lbl:'샘플 발송',cat:'sample',urg:true},{k:'tracking',lbl:'송장번호 전달',cat:'sample',urg:false},{k:'received',lbl:'수령 확인',cat:'sample',urg:false},{k:'schedule',lbl:'공구 일정 확정',cat:'sample',urg:true},{k:'link_sent',lbl:'결제링크 전달',cat:'sample',urg:false}]},
-  {id:3,key:'closing', label:'마감/정산',ico:'💰',color:'#059669',bg:'#ECFDF5',
+   checks:[{k:'info',lbl:'샘플 정보 수집',cat:'sample',urg:true},{k:'sent',lbl:'샘플 발송',cat:'sample',urg:true},{k:'tracking',lbl:'송장번호 전달',cat:'sample',urg:false},{k:'received',lbl:'수령 확인',cat:'sample',urg:false},{k:'schedule',lbl:'공구 일정 확정',cat:'sample',urg:true}]},
+  {id:3,key:'gonggu',  label:'공구중',   ico:'🛍️',color:'#2563EB',bg:'#EFF6FF',
+   checks:[{k:'link_sent',lbl:'결제링크 전달',cat:'groupbuy',urg:true},{k:'ongoing',lbl:'공구 진행 중',cat:'groupbuy',urg:false}]},
+  {id:4,key:'closing', label:'마감/정산',ico:'💰',color:'#059669',bg:'#ECFDF5',
    checks:[{k:'done',lbl:'공구 완료',cat:'settlement',urg:false},{k:'settlement_info',lbl:'정산 일정 안내',cat:'settlement',urg:false},{k:'settled',lbl:'정산 완료',cat:'settlement',urg:true},{k:'next_recommend',lbl:'다음 제품 추천',cat:'contact',urg:false}]},
 ];
 const PM=Object.fromEntries(PHASES.map(p=>[p.id,p]));
@@ -592,8 +596,8 @@ const getCL=inf=>{
   return{
     contact: {dm:false,reply:false,proposal:false,kakao:false,decided:false,...(cl.contact||{})},
     sample:  {info:false,sent:false,tracking:false,received:false,
-              schedule:op.schedule||false,link_sent:op.link_sent||op.ongoing||false,
-              ...(cl.sample||{})},
+              schedule:op.schedule||false,...(cl.sample||{})},
+    gonggu:  {link_sent:op.link_sent||op.ongoing||false,ongoing:false,...(cl.gonggu||{})},
     closing: {done:false,settlement_info:false,settled:false,next_recommend:false,...(cl.closing||{})},
   };
 };
@@ -618,15 +622,26 @@ function getNextAct(inf){
    3. MIGRATION (v3/v4/v5 → v6)
 ════════════════════════════════════════════════ */
 function migrateInf(inf){
-  // v11 마이그레이션: phase3(구 공구확정) → phase2(샘플), phase4(구 마감) → phase3(마감/정산)
-  if(inf.phase===3){
+  // v11.1 마이그레이션: 4단계 구조
+  if(inf.phase===3&&!inf.checklist?.gonggu){
+    // 구 공구확정(operation) → 공구중(gonggu) 또는 샘플(sample)
     const op=inf.checklist?.operation||{};
+    const sm=inf.checklist?.sample||{};
+    if(op.link_sent||sm.link_sent){
+      // 결제링크 전달됐으면 공구중(3)으로
+      return {...inf, phase:3,
+        checklist:{...inf.checklist,
+          gonggu:{link_sent:true,ongoing:op.ongoing||false},
+          sample:{...sm,schedule:op.schedule||sm.schedule||false},
+          operation:undefined}};
+    }
     return {...inf, phase:2,
       checklist:{...inf.checklist,
-        sample:{...(inf.checklist?.sample||{}),schedule:op.schedule||false,link_sent:op.link_sent||false},
+        sample:{...sm,schedule:op.schedule||false},
+        gonggu:{link_sent:false,ongoing:false},
         operation:undefined}};
   }
-  if(inf.phase===4) return {...inf, phase:3};
+  if(inf.phase===4) return {...inf, phase:4}; // 마감/정산 유지
   if(inf.phase)return inf;
   const sm={dm_sent:{phase:1,contact:{dm:true}},replied:{phase:1,contact:{dm:true,reply:true}},kakao_req:{phase:1,contact:{dm:true,reply:true,proposal:true}},proposal:{phase:1,contact:{dm:true,reply:true,proposal:true}},decided:{phase:2,sample:{decided:true}},delivery_info:{phase:2,sample:{decided:true,info:true}},sample_req:{phase:2,sample:{decided:true,info:true}},tracking:{phase:2,sample:{decided:true,info:true,sent:true,tracking:true}},delivery_ok:{phase:2,sample:{decided:true,info:true,sent:true,tracking:true,received:true}},sch_set:{phase:3,operation:{schedule:true}},link_sent:{phase:3,operation:{schedule:true}},ongoing:{phase:3,operation:{schedule:true,ongoing:true}},done:{phase:4,closing:{done:true}},settle_soon:{phase:4,closing:{done:true,settlement_info:true}},settled:{phase:4,closing:{done:true,settlement_info:true,settled:true}}};
   const m=sm[inf.stage]||{phase:1};const cl={contact:{},sample:{},operation:{},closing:{}};
@@ -1062,7 +1077,8 @@ function rChrome(){
   const counts=buildCounts();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
   const cntContact=activeData().filter(d=>d.phase===1).length;
   const cntSample=activeData().filter(d=>d.phase===2).length;
-  const cntClose=activeData().filter(d=>d.phase===3).length;
+  const cntGonggu=activeData().filter(d=>d.phase===3).length;
+  const cntClose=activeData().filter(d=>d.phase===4).length;
   const t0=today();const e30=addDays(30);
   const ongoing=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0&&e>=t0;}).length;
   const upcoming=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0&&s<=e30;}).length;
@@ -1105,7 +1121,12 @@ function rChrome(){
         <div class="sb-kpi" onclick="showBadgeModal('sample')">
           <span class="sb-kpi-num">${cntSample}</span>
           <span class="sb-kpi-lbl">📦 샘플</span>
-          <span style="font-size:9px;color:rgba(61,43,140,.45);margin-top:1px">발송→수령→일정→결제링크</span>
+          <span style="font-size:9px;color:rgba(61,43,140,.45);margin-top:1px">발송→수령→일정확정</span>
+        </div>
+        <div class="sb-kpi" onclick="showBadgeModal('gonggu')">
+          <span class="sb-kpi-num">${cntGonggu}</span>
+          <span class="sb-kpi-lbl">🛍️ 공구중</span>
+          <span style="font-size:9px;color:rgba(61,43,140,.45);margin-top:1px">결제링크→공구진행</span>
         </div>
         <div class="sb-kpi" onclick="showBadgeModal('closing')">
           <span class="sb-kpi-num">${cntClose}</span>
@@ -1150,6 +1171,7 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
     <div class="pc-kpi-grid">
       <div class="pc-kpi" onclick="showBadgeModal('contact')"><span class="pc-kpi-n">${cntContact}</span><span class="pc-kpi-lbl">컨택</span></div>
       <div class="pc-kpi" onclick="showBadgeModal('sample')"><span class="pc-kpi-n">${cntSample}</span><span class="pc-kpi-lbl">샘플</span></div>
+      <div class="pc-kpi" onclick="showBadgeModal('gonggu')"><span class="pc-kpi-n">${cntGonggu}</span><span class="pc-kpi-lbl">공구중</span></div>
       <div class="pc-kpi" onclick="showBadgeModal('closing')"><span class="pc-kpi-n">${cntClose}</span><span class="pc-kpi-lbl">마감/정산</span></div>
       <div class="pc-kpi" onclick="setTab('tasks')"><span class="pc-kpi-n">${counts.tasks}</span><span class="pc-kpi-lbl">업무</span></div>
     </div>
@@ -1176,6 +1198,7 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
       <div class="mob-kpi-grid">
         <div class="mob-kpi" onclick="showBadgeModal('contact')"><b>${cntContact}</b><span>컨택</span></div>
         <div class="mob-kpi" onclick="showBadgeModal('sample')"><b>${cntSample}</b><span>샘플</span></div>
+        <div class="mob-kpi" onclick="showBadgeModal('gonggu')"><b>${cntGonggu}</b><span>공구중</span></div>
         <div class="mob-kpi" onclick="showBadgeModal('closing')"><b>${cntClose}</b><span>마감/정산</span></div>
         <div class="mob-kpi" onclick="setTab('tasks')"><b>${counts.tasks}</b><span>업무</span></div>
       </div>
@@ -1575,7 +1598,7 @@ function rCal(){
   const ddContent=selEvs.length
     ?`<div class="dd-hdr">📌 ${selLbl} · ${selEvs.length}건</div>${selEvs.map(e=>ddCard(e)).join('')}`
     :(selDate?`<div class="dd-hdr">🗓️ ${selLbl}</div><div style="font-size:12px;color:#94A3B8;padding:8px 0">일정 없음</div>`:'');
-  const ddPanel=ddContent?`<div class="day-detail-panel"><div class="dd-scroll">${ddContent}</div></div>`:'';
+  const ddPanel=ddContent?`<div class="day-detail-panel"><div class="dd-drag" title="닫으려면 클릭"></div><div class="dd-scroll">${ddContent}</div></div>`:'';
 
   // 제품별 공구 건수 집계
   const prodCounts={};activeData().forEach(inf=>{const p=inf.negotiating_product||inf.product;if(p&&inf.scheduleDate){prodCounts[p]=(prodCounts[p]||0)+1;}});
@@ -1589,7 +1612,26 @@ function rCal(){
     <div class="cal-grid-box"><div class="cal-dow-row">${['일','월','화','수','목','금','토'].map(d=>`<div>${d}</div>`).join('')}</div><div class="cal-weeks-wrap">${weeksHTML}</div></div>`;
 
   // 캘린더 풀 width + 일자 상세 하단 배치 (PC/모바일 동일)
-  return`<div class="cal-body-pc"><div class="cal-main-pc"><div class="cal-wrap">${calCore}</div></div>${ddPanel?`<div class="cal-side-pc">${ddPanel}</div>`:''}</div>`;
+  // 달력 패널: fixed bottom (JS로 제어)
+  if(ddPanel){
+    let existing=document.getElementById('cal-day-panel');
+    if(existing)existing.remove();
+    const panelEl=document.createElement('div');
+    panelEl.id='cal-day-panel';
+    panelEl.innerHTML=ddPanel;
+    document.body.appendChild(panelEl);
+    // 드래그로 닫기
+    const panel=document.getElementById('cal-day-panel')?.querySelector('.day-detail-panel');
+    if(panel){
+      panel.querySelector('.dd-drag')?.addEventListener('click',()=>{
+        const existing2=document.getElementById('cal-day-panel');
+        if(existing2){existing2.remove();selDate=null;}
+      });
+    }
+  } else {
+    document.getElementById('cal-day-panel')?.remove();
+  }
+  return`<div class="cal-body-pc"><div class="cal-main-pc"><div class="cal-wrap">${calCore}</div></div></div>`;
 }
 function cellH(cell,t){const isTd=cell.date===t,isSel=cell.date===selDate;return`<div class="cal-cell${isTd?' today-cell':''}${isSel&&!isTd?' sel-cell':''}${cell.dim?' dim-cell':''}" onclick="${cell.date?`selectDate('${cell.date}')`:''}" ><div class="day-num">${cell.d}</div></div>`;}
 function calMove(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}rContent();}
@@ -2278,11 +2320,12 @@ async function delPTask(id){if(!confirm('삭제할까요?'))return;await dbDel(T
 function showBadgeModal(type){
   closeId('bm-modal'); // 기존 모달 먼저 닫기
   const t0=today();const e30=addDays(30);
-  const t0b=today();const e30b=addDays(30);const now3=new Date();const ymb=`${now3.getFullYear()}-${String(now3.getMonth()+1).padStart(2,'0')}`;const cfg={contact:{title:'📨 컨택 단계',color:'#6366F1',desc:'현재 컨택 진행 중'},sample:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},operation:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},closing:{title:'💰 마감 단계',color:'#059669',desc:'정산 진행 중'},ongoing:{title:'🛍️ 공구 진행중',color:'#2563EB',desc:'오늘 기준 판매 중'},upcoming:{title:'📅 공구 예정',color:'#7C3AED',desc:'30일 내 공구 예정'},settle:{title:'💰 정산 예정',color:'#059669',desc:'30일 내 정산 예정'},done:{title:'✅ 이달 완료',color:'#0369A1',desc:'이번 달 공구 완료'},urgent:{title:'🚨 오늘 처리 필요',color:'#DC2626',desc:'긴급 업무 + 3일내 정산'}};
+  const t0b=today();const e30b=addDays(30);const now3=new Date();const ymb=`${now3.getFullYear()}-${String(now3.getMonth()+1).padStart(2,'0')}`;const cfg={contact:{title:'📨 컨택 단계',color:'#6366F1',desc:'현재 컨택 진행 중'},sample:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},operation:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},gonggu:{title:'🛍️ 공구 진행 중',color:'#2563EB',desc:'현재 공구 진행 중'},closing:{title:'💰 마감 단계',color:'#059669',desc:'정산 진행 중'},ongoing:{title:'🛍️ 공구 진행중',color:'#2563EB',desc:'오늘 기준 판매 중'},upcoming:{title:'📅 공구 예정',color:'#7C3AED',desc:'30일 내 공구 예정'},settle:{title:'💰 정산 예정',color:'#059669',desc:'30일 내 정산 예정'},done:{title:'✅ 이달 완료',color:'#0369A1',desc:'이번 달 공구 완료'},urgent:{title:'🚨 오늘 처리 필요',color:'#DC2626',desc:'긴급 업무 + 3일내 정산'}};
   const c=cfg[type]||cfg.urgent;let filtered=[];
   if(type==='contact')filtered=activeData().filter(d=>d.phase===1);
   else if(type==='sample'||type==='operation')filtered=activeData().filter(d=>d.phase===2);
-  else if(type==='closing')filtered=activeData().filter(d=>d.phase===3);
+  else if(type==='gonggu')filtered=activeData().filter(d=>d.phase===3);
+  else if(type==='closing')filtered=activeData().filter(d=>d.phase===4);
   else if(type==='ongoing')filtered=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0b&&e>=t0b;});
   else if(type==='upcoming')filtered=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0b&&s<=e30b;});
   else if(type==='settle')filtered=activeData().filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0b&&sd<=e30b&&!getCL(d).closing.settled;});
