@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v11.0.7</title>
+<title>공구 매니저 v11.0.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -455,7 +455,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v11.0.7</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v11.0.8</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -485,7 +485,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v11.0.7</div>
+      <div class="mob-title">🛍️ 공구 매니저 v11.0.8</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -2276,6 +2276,7 @@ async function delPTask(id){if(!confirm('삭제할까요?'))return;await dbDel(T
    14. BADGE FILTER MODAL
 ════════════════════════════════════════════════ */
 function showBadgeModal(type){
+  closeId('bm-modal'); // 기존 모달 먼저 닫기
   const t0=today();const e30=addDays(30);
   const t0b=today();const e30b=addDays(30);const now3=new Date();const ymb=`${now3.getFullYear()}-${String(now3.getMonth()+1).padStart(2,'0')}`;const cfg={contact:{title:'📨 컨택 단계',color:'#6366F1',desc:'현재 컨택 진행 중'},sample:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},operation:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},closing:{title:'💰 마감 단계',color:'#059669',desc:'정산 진행 중'},ongoing:{title:'🛍️ 공구 진행중',color:'#2563EB',desc:'오늘 기준 판매 중'},upcoming:{title:'📅 공구 예정',color:'#7C3AED',desc:'30일 내 공구 예정'},settle:{title:'💰 정산 예정',color:'#059669',desc:'30일 내 정산 예정'},done:{title:'✅ 이달 완료',color:'#0369A1',desc:'이번 달 공구 완료'},urgent:{title:'🚨 오늘 처리 필요',color:'#DC2626',desc:'긴급 업무 + 3일내 정산'}};
   const c=cfg[type]||cfg.urgent;let filtered=[];
