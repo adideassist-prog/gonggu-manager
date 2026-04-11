@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v11.0.3</title>
+<title>공구 매니저 v11.0.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -455,7 +455,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v11.0.3</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v11.0.5</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -485,7 +485,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v11.0.3</div>
+      <div class="mob-title">🛍️ 공구 매니저 v11.0.5</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -883,12 +883,12 @@ function buildUrgent(){
     const cl=getCL(inf);const ph=inf.phase||1;
     const dv=inf.scheduleDate?diffDays(inf.scheduleDate):null;
     // 공구 시작 D-3 이내인데 결제링크 없음
-    if(inf.scheduleDate&&dv!==null&&dv>=0&&dv<=1&&!inf.paymentLink&&!cl.operation.schedule)
+    if(inf.scheduleDate&&dv!==null&&dv>=0&&dv<=1&&!inf.paymentLink&&!cl.sample.schedule)
       items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
         product:inf.negotiating_product||inf.product||'',
         issue:`🔗 공구 ${dv===0?'오늘':dv===1?'내일':'D-'+dv}, 결제링크 미전달`,suggest:'결제링크를 인플루언서에게 전달하세요'});
     // 샘플단계인데 샘플 미발송
-    if(ph>=3&&!cl.sample.sent)
+    if(ph>=2&&!cl.sample.sent)
       items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
         product:inf.negotiating_product||inf.product||'',
         issue:'📦 샘플단계인데 샘플 미발송',suggest:'샘플을 발송하고 체크리스트를 업데이트하세요'});
@@ -1041,6 +1041,7 @@ function buildPersonal(){
 
 /* Counts for nav */
 function buildCounts(){
+  const t0=today();const e30=addDays(30);
   return{
     urgent:   buildUrgent().length,
     gonggu:   buildGonggu().length,
@@ -1048,6 +1049,7 @@ function buildCounts(){
     settle:   buildSettlement().length,
     contact:  buildContact().length,
     personal: buildPersonal().length,
+    tasks:    pTasks.filter(p=>!p.done&&p.date&&p.date>=t0&&p.date<=e30).length,
   };
 }
 
@@ -1057,13 +1059,13 @@ function buildCounts(){
 function render(){rChrome();rContent();updateGDUI();updateInfBadge();updateMasterUI();}
 
 function rChrome(){
-  const now=new Date();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
+  const now=new Date();
+  const counts=buildCounts();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
   const cntContact=activeData().filter(d=>d.phase===1).length;
   const cntSample=activeData().filter(d=>d.phase===2).length;
   const cntClose=activeData().filter(d=>d.phase===3).length;
   const t0=today();const e30=addDays(30);
   const ongoing=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0&&e>=t0;}).length;
-  const cntTasks=pTasks.filter(p=>!p.done&&p.date&&p.date>=t0&&p.date<=e30).length; // 30일 내 미완료 업무
   const upcoming=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0&&s<=e30;}).length;
   // 30일 내 정산 예정
   const settleN=activeData().filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0&&sd<=e30&&!getCL(d).closing.settled;}).length;
@@ -1112,7 +1114,7 @@ function rChrome(){
           <span style="font-size:9px;color:rgba(61,43,140,.45);margin-top:1px">완료→정산안내→정산완료</span>
         </div>
         <div class="sb-kpi" onclick="setTab('tasks')">
-          <span class="sb-kpi-num">${cntTasks}</span>
+          <span class="sb-kpi-num">${counts.tasks}</span>
           <span class="sb-kpi-lbl">📝 업무</span>
           <span style="font-size:9px;color:rgba(61,43,140,.45);margin-top:1px">30일 내 미완료 업무</span>
         </div>
@@ -1150,7 +1152,7 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
       <div class="pc-kpi" onclick="showBadgeModal('contact')"><span class="pc-kpi-n">${cntContact}</span><span class="pc-kpi-lbl">컨택</span></div>
       <div class="pc-kpi" onclick="showBadgeModal('sample')"><span class="pc-kpi-n">${cntSample}</span><span class="pc-kpi-lbl">샘플</span></div>
       <div class="pc-kpi" onclick="showBadgeModal('closing')"><span class="pc-kpi-n">${cntClose}</span><span class="pc-kpi-lbl">마감/정산</span></div>
-      <div class="pc-kpi" onclick="setTab('tasks')"><span class="pc-kpi-n">${cntTasks}</span><span class="pc-kpi-lbl">업무</span></div>
+      <div class="pc-kpi" onclick="setTab('tasks')"><span class="pc-kpi-n">${counts.tasks}</span><span class="pc-kpi-lbl">업무</span></div>
     </div>
   </div>
 `;
@@ -1176,7 +1178,7 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
         <div class="mob-kpi" onclick="showBadgeModal('contact')"><b>${cntContact}</b><span>컨택</span></div>
         <div class="mob-kpi" onclick="showBadgeModal('sample')"><b>${cntSample}</b><span>샘플</span></div>
         <div class="mob-kpi" onclick="showBadgeModal('closing')"><b>${cntClose}</b><span>마감/정산</span></div>
-        <div class="mob-kpi" onclick="setTab('tasks')"><b>${cntTasks}</b><span>업무</span></div>
+        <div class="mob-kpi" onclick="setTab('tasks')"><b>${counts.tasks}</b><span>업무</span></div>
       </div>
     </div>`;
   ['dash','cal','list','tasks'].forEach(t=>{const b=el('mbn-'+t);if(b)b.classList.toggle('on',tab===t);});
