@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v11.4.1</title>
+<title>공구 매니저 v11.4.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v11.4.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v11.4.2</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v11.4.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v11.4.2</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -1071,7 +1071,10 @@ function buildCounts(){
     settle:   buildSettlement().length,
     contact:  buildContact().length,
     personal: buildPersonal().length,
-    imminent: activeData().filter(d=>d.phase===3).length,
+    imminent: activeData().filter(d=>{
+      if(!d.scheduleDate)return false;
+      const dv=diffDays(d.scheduleDate);return dv!==null&&dv>=0&&dv<=3;
+    }).length,
     tasks:    pTasks.filter(p=>!p.done&&p.date&&p.date>=t0&&p.date<=e30).length,
   };
 }
@@ -1086,7 +1089,12 @@ function rChrome(){
   const counts=buildCounts();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
   const cntContact=activeData().filter(d=>d.phase===1).length;
   const cntSample=activeData().filter(d=>d.phase===2).length;
-  const cntImminent=activeData().filter(d=>d.phase===3).length;
+  // 공구임박: scheduleDate가 3일 이내인 것 (날짜 기반, phase 무관)
+  const cntImminent=activeData().filter(d=>{
+    if(!d.scheduleDate)return false;
+    const dv=diffDays(d.scheduleDate);
+    return dv!==null&&dv>=0&&dv<=3;
+  }).length;
   const cntClose=activeData().filter(d=>d.phase===4).length;
   const t0=today();const e30=addDays(30);
   const ongoing=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0&&e>=t0;}).length;
@@ -1155,7 +1163,7 @@ function rChrome(){
     <div class="sb-kpi-group">
       <div class="sb-kpi-group-lbl" onclick="setTab('tasks')" style="cursor:pointer">📝 업무 <span style="font-size:10px;font-weight:900;color:#4F46E5;background:#EEF2FF;padding:1px 6px;border-radius:6px;margin-left:4px">${totalTaskN}</span></div>
       <div class="sb-kpi-row" style="flex-wrap:wrap;gap:3px">
-        ${Object.entries(PTASK_COLORS).map(([k,v])=>taskCats[k]?`<div class="sb-kpi" onclick="setTab('tasks')" style="min-width:0;padding:5px 7px;background:${v}22;border:1px solid ${v}66"><span class="sb-kpi-num" style="font-size:14px;color:#1E293B">${taskCats[k]}</span><span class="sb-kpi-lbl" style="font-size:9px">${k}</span></div>`:'').join('')}
+        ${Object.entries(PTASK_COLORS).map(([k,v])=>taskCats[k]?`<div class="sb-kpi" onclick="setTabWithFilter('tasks','${k}')" style="min-width:0;padding:5px 7px;background:${v}22;border:1px solid ${v}66"><span class="sb-kpi-num" style="font-size:14px;color:#1E293B">${taskCats[k]}</span><span class="sb-kpi-lbl" style="font-size:9px">${k}</span></div>`:'').join('')}
         ${!totalTaskN?`<div style="font-size:11px;color:rgba(61,43,140,.4);padding:6px 4px">30일 내 업무 없음</div>`:''}
       </div>
     </div>`;
@@ -1199,7 +1207,7 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
   <div style="border-top:1px solid #E2E8F0;padding-top:6px">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <span style="font-size:9px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap">📝 업무</span>
-      ${Object.entries(PTASK_COLORS).map(([k,v])=>{const cnt=taskCats[k]||0;return cnt?`<div class="pc-kpi" onclick="setTab('tasks')" style="background:${v}22;border-color:${v}88;padding:3px 8px;min-width:0"><span class="pc-kpi-n" style="color:#1E293B;font-size:13px">${cnt}</span><span class="pc-kpi-lbl">${k}</span></div>`:'';}).join('')}
+      ${Object.entries(PTASK_COLORS).map(([k,v])=>{const cnt=taskCats[k]||0;return cnt?`<div class="pc-kpi" onclick="setTabWithFilter('tasks','${k}')" style="background:${v}22;border-color:${v}88;padding:3px 8px;min-width:0"><span class="pc-kpi-n" style="color:#1E293B;font-size:13px">${cnt}</span><span class="pc-kpi-lbl">${k}</span></div>`:'';}).join('')}
       ${!totalTaskN?`<span style="font-size:11px;color:#CBD5E1">30일 내 업무 없음</span>`:''}
     </div>
   </div>
@@ -1234,7 +1242,7 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
     <div style="border-top:1px solid rgba(61,43,140,.12);padding-top:5px;margin-top:2px">
       <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
         <span style="font-size:8px;font-weight:800;color:rgba(61,43,140,.5);white-space:nowrap">📝 업무</span>
-        ${Object.entries(PTASK_COLORS).map(([k,v])=>{const cnt=taskCats[k]||0;return cnt?`<div class="mob-kpi" onclick="setTab('tasks')" style="background:${v}22;padding:3px 5px;min-width:0"><b style="color:#1E293B;font-size:12px">${cnt}</b><span style="font-size:8px">${k}</span></div>`:'';}).join('')}
+        ${Object.entries(PTASK_COLORS).map(([k,v])=>{const cnt=taskCats[k]||0;return cnt?`<div class="mob-kpi" onclick="setTabWithFilter('tasks','${k}')" style="background:${v}22;padding:3px 5px;min-width:0"><b style="color:#1E293B;font-size:12px">${cnt}</b><span style="font-size:8px">${k}</span></div>`:'';}).join('')}
         ${!totalTaskN?`<span style="font-size:10px;color:rgba(61,43,140,.35)">30일 내 업무 없음</span>`:''}
       </div>
     </div>`;
@@ -1716,6 +1724,8 @@ function rTasks(){
     if(taskFilter==='HIGH')return !p.done&&p.priority==='HIGH';
     if(taskFilter==='MID')return !p.done&&(p.priority||'MID')==='MID';
     if(taskFilter==='LOW')return !p.done&&p.priority==='LOW';
+    // 카테고리 필터
+    if(taskFilter&&taskFilter!=='all'&&PTASK_CATS.includes(taskFilter))return !p.done&&(p.category||'기타')===taskFilter;
     const catMatch=PTASK_CATS.includes(taskFilter)?p.category===taskFilter:true;
     return !p.done&&catMatch;
   });
@@ -1821,6 +1831,7 @@ function rTasks(){
 }
 
 function setTaskFilter(f){taskFilter=f;rContent();}
+function setTabWithFilter(tab_,filter_){taskFilter=filter_;setTab(tab_);}
 function setTaskSort(s){taskSort=s;rContent();}
 let _taskSearchTimer=null;
 function setTaskSearch(v){
@@ -2365,7 +2376,10 @@ function showBadgeModal(type){
   if(type==='contact')filtered=activeData().filter(d=>d.phase===1);
   else if(type==='sample'||type==='operation')filtered=activeData().filter(d=>d.phase===2);
   
-  else if(type==='imminent')filtered=activeData().filter(d=>d.phase===3);
+  else if(type==='imminent')filtered=activeData().filter(d=>{
+    if(!d.scheduleDate)return false;
+    const dv=diffDays(d.scheduleDate);return dv!==null&&dv>=0&&dv<=3;
+  });
   else if(type==='closing')filtered=activeData().filter(d=>d.phase===4);
   else if(type==='ongoing')filtered=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0b&&e>=t0b;});
   else if(type==='upcoming')filtered=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0b&&s<=e30b;});
