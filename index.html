@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v11.2</title>
+<title>공구 매니저 v11.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v11.2</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v11.3</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v11.2</div>
+      <div class="mob-title">🛍️ 공구 매니저 v11.3</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -550,11 +550,13 @@ a{text-decoration:none}
    1. CONSTANTS
 ════════════════════════════════════════════════ */
 const PHASES=[
-  {id:1,key:'contact', label:'컨택',    ico:'📨',color:'#6366F1',bg:'#EEF2FF',
+  {id:1,key:'contact',  label:'컨택',    ico:'📨',color:'#6366F1',bg:'#EEF2FF',
    checks:[{k:'dm',lbl:'DM 발송',cat:'contact',urg:false},{k:'reply',lbl:'답장 확인',cat:'contact',urg:false},{k:'proposal',lbl:'제품 제안',cat:'contact',urg:false},{k:'kakao',lbl:'카톡 연결',cat:'contact',urg:false},{k:'decided',lbl:'공구 결정',cat:'contact',urg:true}]},
-  {id:2,key:'sample',  label:'샘플',    ico:'📦',color:'#D97706',bg:'#FFFBEB',
-   checks:[{k:'info',lbl:'샘플 정보 수집',cat:'sample',urg:true},{k:'sent',lbl:'샘플 발송',cat:'sample',urg:true},{k:'tracking',lbl:'송장번호 전달',cat:'sample',urg:false},{k:'received',lbl:'수령 확인',cat:'sample',urg:false},{k:'schedule',lbl:'공구 일정 확정',cat:'sample',urg:true},{k:'link_sent',lbl:'결제링크 전달',cat:'sample',urg:false}]},
-  {id:3,key:'closing', label:'마감/정산',ico:'💰',color:'#059669',bg:'#ECFDF5',
+  {id:2,key:'sample',   label:'샘플',    ico:'📦',color:'#D97706',bg:'#FFFBEB',
+   checks:[{k:'info',lbl:'샘플 정보 수집',cat:'sample',urg:true},{k:'sent',lbl:'샘플 발송',cat:'sample',urg:true},{k:'tracking',lbl:'송장번호 전달',cat:'sample',urg:false},{k:'received',lbl:'수령 확인',cat:'sample',urg:false},{k:'schedule',lbl:'공구 일정 확정',cat:'sample',urg:true}]},
+  {id:3,key:'imminent', label:'공구임박', ico:'⏰',color:'#DC2626',bg:'#FFF5F5',
+   checks:[{k:'link_sent',lbl:'결제링크 전달',cat:'groupbuy',urg:true}]},
+  {id:4,key:'closing',  label:'마감/정산',ico:'💰',color:'#059669',bg:'#ECFDF5',
    checks:[{k:'done',lbl:'공구 완료',cat:'settlement',urg:false},{k:'settlement_info',lbl:'정산 일정 안내',cat:'settlement',urg:false},{k:'settled',lbl:'정산 완료',cat:'settlement',urg:true},{k:'next_recommend',lbl:'다음 제품 추천',cat:'contact',urg:false}]},
 ];
 const PM=Object.fromEntries(PHASES.map(p=>[p.id,p]));
@@ -590,13 +592,15 @@ const getCL=inf=>{
   const cl=inf.checklist||{};
   // 구버전 operation 키 데이터 마이그레이션
   const op=cl.operation||{};
+  // 구버전 link_sent 위치 자동 마이그레이션
+  const old_link = op.link_sent||(cl.gonggu?.link_sent)||(cl.sample?.link_sent)||false;
   return{
-    contact: {dm:false,reply:false,proposal:false,kakao:false,decided:false,...(cl.contact||{})},
-    sample:  {info:false,sent:false,tracking:false,received:false,
-              schedule:op.schedule||false,
-              link_sent:op.link_sent||(cl.gonggu?.link_sent)||false,
-              ...(cl.sample||{})},
-    closing: {done:false,settlement_info:false,settled:false,next_recommend:false,...(cl.closing||{})},
+    contact:  {dm:false,reply:false,proposal:false,kakao:false,decided:false,...(cl.contact||{})},
+    sample:   {info:false,sent:false,tracking:false,received:false,
+               schedule:op.schedule||cl.sample?.schedule||false,
+               ...(cl.sample||{})},
+    imminent: {link_sent:old_link,...(cl.imminent||{})},
+    closing:  {done:false,settlement_info:false,settled:false,next_recommend:false,...(cl.closing||{})},
   };
 };
 const getTotalProg=inf=>{const cl=getCL(inf);let done=0,total=0;PHASES.forEach(p=>{p.checks.forEach(c=>{total++;if(cl[p.key][c.k])done++;});});return{done,total}};
@@ -624,13 +628,25 @@ function migrateInf(inf){
   const mop=inf.checklist?.operation||{};
   const msm=inf.checklist?.sample||{};
   const mgg=inf.checklist?.gonggu||{};
-  if(inf.phase===3||inf.phase===4){
+  const mim=inf.checklist?.imminent||{};
+  const old_link=mop.link_sent||mgg.link_sent||msm.link_sent||mim.link_sent||false;
+  // 구버전 phase3(공구확정/gonggu) → phase3(공구임박)으로
+  if(inf.phase===3){
     return {...inf, phase:3,
       checklist:{...inf.checklist,
-        sample:{...msm, schedule:mop.schedule||msm.schedule||false, link_sent:mop.link_sent||mgg.link_sent||msm.link_sent||false},
+        sample:{...msm, schedule:mop.schedule||msm.schedule||false, link_sent:undefined},
+        imminent:{link_sent:old_link},
         gonggu:undefined, operation:undefined}};
   }
-  if(inf.phase===1||inf.phase===2) return inf;
+  // 구버전 phase4 → phase4 유지
+  if(inf.phase===4) return {...inf,
+    checklist:{...inf.checklist,
+      imminent:{link_sent:old_link,...mim},
+      gonggu:undefined, operation:undefined}};
+  if(inf.phase===1||inf.phase===2) return {...inf,
+    checklist:{...inf.checklist,
+      imminent:{link_sent:old_link,...mim},
+      gonggu:undefined, operation:undefined}};
   if(inf.phase)return inf;
   const sm={dm_sent:{phase:1,contact:{dm:true}},replied:{phase:1,contact:{dm:true,reply:true}},kakao_req:{phase:1,contact:{dm:true,reply:true,proposal:true}},proposal:{phase:1,contact:{dm:true,reply:true,proposal:true}},decided:{phase:2,sample:{decided:true}},delivery_info:{phase:2,sample:{decided:true,info:true}},sample_req:{phase:2,sample:{decided:true,info:true}},tracking:{phase:2,sample:{decided:true,info:true,sent:true,tracking:true}},delivery_ok:{phase:2,sample:{decided:true,info:true,sent:true,tracking:true,received:true}},sch_set:{phase:3,operation:{schedule:true}},link_sent:{phase:3,operation:{schedule:true}},ongoing:{phase:3,operation:{schedule:true,ongoing:true}},done:{phase:4,closing:{done:true}},settle_soon:{phase:4,closing:{done:true,settlement_info:true}},settled:{phase:4,closing:{done:true,settlement_info:true,settled:true}}};
   const m=sm[inf.stage]||{phase:1};const cl={contact:{},sample:{},operation:{},closing:{}};
@@ -885,11 +901,14 @@ function buildUrgent(){
   activeData().forEach(inf=>{
     const cl=getCL(inf);const ph=inf.phase||1;
     const dv=inf.scheduleDate?diffDays(inf.scheduleDate):null;
-    // 공구 시작 D-3 이내인데 결제링크 없음
-    if(inf.scheduleDate&&dv!==null&&dv>=0&&dv<=1&&!inf.paymentLink&&!cl.sample.schedule)
-      items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
-        product:inf.negotiating_product||inf.product||'',
-        issue:`🔗 공구 ${dv===0?'오늘':dv===1?'내일':'D-'+dv}, 결제링크 미전달`,suggest:'결제링크를 인플루언서에게 전달하세요'});
+    // 공구임박(D-3) + 결제링크 미전달 → 긴급 (link_sent 체크 시 자동 해제)
+    if(inf.scheduleDate&&dv!==null&&dv>=0&&dv<=3&&!cl.imminent.link_sent){
+      const lk=`link_missing_${inf.id}_${inf.scheduleDate}`;
+      if(!(inf.dismissedAlerts||[]).includes(lk))
+        items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
+          product:inf.negotiating_product||inf.product||'',alertKey:lk,
+          issue:`⏰ 공구 D-${dv}, 결제링크 미전달`,suggest:'공구임박 단계에서 결제링크를 전달하고 체크하세요'});
+    }
     // 샘플단계인데 샘플 미발송
     if(ph>=2&&!cl.sample.sent)
       items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
@@ -1052,6 +1071,7 @@ function buildCounts(){
     settle:   buildSettlement().length,
     contact:  buildContact().length,
     personal: buildPersonal().length,
+    imminent: activeData().filter(d=>d.phase===3).length,
     tasks:    pTasks.filter(p=>!p.done&&p.date&&p.date>=t0&&p.date<=e30).length,
   };
 }
@@ -1066,7 +1086,8 @@ function rChrome(){
   const counts=buildCounts();const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS_[now.getDay()]}요일`;
   const cntContact=activeData().filter(d=>d.phase===1).length;
   const cntSample=activeData().filter(d=>d.phase===2).length;
-  const cntClose=activeData().filter(d=>d.phase===3).length;
+  const cntImminent=activeData().filter(d=>d.phase===3).length;
+  const cntClose=activeData().filter(d=>d.phase===4).length;
   const t0=today();const e30=addDays(30);
   const ongoing=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0&&e>=t0;}).length;
   const upcoming=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0&&s<=e30;}).length;
@@ -1111,6 +1132,11 @@ function rChrome(){
           <span class="sb-kpi-lbl">📦 샘플</span>
           <span style="font-size:9px;color:rgba(61,43,140,.45);margin-top:1px">발송→수령→일정확정</span>
         </div>
+        <div class="sb-kpi" onclick="showBadgeModal('imminent')">
+          <span class="sb-kpi-num">${cntImminent}</span>
+          <span class="sb-kpi-lbl">⏰ 공구임박</span>
+          <span style="font-size:9px;color:rgba(61,43,140,.45);margin-top:1px">결제링크 전달</span>
+        </div>
         <div class="sb-kpi" onclick="showBadgeModal('closing')">
           <span class="sb-kpi-num">${cntClose}</span>
           <span class="sb-kpi-lbl">💰 마감/정산</span>
@@ -1154,6 +1180,7 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
     <div class="pc-kpi-grid">
       <div class="pc-kpi" onclick="showBadgeModal('contact')"><span class="pc-kpi-n">${cntContact}</span><span class="pc-kpi-lbl">컨택</span></div>
       <div class="pc-kpi" onclick="showBadgeModal('sample')"><span class="pc-kpi-n">${cntSample}</span><span class="pc-kpi-lbl">샘플</span></div>
+      <div class="pc-kpi" onclick="showBadgeModal('imminent')"><span class="pc-kpi-n">${cntImminent}</span><span class="pc-kpi-lbl">공구임박</span></div>
       <div class="pc-kpi" onclick="showBadgeModal('closing')"><span class="pc-kpi-n">${cntClose}</span><span class="pc-kpi-lbl">마감/정산</span></div>
       <div class="pc-kpi" onclick="setTab('tasks')"><span class="pc-kpi-n">${counts.tasks}</span><span class="pc-kpi-lbl">업무</span></div>
     </div>
@@ -1180,6 +1207,7 @@ if(el('pc-kpis'))el('pc-kpis').innerHTML=`
       <div class="mob-kpi-grid">
         <div class="mob-kpi" onclick="showBadgeModal('contact')"><b>${cntContact}</b><span>컨택</span></div>
         <div class="mob-kpi" onclick="showBadgeModal('sample')"><b>${cntSample}</b><span>샘플</span></div>
+        <div class="mob-kpi" onclick="showBadgeModal('imminent')"><b>${cntImminent}</b><span>공구임박</span></div>
         <div class="mob-kpi" onclick="showBadgeModal('closing')"><b>${cntClose}</b><span>마감/정산</span></div>
         <div class="mob-kpi" onclick="setTab('tasks')"><b>${counts.tasks}</b><span>업무</span></div>
       </div>
@@ -2298,12 +2326,13 @@ async function delPTask(id){if(!confirm('삭제할까요?'))return;await dbDel(T
 function showBadgeModal(type){
   closeId('bm-modal'); // 기존 모달 먼저 닫기
   const t0=today();const e30=addDays(30);
-  const t0b=today();const e30b=addDays(30);const now3=new Date();const ymb=`${now3.getFullYear()}-${String(now3.getMonth()+1).padStart(2,'0')}`;const cfg={contact:{title:'📨 컨택 단계',color:'#6366F1',desc:'현재 컨택 진행 중'},sample:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},operation:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},gonggu:{title:'🛍️ 공구 진행 중',color:'#2563EB',desc:'현재 공구 진행 중'},closing:{title:'💰 마감 단계',color:'#059669',desc:'정산 진행 중'},ongoing:{title:'🛍️ 공구 진행중',color:'#2563EB',desc:'오늘 기준 판매 중'},upcoming:{title:'📅 공구 예정',color:'#7C3AED',desc:'30일 내 공구 예정'},settle:{title:'💰 정산 예정',color:'#059669',desc:'30일 내 정산 예정'},done:{title:'✅ 이달 완료',color:'#0369A1',desc:'이번 달 공구 완료'},urgent:{title:'🚨 오늘 처리 필요',color:'#DC2626',desc:'긴급 업무 + 3일내 정산'}};
+  const t0b=today();const e30b=addDays(30);const now3=new Date();const ymb=`${now3.getFullYear()}-${String(now3.getMonth()+1).padStart(2,'0')}`;const cfg={contact:{title:'📨 컨택 단계',color:'#6366F1',desc:'현재 컨택 진행 중'},sample:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},operation:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},gonggu:{title:'🛍️ 공구 진행 중',color:'#2563EB',desc:'현재 공구 진행 중'},imminent:{title:'⏰ 공구임박',color:'#DC2626',desc:'결제링크 전달 필요'},closing:{title:'💰 마감/정산',color:'#059669',desc:'정산 진행 중'},ongoing:{title:'🛍️ 공구 진행중',color:'#2563EB',desc:'오늘 기준 판매 중'},upcoming:{title:'📅 공구 예정',color:'#7C3AED',desc:'30일 내 공구 예정'},settle:{title:'💰 정산 예정',color:'#059669',desc:'30일 내 정산 예정'},done:{title:'✅ 이달 완료',color:'#0369A1',desc:'이번 달 공구 완료'},urgent:{title:'🚨 오늘 처리 필요',color:'#DC2626',desc:'긴급 업무 + 3일내 정산'}};
   const c=cfg[type]||cfg.urgent;let filtered=[];
   if(type==='contact')filtered=activeData().filter(d=>d.phase===1);
   else if(type==='sample'||type==='operation')filtered=activeData().filter(d=>d.phase===2);
   
-  else if(type==='closing')filtered=activeData().filter(d=>d.phase===3);
+  else if(type==='imminent')filtered=activeData().filter(d=>d.phase===3);
+  else if(type==='closing')filtered=activeData().filter(d=>d.phase===4);
   else if(type==='ongoing')filtered=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0b&&e>=t0b;});
   else if(type==='upcoming')filtered=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0b&&s<=e30b;});
   else if(type==='settle')filtered=activeData().filter(d=>{const sd=calcSettleDate(d);return sd&&sd>=t0b&&sd<=e30b&&!getCL(d).closing.settled;});
