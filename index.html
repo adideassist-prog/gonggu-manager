@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v13.5.4</title>
+<title>공구 매니저 v12.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -262,7 +262,7 @@ a{text-decoration:none}
 .ptc-title{font-size:13px;font-weight:800;margin-bottom:2px}
 .ptc-meta{font-size:11px;color:#64748B;font-weight:600}
 .ptc-memo{font-size:11px;color:#94A3B8;font-style:italic;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ptc-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:5px;flex-shrink:0;white-space:nowrap;color:#1E293B;background:white;border:1.5px solid rgba(0,0,0,.25)}
+.ptc-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:5px;flex-shrink:0;white-space:nowrap}
 
 .empty-s{text-align:center;padding:28px 20px;color:#94A3B8}
 .empty-s-ico{font-size:34px;margin-bottom:7px}
@@ -286,7 +286,7 @@ a{text-decoration:none}
 .cal-dow-row div:first-child{color:#EF4444}
 .cal-dow-row div:last-child{color:#6366F1}
 .cal-weeks-wrap{display:flex;flex-direction:column}
-.cal-week{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #F1F5F9;position:relative;min-height:160px}
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #F1F5F9;position:relative;min-height:80px}
 .cal-cell{padding:4px 2px 2px;cursor:pointer;overflow:hidden}
 .cal-cell:hover{background:#FAFBFF}
 .cal-cell.today-cell .day-num{background:linear-gradient(135deg,#A78BFA,#C4B5FD);color:white;border-radius:50%}
@@ -301,7 +301,7 @@ a{text-decoration:none}
 .evb-n{font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;color:#1E1B4B;line-height:1}
 .evb-p{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(30,27,75,.7);line-height:1;flex-shrink:0;max-width:45%}
 .ev-bar:hover{opacity:1;box-shadow:0 3px 10px rgba(0,0,0,.18)}
-.ev-pt{position:absolute;height:20px;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;padding:0 6px;gap:4px;overflow:hidden;pointer-events:all;cursor:pointer;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.12);opacity:.88}.evp-c{font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;color:#1E1B4B;line-height:1}.evp-t{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;color:rgba(30,27,75,.75);line-height:1}
+.ev-pt{position:absolute;height:36px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:2px 7px;gap:1px;overflow:hidden;pointer-events:all;cursor:pointer;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.12);opacity:.88}.evp-c{font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:#1E1B4B;line-height:1.3}.evp-t{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:rgba(30,27,75,.65);line-height:1.3}
 .ev-pt:hover{opacity:1;box-shadow:0 3px 10px rgba(0,0,0,.18)}
 /* Day detail */
 .day-detail-panel{background:white;border-radius:13px;padding:12px 14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.08);margin-top:10px}
@@ -415,12 +415,12 @@ a{text-decoration:none}
   .cal-wrap{display:flex;flex-direction:column;gap:8px}
   .cal-grid-box{width:100%}
   .cal-weeks-wrap{display:flex;flex-direction:column}
-  .cal-week{min-height:160px}
-  .cal-cell{min-height:150px}
+  .cal-week{min-height:80px}
+  .cal-cell{min-height:70px}
   /* Bigger text on PC */
   .day-num{font-size:14px;width:26px;height:26px}
   .ev-bar{height:22px}.evb-n{font-size:12px;font-weight:800;color:#1E1B4B}.evp-c{font-size:12px;font-weight:800;color:#1E1B4B}.evp-t{font-size:11px;font-weight:600;color:rgba(30,27,75,.65)}
-  .ev-pt{height:22px}
+  .ev-pt{height:38px}
   .ev-layer{top:32px}
   .day-detail-panel{margin-top:0;flex-shrink:0}
 }
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v13.5.4</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v12.3</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v13.5.4</div>
+      <div class="mob-title">🛍️ 공구 매니저 v12.3</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -578,7 +578,7 @@ const MONTHS_=['1월','2월','3월','4월','5월','6월','7월','8월','9월','1
    2. HELPERS (no name conflicts — calcSettleDate, not autoSettle)
 ════════════════════════════════════════════════ */
 const uid    = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const today  = ()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+const today  = ()=>new Date().toISOString().split('T')[0];
 const addDays= (n,b)=>{const d=new Date((b||today())+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]};
 const fmtDate= s=>{if(!s)return'';const d=new Date(s+'T00:00:00');return`${d.getMonth()+1}/${d.getDate()}`};
 const fmtFull= s=>{if(!s)return'';const d=new Date(s+'T00:00:00');return`${d.getMonth()+1}월 ${d.getDate()}일 ${DAYS_[d.getDay()]}`;};
@@ -869,8 +869,6 @@ function buildUrgent(){
     if(!inf.scheduleDate)return;
     const dv=diffDays(inf.scheduleDate);
     if(dv===null||dv<0||dv>1)return;
-    const cl0=getCL(inf);
-    if(cl0.imminent.link_sent)return; // 결제링크 전달 완료 → 공구 시작 알림 제거
     const alertKey=`gonggu_start_${inf.id}_${inf.scheduleDate}`;
     if((inf.dismissedAlerts||[]).includes(alertKey))return;
     const dvTxt=dv===0?'오늘 시작!':dv===1?'내일 시작':`D-${dv} 시작`;
@@ -909,8 +907,7 @@ function buildUrgent(){
       if(!(inf.dismissedAlerts||[]).includes(lk))
         items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
           product:inf.negotiating_product||inf.product||'',alertKey:lk,
-          issue:`⏰ 공구 D-${dv}, 결제링크 미전달`,suggest:'공구임박 단계에서 결제링크를 전달하고 체크하세요',
-          linkCheckId:inf.id, phaseId:3});
+          issue:`⏰ 공구 D-${dv}, 결제링크 미전달`,suggest:'공구임박 단계에서 결제링크를 전달하고 체크하세요'});
     }
     // 샘플단계인데 샘플 미발송
     if(ph>=2&&!cl.sample.sent)
@@ -1103,7 +1100,7 @@ function rChrome(){
   const settleN=activeData().filter(d=>{const sd=calcSettleDate(d);if(!sd||getCL(d).closing.settled)return false;return sd<t0||sd<=addDays(7);}).length;
   // 이달 공구 완료 (scheduleEndDate가 이번달 내)
   const now2=new Date();const ym=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
-  const doneN=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ym)&&d.scheduleEndDate<=t0).length;
+  const doneN=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ym)&&getCL(d).closing.done).length;
   // 오늘 처리 필요 (긴급 + 오늘 개인일정 + 3일내 정산)
   const urgItems=buildUrgent();
   const todayN=urgItems.length;
@@ -1299,24 +1296,14 @@ function rDash(){
         </div>`;
       }
       if(item.type==='warn'){
-        const _wi=data.find(x=>x.id===item.id);
-        const _wph=_wi?PM[_wi.phase||1]:null;
-        const _wcl=_wi&&_wph?getCL(_wi)[_wph.key]:null;
-        const _wks=_wph&&_wcl?_wph.checks.map(c=>({lbl:c.lbl,done:!!_wcl[c.k]})):[];
-        const _wnext=_wks.find(c=>!c.done);
-        const _wkHTML=_wks.length?`<div class="sc-checks" style="margin-top:5px">${_wks.map(c=>`<div class="sc-ck${c.done?' is-done':''}"><div class="sc-ck-box${c.done?' done':''}">${c.done?'✓':''}</div><span class="sc-ck-lbl">${c.lbl}</span>${!c.done&&c===_wnext?'<span class="sc-ck-arrow">← 지금</span>':''}</div>`).join('')}</div>`:'';
         return`<div class="uc" style="background:#FFFBEB;border:1.5px solid #FDE68A" onclick="openEdit('${item.id}')">
           <div class="uc-ico" style="background:#FEF3C7;font-size:18px">⚠️</div>
           <div class="uc-body">
             <div class="uc-name"><span>${item.name}${item.nickname?' <span style="color:#5B21B6;font-weight:800">('+item.nickname+')</span>':''}</span><span class="uc-product">${item.product}</span></div>
             <div class="uc-action" style="color:#92400E;font-weight:800">${item.issue}</div>
             <div style="font-size:11px;color:#78350F;margin-top:2px">💡 ${item.suggest}</div>
-            ${_wkHTML}
           </div>
-          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
-            ${item.linkCheckId?`<button onclick="event.stopPropagation();checkLinkSent('${item.linkCheckId}')" style="padding:4px 8px;border-radius:6px;border:1px solid #DC2626;background:#DC2626;color:white;font-size:10px;font-weight:700;cursor:pointer">✓ 전달완료</button>`:''}
-            ${item.alertKey?`<button onclick="event.stopPropagation();dismissAlert('${item.id}','${item.alertKey}')" style="padding:4px 8px;border-radius:6px;border:1px solid #D97706;background:white;color:#92400E;font-size:10px;font-weight:700;cursor:pointer">확인</button>`:''}
-          </div>
+          ${item.alertKey?`<button onclick="event.stopPropagation();dismissAlert('${item.id}','${item.alertKey}')" style="flex-shrink:0;padding:4px 8px;border-radius:6px;border:1px solid #D97706;background:white;color:#92400E;font-size:10px;font-weight:700;cursor:pointer">확인</button>`:''}
         </div>`;
       }
       if(item.type==='settle'){
@@ -1336,13 +1323,6 @@ function rDash(){
         </div>`;
       }
       const ph=item.phase;const cm=CAT_META[item.cat]||CAT_META.contact;
-      // 체크리스트 표시
-      const _ui=data.find(x=>x.id===item.id);
-      const _uph=_ui?PM[_ui.phase||1]:null;
-      const _ucl=_ui&&_uph?getCL(_ui)[_uph.key]:null;
-      const _ucks=_uph&&_ucl?_uph.checks.map(c=>({lbl:c.lbl,done:!!_ucl[c.k]})):[];
-      const _unext=_ucks.find(c=>!c.done);
-      const _uckHTML=_ucks.length?`<div class="sc-checks" style="margin-top:6px">${_ucks.map(c=>`<div class="sc-ck${c.done?' is-done':''}"><div class="sc-ck-box${c.done?' done':''}">${c.done?'✓':''}</div><span class="sc-ck-lbl">${c.lbl}</span>${!c.done&&c===_unext?'<span class="sc-ck-arrow">← 지금</span>':''}</div>`).join('')}</div>`:'';
       return`<div class="uc today" onclick="openEdit('${item.id}')">
         <div class="uc-urg"></div>
         <div class="uc-ico" style="background:${cm.bg}">${cm.ico}</div>
@@ -1355,7 +1335,6 @@ function rDash(){
           </div>
           <div class="uc-action" style="font-size:13px;font-weight:800;color:#DC2626">${item.urgReason||('→ '+item.action)}</div>
           <div class="uc-meta"><span class="uc-ph" style="background:${cm.bg};color:${cm.color}">${cm.lbl}</span></div>
-          ${_uckHTML}
         </div>
       </div>`;
     }).join('')
@@ -1417,25 +1396,15 @@ function rDash(){
   const s4Body=`<div class="settle-summary">이번 달 정산 예정: ${settleThisMonth.length}건</div>`+
     (settleItems.length
       ?settleItems.map(item=>{
-        const d=diffDays(item.settleDate);const isUrgent=d!==null&&(d<=7||d<0);
-        // closing 체크리스트
-        const _si=data.find(x=>x.id===item.id);
-        const _sc=_si?getCL(_si).closing:null;
-        const _schecks=_sc?PM[4].checks.map(c=>({lbl:c.lbl,done:_sc[c.k]})):[];
-        const _snext=_schecks.find(c=>!c.done);
-        const _sckHTML=_schecks.length?`<div class="sc-checks" style="margin-top:5px">${_schecks.map(c=>`<div class="sc-ck${c.done?' is-done':''}"><div class="sc-ck-box${c.done?' done':''}">${c.done?'✓':''}</div><span class="sc-ck-lbl">${c.lbl}</span>${!c.done&&c===_snext?'<span class="sc-ck-arrow">← 지금</span>':''}</div>`).join('')}</div>`:'';
+        const d=diffDays(item.settleDate);const isUrgent=d!==null&&d<=7;
         return`<div class="stc${isUrgent?' urgent-settle':''}" onclick="openEdit('${item.id}')">
           <div class="stc-left">
             <div class="stc-ico">💰</div>
-            <div>
-              <div class="stc-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''} ${catTagsHTML(item.category,'12px',true)}</div>
-              <div class="stc-product">${item.product}</div>
-              ${_sckHTML}
-            </div>
+            <div><div class="stc-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''} ${catTagsHTML(item.category,'12px',true)}</div><div class="stc-product">${item.product}</div></div>
           </div>
           <div class="stc-right">
             <div class="stc-date">${fmtDate(item.settleDate)}</div>
-            <div class="stc-d" style="color:${d<0||d===0?'#EF4444':isUrgent?'#EF4444':'#94A3B8'}">${d===0?'오늘':d===1?'내일':d<0?`${Math.abs(d)}일 경과`:`D-${d}`}</div>
+            <div class="stc-d" style="color:${isUrgent?'#EF4444':'#94A3B8'}">${d===0?'오늘':d===1?'내일':d<0?`${Math.abs(d)}일 경과`:`D-${d}`}</div>
           </div>
         </div>`;
       }).join('')
@@ -1447,12 +1416,6 @@ function rDash(){
   const s5Body=contactItems.length
     ?contactItems.map(item=>{
       const ph=item.phase;
-      // contact 체크리스트
-      const _ci=data.find(x=>x.id===item.id);
-      const _cc=_ci?getCL(_ci).contact:null;
-      const _cchecks=_cc?PM[1].checks.map(c=>({lbl:c.lbl,done:_cc[c.k]})):[];
-      const _cnext=_cchecks.find(c=>!c.done);
-      const _cckHTML=_cchecks.length?`<div class="sc-checks" style="margin-top:5px">${_cchecks.map(c=>`<div class="sc-ck${c.done?' is-done':''}"><div class="sc-ck-box${c.done?' done':''}">${c.done?'✓':''}</div><span class="sc-ck-lbl">${c.lbl}</span>${!c.done&&c===_cnext?'<span class="sc-ck-arrow">← 지금</span>':''}</div>`).join('')}</div>`:'';
       return`<div class="cc${item.remindLabel?' '+item.remindLabel:''}" onclick="openEdit('${item.id}')">
         <div class="cc-ico">💬</div>
         <div class="cc-body">
@@ -1465,7 +1428,6 @@ function rDash(){
           ${item.na?`<div class="cc-action">→ ${item.na.action}</div>`:''}
           ${item.remindLabel==='remind14'?`<div class="cc-remind r14">🚨 1차 재연락 (${item.daysSince}일 경과)</div>`:''}
           ${item.remindLabel==='remind21'?`<div class="cc-remind r21">⚠️ 최종 확인 (${item.daysSince}일 경과)</div>`:''}
-          ${_cckHTML}
         </div>
         <span class="cc-days">${item.daysSince}일</span>
       </div>`;
@@ -1597,7 +1559,7 @@ function rCal(){
     const BAR_H=22;rows.forEach((row,ri)=>{row.forEach(({sp,s,e})=>{const left=(s*cw).toFixed(2)+'%';const width=((e-s+1)*cw-.3).toFixed(2)+'%';const top=(ri*BAR_H+2)+'px';const isS=sp.start>=ws,isE=sp.end<=we;const r2=isS&&isE?'5px':isS?'5px 2px 2px 5px':isE?'2px 5px 5px 2px':'2px';const nameHtml=`<span class="evb-n">${sp.shortLabel}</span>`;const prodHtml='';const barFn=sp.isTaskSpan?`openTaskEdit('${sp.id}')`:`openEdit('${sp.id}')`;bars+=`<div class="ev-bar" onclick="${barFn}" style="left:${left};width:${width};top:${top};background:${sp.color};border-radius:${r2}">${nameHtml}${prodHtml}</div>`;});});
     const ptRow=rows.length;
     wk.forEach((cell,ci)=>{if(!cell.date)return;(ptsByDay[cell.date]||[]).forEach((pt,pi)=>{const top=((ptRow+pi)*BAR_H+2)+'px';const left=(ci*cw).toFixed(2)+'%';const width=(cw-.3).toFixed(2)+'%';const fn=pt.isPT?`openTaskEdit('${pt.id}')`:`openEdit('${pt.id}')`;const ptCat=pt.isPT?pt.category:(pt.ptCategory||'');const ptInner=ptCat?`<span class="evp-c">${ptCat}</span><span class="evp-t">${pt.shortLabel}</span>`:`<span class="evp-t">${pt.shortLabel}</span>`;bars+=`<div class="ev-pt" onclick="${fn}" style="left:${left};width:${width};top:${top};background:${pt.color}">${ptInner}</div>`;});});
-    const maxR=ptRow+Math.max(0,...Object.values(ptsByDay).map(a=>a.length),0);const mh=Math.max(160,32+maxR*BAR_H+4);
+    const maxR=ptRow+Math.max(0,...Object.values(ptsByDay).map(a=>a.length),0);const mh=Math.max(90,32+maxR*BAR_H+4);
     return`<div class="cal-week" style="min-height:${mh}px">${wk.map(c=>cellH(c,t)).join('')}<div class="ev-layer">${bars}</div></div>`;
   }).join('');
 
@@ -1981,7 +1943,7 @@ async function toggleCk(phId,key,infId){
   const isNew=!data.find(x=>x.id===infId);
   if(!inf&&isNew){
     // 신규: editInf가 없으면 기본값으로 생성
-    inf={id:infId,phase:1,checklist:{contact:{},sample:{},imminent:{},closing:{}},gongguHistory:[]};
+    inf={id:infId,phase:1,checklist:{contact:{},sample:{},operation:{},closing:{}},gongguHistory:[]};
   }
   if(!inf)return;
 
@@ -2379,7 +2341,7 @@ function showBadgeModal(type){
     filtered=activeData().filter(d=>{const sd=calcSettleDate(d);if(!sd||getCL(d).closing.settled)return false;return sd<_t||sd<=_e7;});
     filtered.sort((a,b)=>(calcSettleDate(a)||'').localeCompare(calcSettleDate(b)||''));
   }
-  else if(type==='done')filtered=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb)&&d.scheduleEndDate<=t0b);
+  else if(type==='done')filtered=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb)&&getCL(d).closing.done);
   else if(type==='urgent'){
     const urgItems=buildUrgent();
     const ids=new Set(urgItems.filter(i=>i.id&&i.type!=='personal').map(i=>i.id));
@@ -2447,15 +2409,6 @@ function showBadgeModal(type){
 }
 function closeBM(){closeId('bm-modal');}
 
-async function checkLinkSent(infId){
-  // 긴급 카드에서 결제링크 전달완료 직접 체크
-  const inf=data.find(x=>x.id===infId);if(!inf||!isMaster)return;
-  const cl=getCL(inf);
-  cl.imminent.link_sent=true;
-  const updated={...inf,checklist:cl,updatedAt:new Date().toISOString()};
-  await dbPut(IS,updated);data=await dbAll(IS);
-  gdSave();render();showToast('✅ 결제링크 전달 완료로 체크됐어요');
-}
 async function dismissAlert(infId,alertKey){
   const inf=data.find(x=>x.id===infId);if(!inf)return;
   const dismissed=[...(inf.dismissedAlerts||[])];
