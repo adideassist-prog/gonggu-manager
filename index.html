@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v13.7.1</title>
+<title>공구 매니저 v13.7.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -407,11 +407,11 @@ a{text-decoration:none}
   .page{flex:1;overflow-y:auto;min-height:0;padding:12px 20px 20px;position:relative}
   #srch-wrap{padding:10px 20px 0}
   /* 캘린더 탭일 때만 page도 flex로 */
-  .page.cal-page{display:flex;flex-direction:column;padding-bottom:0}
+  .page.cal-page{display:block;padding-bottom:0}
   /* Calendar body fills remaining space */
-  .cal-body-pc{flex:1;display:flex;flex-direction:column;min-height:0;width:100%}
+  .cal-body-pc{height:100%;display:flex;flex-direction:column;width:100%}
   .cal-main-pc{flex:1;display:flex;flex-direction:column;min-height:0;width:100%}
-  .cal-side-pc{flex-shrink:0;width:100%;margin-top:10px}
+  .cal-side-pc{width:100%;margin-top:10px}
   .cal-wrap{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0}
   .cal-grid-box{flex:1;display:flex;flex-direction:column;min-height:0;width:100%}
   .cal-weeks-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v13.7.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v13.7.3</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v13.7.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v13.7.3</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
