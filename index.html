@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v13.4</title>
+<title>공구 매니저 v13.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -262,7 +262,7 @@ a{text-decoration:none}
 .ptc-title{font-size:13px;font-weight:800;margin-bottom:2px}
 .ptc-meta{font-size:11px;color:#64748B;font-weight:600}
 .ptc-memo{font-size:11px;color:#94A3B8;font-style:italic;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ptc-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:5px;flex-shrink:0;white-space:nowrap;color:#1E293B!important;border:1px solid rgba(0,0,0,.15)}
+.ptc-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:5px;flex-shrink:0;white-space:nowrap;color:#1E293B;background:white;border:1.5px solid rgba(0,0,0,.25)}
 
 .empty-s{text-align:center;padding:28px 20px;color:#94A3B8}
 .empty-s-ico{font-size:34px;margin-bottom:7px}
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v13.4</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v13.5</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v13.4</div>
+      <div class="mob-title">🛍️ 공구 매니저 v13.5</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -1299,12 +1299,19 @@ function rDash(){
         </div>`;
       }
       if(item.type==='warn'){
+        const _wi=data.find(x=>x.id===item.id);
+        const _wph=_wi?PM[_wi.phase||1]:null;
+        const _wcl=_wi&&_wph?getCL(_wi)[_wph.key]:null;
+        const _wks=_wph&&_wcl?_wph.checks.map(c=>({lbl:c.lbl,done:!!_wcl[c.k]})):[];
+        const _wnext=_wks.find(c=>!c.done);
+        const _wkHTML=_wks.length?`<div class="sc-checks" style="margin-top:5px">${_wks.map(c=>`<div class="sc-ck${c.done?' is-done':''}"><div class="sc-ck-box${c.done?' done':''}">${c.done?'✓':''}</div><span class="sc-ck-lbl">${c.lbl}</span>${!c.done&&c===_wnext?'<span class="sc-ck-arrow">← 지금</span>':''}</div>`).join('')}</div>`:'';
         return`<div class="uc" style="background:#FFFBEB;border:1.5px solid #FDE68A" onclick="openEdit('${item.id}')">
           <div class="uc-ico" style="background:#FEF3C7;font-size:18px">⚠️</div>
           <div class="uc-body">
             <div class="uc-name"><span>${item.name}${item.nickname?' <span style="color:#5B21B6;font-weight:800">('+item.nickname+')</span>':''}</span><span class="uc-product">${item.product}</span></div>
             <div class="uc-action" style="color:#92400E;font-weight:800">${item.issue}</div>
             <div style="font-size:11px;color:#78350F;margin-top:2px">💡 ${item.suggest}</div>
+            ${_wkHTML}
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
             ${item.linkCheckId?`<button onclick="event.stopPropagation();checkLinkSent('${item.linkCheckId}')" style="padding:4px 8px;border-radius:6px;border:1px solid #DC2626;background:#DC2626;color:white;font-size:10px;font-weight:700;cursor:pointer">✓ 전달완료</button>`:''}
@@ -1458,6 +1465,7 @@ function rDash(){
           ${item.na?`<div class="cc-action">→ ${item.na.action}</div>`:''}
           ${item.remindLabel==='remind14'?`<div class="cc-remind r14">🚨 1차 재연락 (${item.daysSince}일 경과)</div>`:''}
           ${item.remindLabel==='remind21'?`<div class="cc-remind r21">⚠️ 최종 확인 (${item.daysSince}일 경과)</div>`:''}
+          ${_cckHTML}
         </div>
         <span class="cc-days">${item.daysSince}일</span>
       </div>`;
