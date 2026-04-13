@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v13.2</title>
+<title>공구 매니저 v13.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v13.2</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v13.3</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v13.2</div>
+      <div class="mob-title">🛍️ 공구 매니저 v13.3</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -869,6 +869,8 @@ function buildUrgent(){
     if(!inf.scheduleDate)return;
     const dv=diffDays(inf.scheduleDate);
     if(dv===null||dv<0||dv>1)return;
+    const cl0=getCL(inf);
+    if(cl0.imminent.link_sent)return; // 결제링크 전달 완료 → 공구 시작 알림 제거
     const alertKey=`gonggu_start_${inf.id}_${inf.scheduleDate}`;
     if((inf.dismissedAlerts||[]).includes(alertKey))return;
     const dvTxt=dv===0?'오늘 시작!':dv===1?'내일 시작':`D-${dv} 시작`;
@@ -1400,15 +1402,25 @@ function rDash(){
   const s4Body=`<div class="settle-summary">이번 달 정산 예정: ${settleThisMonth.length}건</div>`+
     (settleItems.length
       ?settleItems.map(item=>{
-        const d=diffDays(item.settleDate);const isUrgent=d!==null&&d<=7;
+        const d=diffDays(item.settleDate);const isUrgent=d!==null&&(d<=7||d<0);
+        // closing 체크리스트
+        const _si=data.find(x=>x.id===item.id);
+        const _sc=_si?getCL(_si).closing:null;
+        const _schecks=_sc?PM[4].checks.map(c=>({lbl:c.lbl,done:_sc[c.k]})):[];
+        const _snext=_schecks.find(c=>!c.done);
+        const _sckHTML=_schecks.length?`<div class="sc-checks" style="margin-top:5px">${_schecks.map(c=>`<div class="sc-ck${c.done?' is-done':''}"><div class="sc-ck-box${c.done?' done':''}">${c.done?'✓':''}</div><span class="sc-ck-lbl">${c.lbl}</span>${!c.done&&c===_snext?'<span class="sc-ck-arrow">← 지금</span>':''}</div>`).join('')}</div>`:'';
         return`<div class="stc${isUrgent?' urgent-settle':''}" onclick="openEdit('${item.id}')">
           <div class="stc-left">
             <div class="stc-ico">💰</div>
-            <div><div class="stc-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''} ${catTagsHTML(item.category,'12px',true)}</div><div class="stc-product">${item.product}</div></div>
+            <div>
+              <div class="stc-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''} ${catTagsHTML(item.category,'12px',true)}</div>
+              <div class="stc-product">${item.product}</div>
+              ${_sckHTML}
+            </div>
           </div>
           <div class="stc-right">
             <div class="stc-date">${fmtDate(item.settleDate)}</div>
-            <div class="stc-d" style="color:${isUrgent?'#EF4444':'#94A3B8'}">${d===0?'오늘':d===1?'내일':d<0?`${Math.abs(d)}일 경과`:`D-${d}`}</div>
+            <div class="stc-d" style="color:${d<0||d===0?'#EF4444':isUrgent?'#EF4444':'#94A3B8'}">${d===0?'오늘':d===1?'내일':d<0?`${Math.abs(d)}일 경과`:`D-${d}`}</div>
           </div>
         </div>`;
       }).join('')
@@ -1420,6 +1432,12 @@ function rDash(){
   const s5Body=contactItems.length
     ?contactItems.map(item=>{
       const ph=item.phase;
+      // contact 체크리스트
+      const _ci=data.find(x=>x.id===item.id);
+      const _cc=_ci?getCL(_ci).contact:null;
+      const _cchecks=_cc?PM[1].checks.map(c=>({lbl:c.lbl,done:_cc[c.k]})):[];
+      const _cnext=_cchecks.find(c=>!c.done);
+      const _cckHTML=_cchecks.length?`<div class="sc-checks" style="margin-top:5px">${_cchecks.map(c=>`<div class="sc-ck${c.done?' is-done':''}"><div class="sc-ck-box${c.done?' done':''}">${c.done?'✓':''}</div><span class="sc-ck-lbl">${c.lbl}</span>${!c.done&&c===_cnext?'<span class="sc-ck-arrow">← 지금</span>':''}</div>`).join('')}</div>`:'';
       return`<div class="cc${item.remindLabel?' '+item.remindLabel:''}" onclick="openEdit('${item.id}')">
         <div class="cc-ico">💬</div>
         <div class="cc-body">
