@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v13.3</title>
+<title>공구 매니저 v13.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v13.3</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v13.4</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v13.3</div>
+      <div class="mob-title">🛍️ 공구 매니저 v13.4</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -1329,6 +1329,13 @@ function rDash(){
         </div>`;
       }
       const ph=item.phase;const cm=CAT_META[item.cat]||CAT_META.contact;
+      // 체크리스트 표시
+      const _ui=data.find(x=>x.id===item.id);
+      const _uph=_ui?PM[_ui.phase||1]:null;
+      const _ucl=_ui&&_uph?getCL(_ui)[_uph.key]:null;
+      const _ucks=_uph&&_ucl?_uph.checks.map(c=>({lbl:c.lbl,done:!!_ucl[c.k]})):[];
+      const _unext=_ucks.find(c=>!c.done);
+      const _uckHTML=_ucks.length?`<div class="sc-checks" style="margin-top:6px">${_ucks.map(c=>`<div class="sc-ck${c.done?' is-done':''}"><div class="sc-ck-box${c.done?' done':''}">${c.done?'✓':''}</div><span class="sc-ck-lbl">${c.lbl}</span>${!c.done&&c===_unext?'<span class="sc-ck-arrow">← 지금</span>':''}</div>`).join('')}</div>`:'';
       return`<div class="uc today" onclick="openEdit('${item.id}')">
         <div class="uc-urg"></div>
         <div class="uc-ico" style="background:${cm.bg}">${cm.ico}</div>
@@ -1341,6 +1348,7 @@ function rDash(){
           </div>
           <div class="uc-action" style="font-size:13px;font-weight:800;color:#DC2626">${item.urgReason||('→ '+item.action)}</div>
           <div class="uc-meta"><span class="uc-ph" style="background:${cm.bg};color:${cm.color}">${cm.lbl}</span></div>
+          ${_uckHTML}
         </div>
       </div>`;
     }).join('')
