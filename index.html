@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v13.5.4</title>
+<title>공구 매니저 v13.5.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -269,7 +269,7 @@ a{text-decoration:none}
 .empty-s-txt{font-size:13px;font-weight:700}
 
 /* ════════════════════════════════════════ CALENDAR ════════════════════════════════════════ */
-.cal-wrap{display:flex;flex-direction:column;gap:10px}
+.cal-wrap{display:flex;flex-direction:column;gap:10px;min-height:calc(100vh - 220px)}
 .cal-mode-row{display:flex;gap:7px}
 .cal-mode-btn{flex:1;padding:8px;border-radius:9px;border:2px solid #E2E8F0;background:white;font-size:12px;font-weight:700;color:#94A3B8;cursor:pointer;font-family:inherit;transition:all .15s}
 .cal-mode-btn.on{border-color:#4F46E5;background:#EEF2FF;color:#4F46E5}
@@ -285,7 +285,7 @@ a{text-decoration:none}
 .cal-dow-row div{text-align:center;font-size:11px;font-weight:700;color:#94A3B8;padding:8px 0}
 .cal-dow-row div:first-child{color:#EF4444}
 .cal-dow-row div:last-child{color:#6366F1}
-.cal-weeks-wrap{display:flex;flex-direction:column}
+.cal-weeks-wrap{display:flex;flex-direction:column;flex:1}
 .cal-week{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #F1F5F9;position:relative;min-height:160px}
 .cal-cell{padding:4px 2px 2px;cursor:pointer;overflow:hidden}
 .cal-cell:hover{background:#FAFBFF}
@@ -407,12 +407,12 @@ a{text-decoration:none}
   .page{flex:1;overflow-y:auto;min-height:0;padding:12px 20px 20px;position:relative}
   #srch-wrap{padding:10px 20px 0}
   /* 캘린더 탭일 때만 page도 flex로 */
-  .page.cal-page{display:flex;flex-direction:column;padding-bottom:20px}
+  .page.cal-page{display:block;padding-bottom:40px}
   /* Calendar body fills remaining space */
   .cal-body-pc{display:block;width:100%}
   .cal-main-pc{width:100%}
   .cal-side-pc{width:100%;margin-top:10px}
-  .cal-wrap{display:flex;flex-direction:column;gap:8px}
+  .cal-wrap{display:flex;flex-direction:column;gap:8px;min-height:calc(100vh - 200px)}
   .cal-grid-box{width:100%}
   .cal-weeks-wrap{display:flex;flex-direction:column}
   .cal-week{min-height:160px}
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v13.5.4</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v13.5.5</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v13.5.4</div>
+      <div class="mob-title">🛍️ 공구 매니저 v13.5.5</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
