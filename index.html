@@ -285,7 +285,7 @@ a{text-decoration:none}
 .cal-dow-row div{text-align:center;font-size:11px;font-weight:700;color:#94A3B8;padding:8px 0}
 .cal-dow-row div:first-child{color:#EF4444}
 .cal-dow-row div:last-child{color:#6366F1}
-.cal-weeks-wrap{display:flex;flex-direction:column}
+  .cal-weeks-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
 .cal-week{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #F1F5F9;position:relative;min-height:160px}
 .cal-cell{padding:4px 2px 2px;cursor:pointer;overflow:hidden}
 .cal-cell:hover{background:#FAFBFF}
@@ -407,16 +407,16 @@ a{text-decoration:none}
   .page{flex:1;overflow-y:auto;min-height:0;padding:12px 20px 20px;position:relative}
   #srch-wrap{padding:10px 20px 0}
   /* 캘린더 탭일 때만 page도 flex로 */
-  .page.cal-page{display:flex;flex-direction:column;padding-bottom:20px}
+  .page.cal-page{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:10px}
   /* Calendar body fills remaining space */
-  .cal-body-pc{display:block;width:100%}
-  .cal-main-pc{width:100%}
+  .cal-body-pc{flex:1;display:flex;flex-direction:column;min-height:0;width:100%}
+  .cal-main-pc{flex:1;display:flex;flex-direction:column;min-height:0;width:100%}
   .cal-side-pc{width:100%;margin-top:10px}
-  .cal-wrap{display:flex;flex-direction:column;gap:8px}
-  .cal-grid-box{width:100%}
-  .cal-weeks-wrap{display:flex;flex-direction:column}
-  .cal-week{min-height:160px}
-  .cal-cell{min-height:150px}
+  .cal-wrap{flex:1;display:flex;flex-direction:column;min-height:0;gap:8px}
+  .cal-grid-box{flex:1;display:flex;flex-direction:column;min-height:0;width:100%}
+  .cal-weeks-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
+  .cal-week{flex:1;min-height:120px}
+  .cal-cell{height:100%;min-height:100px}
     /* Bigger text on PC */
   .day-num{font-size:14px;width:26px;height:26px}
   .ev-bar{height:22px}.evb-n{font-size:12px;font-weight:800;color:#1E1B4B}.evp-c{font-size:12px;font-weight:800;color:#1E1B4B}.evp-t{font-size:11px;font-weight:600;color:rgba(30,27,75,.65)}
