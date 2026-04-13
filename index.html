@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v13.5.6</title>
+<title>공구 매니저 v13.5.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -412,10 +412,11 @@ a{text-decoration:none}
   .cal-body-pc{display:block;width:100%}
   .cal-main-pc{width:100%}
   .cal-side-pc{width:100%;margin-top:10px}
-  .cal-wrap{display:flex;flex-direction:column;gap:8px}
-  .cal-grid-box{width:100%}
-  .cal-weeks-wrap{display:flex;flex-direction:column}
-  .cal-week{min-height:80px}
+  .cal-wrap{flex:1;display:flex;flex-direction:column;gap:8px}
+  .cal-grid-box{flex:1;display:flex;flex-direction:column;width:100%}
+  .cal-weeks-wrap{flex:1;display:flex;flex-direction:column}
+  .cal-week{flex:1;min-height:80px}
+  .cal-cell{height:100%}
   .cal-cell{min-height:70px}
   /* Bigger text on PC */
   .day-num{font-size:14px;width:26px;height:26px}
@@ -456,7 +457,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v13.5.6</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v13.5.7</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +487,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v13.5.6</div>
+      <div class="mob-title">🛍️ 공구 매니저 v13.5.7</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
