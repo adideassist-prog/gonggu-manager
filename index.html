@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v13.5.5</title>
+<title>공구 매니저 v13.5.6</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -269,7 +269,7 @@ a{text-decoration:none}
 .empty-s-txt{font-size:13px;font-weight:700}
 
 /* ════════════════════════════════════════ CALENDAR ════════════════════════════════════════ */
-.cal-wrap{display:flex;flex-direction:column;gap:10px;min-height:calc(100vh - 220px)}
+.cal-wrap{display:flex;flex-direction:column;gap:10px}
 .cal-mode-row{display:flex;gap:7px}
 .cal-mode-btn{flex:1;padding:8px;border-radius:9px;border:2px solid #E2E8F0;background:white;font-size:12px;font-weight:700;color:#94A3B8;cursor:pointer;font-family:inherit;transition:all .15s}
 .cal-mode-btn.on{border-color:#4F46E5;background:#EEF2FF;color:#4F46E5}
@@ -285,8 +285,8 @@ a{text-decoration:none}
 .cal-dow-row div{text-align:center;font-size:11px;font-weight:700;color:#94A3B8;padding:8px 0}
 .cal-dow-row div:first-child{color:#EF4444}
 .cal-dow-row div:last-child{color:#6366F1}
-.cal-weeks-wrap{display:flex;flex-direction:column;flex:1}
-.cal-week{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #F1F5F9;position:relative;min-height:160px}
+.cal-weeks-wrap{display:flex;flex-direction:column}
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #F1F5F9;position:relative;min-height:80px}
 .cal-cell{padding:4px 2px 2px;cursor:pointer;overflow:hidden}
 .cal-cell:hover{background:#FAFBFF}
 .cal-cell.today-cell .day-num{background:linear-gradient(135deg,#A78BFA,#C4B5FD);color:white;border-radius:50%}
@@ -407,16 +407,16 @@ a{text-decoration:none}
   .page{flex:1;overflow-y:auto;min-height:0;padding:12px 20px 20px;position:relative}
   #srch-wrap{padding:10px 20px 0}
   /* 캘린더 탭일 때만 page도 flex로 */
-  .page.cal-page{display:block;padding-bottom:40px}
+  .page.cal-page{display:flex;flex-direction:column;padding-bottom:20px}
   /* Calendar body fills remaining space */
   .cal-body-pc{display:block;width:100%}
   .cal-main-pc{width:100%}
   .cal-side-pc{width:100%;margin-top:10px}
-  .cal-wrap{display:flex;flex-direction:column;gap:8px;min-height:calc(100vh - 200px)}
+  .cal-wrap{display:flex;flex-direction:column;gap:8px}
   .cal-grid-box{width:100%}
   .cal-weeks-wrap{display:flex;flex-direction:column}
-  .cal-week{min-height:160px}
-  .cal-cell{min-height:150px}
+  .cal-week{min-height:80px}
+  .cal-cell{min-height:70px}
   /* Bigger text on PC */
   .day-num{font-size:14px;width:26px;height:26px}
   .ev-bar{height:22px}.evb-n{font-size:12px;font-weight:800;color:#1E1B4B}.evp-c{font-size:12px;font-weight:800;color:#1E1B4B}.evp-t{font-size:11px;font-weight:600;color:rgba(30,27,75,.65)}
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v13.5.5</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v13.5.6</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v13.5.5</div>
+      <div class="mob-title">🛍️ 공구 매니저 v13.5.6</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -1597,7 +1597,7 @@ function rCal(){
     const BAR_H=22;rows.forEach((row,ri)=>{row.forEach(({sp,s,e})=>{const left=(s*cw).toFixed(2)+'%';const width=((e-s+1)*cw-.3).toFixed(2)+'%';const top=(ri*BAR_H+2)+'px';const isS=sp.start>=ws,isE=sp.end<=we;const r2=isS&&isE?'5px':isS?'5px 2px 2px 5px':isE?'2px 5px 5px 2px':'2px';const nameHtml=`<span class="evb-n">${sp.shortLabel}</span>`;const prodHtml='';const barFn=sp.isTaskSpan?`openTaskEdit('${sp.id}')`:`openEdit('${sp.id}')`;bars+=`<div class="ev-bar" onclick="${barFn}" style="left:${left};width:${width};top:${top};background:${sp.color};border-radius:${r2}">${nameHtml}${prodHtml}</div>`;});});
     const ptRow=rows.length;
     wk.forEach((cell,ci)=>{if(!cell.date)return;(ptsByDay[cell.date]||[]).forEach((pt,pi)=>{const top=((ptRow+pi)*BAR_H+2)+'px';const left=(ci*cw).toFixed(2)+'%';const width=(cw-.3).toFixed(2)+'%';const fn=pt.isPT?`openTaskEdit('${pt.id}')`:`openEdit('${pt.id}')`;const ptCat=pt.isPT?pt.category:(pt.ptCategory||'');const ptInner=ptCat?`<span class="evp-c">${ptCat}</span><span class="evp-t">${pt.shortLabel}</span>`:`<span class="evp-t">${pt.shortLabel}</span>`;bars+=`<div class="ev-pt" onclick="${fn}" style="left:${left};width:${width};top:${top};background:${pt.color}">${ptInner}</div>`;});});
-    const maxR=ptRow+Math.max(0,...Object.values(ptsByDay).map(a=>a.length),0);const mh=Math.max(160,32+maxR*BAR_H+4);
+    const maxR=ptRow+Math.max(0,...Object.values(ptsByDay).map(a=>a.length),0);const mh=Math.max(90,32+maxR*BAR_H+4);
     return`<div class="cal-week" style="min-height:${mh}px">${wk.map(c=>cellH(c,t)).join('')}<div class="ev-layer">${bars}</div></div>`;
   }).join('');
 
