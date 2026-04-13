@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v13.0</title>
+<title>공구 매니저 v13.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -262,7 +262,7 @@ a{text-decoration:none}
 .ptc-title{font-size:13px;font-weight:800;margin-bottom:2px}
 .ptc-meta{font-size:11px;color:#64748B;font-weight:600}
 .ptc-memo{font-size:11px;color:#94A3B8;font-style:italic;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ptc-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:5px;flex-shrink:0;white-space:nowrap}
+.ptc-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:5px;flex-shrink:0;white-space:nowrap;color:#1E293B!important;border:1px solid rgba(0,0,0,.15)}
 
 .empty-s{text-align:center;padding:28px 20px;color:#94A3B8}
 .empty-s-ico{font-size:34px;margin-bottom:7px}
@@ -456,7 +456,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v13.0</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v13.2</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +486,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v13.0</div>
+      <div class="mob-title">🛍️ 공구 매니저 v13.2</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -1100,7 +1100,7 @@ function rChrome(){
   const settleN=activeData().filter(d=>{const sd=calcSettleDate(d);if(!sd||getCL(d).closing.settled)return false;return sd<t0||sd<=addDays(7);}).length;
   // 이달 공구 완료 (scheduleEndDate가 이번달 내)
   const now2=new Date();const ym=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
-  const doneN=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ym)&&getCL(d).closing.done).length;
+  const doneN=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ym)).length;
   // 오늘 처리 필요 (긴급 + 오늘 개인일정 + 3일내 정산)
   const urgItems=buildUrgent();
   const todayN=urgItems.length;
@@ -2341,7 +2341,7 @@ function showBadgeModal(type){
     filtered=activeData().filter(d=>{const sd=calcSettleDate(d);if(!sd||getCL(d).closing.settled)return false;return sd<_t||sd<=_e7;});
     filtered.sort((a,b)=>(calcSettleDate(a)||'').localeCompare(calcSettleDate(b)||''));
   }
-  else if(type==='done')filtered=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb)&&getCL(d).closing.done);
+  else if(type==='done')filtered=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb));
   else if(type==='urgent'){
     const urgItems=buildUrgent();
     const ids=new Set(urgItems.filter(i=>i.id&&i.type!=='personal').map(i=>i.id));
