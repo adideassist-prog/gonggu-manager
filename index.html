@@ -1100,7 +1100,7 @@ function rChrome(){
   const settleN=activeData().filter(d=>{const sd=calcSettleDate(d);if(!sd||getCL(d).closing.settled)return false;return sd<t0||sd<=addDays(7);}).length;
   // 이달 공구 완료 (scheduleEndDate가 이번달 내)
   const now2=new Date();const ym=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
-  const doneN=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ym)).length;
+  const doneN=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ym)&&d.scheduleEndDate<=t0).length;
   // 오늘 처리 필요 (긴급 + 오늘 개인일정 + 3일내 정산)
   const urgItems=buildUrgent();
   const todayN=urgItems.length;
@@ -1943,7 +1943,7 @@ async function toggleCk(phId,key,infId){
   const isNew=!data.find(x=>x.id===infId);
   if(!inf&&isNew){
     // 신규: editInf가 없으면 기본값으로 생성
-    inf={id:infId,phase:1,checklist:{contact:{},sample:{},operation:{},closing:{}},gongguHistory:[]};
+    inf={id:infId,phase:1,checklist:{contact:{},sample:{},imminent:{},closing:{}},gongguHistory:[]};
   }
   if(!inf)return;
 
@@ -2341,7 +2341,7 @@ function showBadgeModal(type){
     filtered=activeData().filter(d=>{const sd=calcSettleDate(d);if(!sd||getCL(d).closing.settled)return false;return sd<_t||sd<=_e7;});
     filtered.sort((a,b)=>(calcSettleDate(a)||'').localeCompare(calcSettleDate(b)||''));
   }
-  else if(type==='done')filtered=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb));
+  else if(type==='done')filtered=activeData().filter(d=>d.scheduleEndDate&&d.scheduleEndDate.startsWith(ymb)&&d.scheduleEndDate<=t0b);
   else if(type==='urgent'){
     const urgItems=buildUrgent();
     const ids=new Set(urgItems.filter(i=>i.id&&i.type!=='personal').map(i=>i.id));
