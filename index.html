@@ -907,7 +907,8 @@ function buildUrgent(){
       if(!(inf.dismissedAlerts||[]).includes(lk))
         items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
           product:inf.negotiating_product||inf.product||'',alertKey:lk,
-          issue:`⏰ 공구 D-${dv}, 결제링크 미전달`,suggest:'공구임박 단계에서 결제링크를 전달하고 체크하세요'});
+          issue:`⏰ 공구 D-${dv}, 결제링크 미전달`,suggest:'공구임박 단계에서 결제링크를 전달하고 체크하세요',
+          linkCheckId:inf.id, phaseId:3});
     }
     // 샘플단계인데 샘플 미발송
     if(ph>=2&&!cl.sample.sent)
@@ -1303,7 +1304,10 @@ function rDash(){
             <div class="uc-action" style="color:#92400E;font-weight:800">${item.issue}</div>
             <div style="font-size:11px;color:#78350F;margin-top:2px">💡 ${item.suggest}</div>
           </div>
-          ${item.alertKey?`<button onclick="event.stopPropagation();dismissAlert('${item.id}','${item.alertKey}')" style="flex-shrink:0;padding:4px 8px;border-radius:6px;border:1px solid #D97706;background:white;color:#92400E;font-size:10px;font-weight:700;cursor:pointer">확인</button>`:''}
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+            ${item.linkCheckId?`<button onclick="event.stopPropagation();checkLinkSent('${item.linkCheckId}')" style="padding:4px 8px;border-radius:6px;border:1px solid #DC2626;background:#DC2626;color:white;font-size:10px;font-weight:700;cursor:pointer">✓ 전달완료</button>`:''}
+            ${item.alertKey?`<button onclick="event.stopPropagation();dismissAlert('${item.id}','${item.alertKey}')" style="padding:4px 8px;border-radius:6px;border:1px solid #D97706;background:white;color:#92400E;font-size:10px;font-weight:700;cursor:pointer">확인</button>`:''}
+          </div>
         </div>`;
       }
       if(item.type==='settle'){
@@ -2409,6 +2413,15 @@ function showBadgeModal(type){
 }
 function closeBM(){closeId('bm-modal');}
 
+async function checkLinkSent(infId){
+  // 긴급 카드에서 결제링크 전달완료 직접 체크
+  const inf=data.find(x=>x.id===infId);if(!inf||!isMaster)return;
+  const cl=getCL(inf);
+  cl.imminent.link_sent=true;
+  const updated={...inf,checklist:cl,updatedAt:new Date().toISOString()};
+  await dbPut(IS,updated);data=await dbAll(IS);
+  gdSave();render();showToast('✅ 결제링크 전달 완료로 체크됐어요');
+}
 async function dismissAlert(infId,alertKey){
   const inf=data.find(x=>x.id===infId);if(!inf)return;
   const dismissed=[...(inf.dismissedAlerts||[])];
