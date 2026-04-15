@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v13.7.4</title>
+<title>공구 매니저 v14.0.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -224,6 +224,9 @@ a{text-decoration:none}
 .sc-ck-arrow{font-size:10px;color:#F59E0B;font-weight:800;margin-left:auto;flex-shrink:0}
 
 /* ── SETTLEMENT CARD ── */
+.star-btn{background:none;border:none;cursor:pointer;font-size:16px;padding:0;line-height:1;opacity:.4;transition:opacity .15s}
+.star-btn.on{opacity:1}
+.inf-star{display:flex;gap:2px;align-items:center}
 .stc{border-radius:11px;padding:11px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:1.5px solid #D1FAE5;background:#F0FDF4;transition:transform .1s,box-shadow .1s}
 .stc:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.08)}
 .stc.urgent-settle{border-color:#6EE7B7;background:linear-gradient(135deg,#ECFDF5,#F0FDF4)}
@@ -456,7 +459,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v13.7.4</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v14.0.1</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -486,7 +489,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v13.7.4</div>
+      <div class="mob-title">🛍️ 공구 매니저 v14.0.1</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -1036,6 +1039,7 @@ function buildContact(){
   const t=today();
   return activeData()
     .filter(inf=>inf.phase===1)
+    .sort((a,b)=>(b.priority||0)-(a.priority||0))
     .map(inf=>{
       const ref=new Date(inf.updatedAt||inf.createdAt||Date.now());
       const daysSince=Math.floor((new Date()-ref)/86400000);
@@ -1471,7 +1475,28 @@ function rDash(){
       </div>`;
     }).join('')
     :`<div class="empty-s"><div class="empty-s-ico">💬</div><div class="empty-s-txt">소통 대상 없음</div></div>`;
-  const hiddenBtn=hiddenCount>0?`<div style="text-align:center;margin-top:8px"><button onclick="toggleHiddenContact(this)" style="padding:6px 14px;border-radius:8px;border:1px solid #E2E8F0;background:white;font-size:12px;color:#64748B;cursor:pointer;font-weight:600">🙈 무응답 숨긴 ${hiddenCount}명 보기</button></div><div id="hidden-contact-list" style="display:none;margin-top:8px">${contactItems.filter(x=>!x.show).map(item=>`<div class="cc" onclick="openEdit('${item.id}')" style="opacity:.6"><div class="cc-ico" style="background:${CAT_META.contact.bg}">${CAT_META.contact.ico}</div><div class="cc-body"><div class="cc-name">${item.name}${item.nickname?' <span style="color:#5B21B6;font-weight:800">('+item.nickname+')</span>':''}<span class="cc-product">${item.product}</span></div><div class="cc-sub" style="color:#94A3B8">${item.daysSince}일 경과 · 무응답으로 숨김</div></div></div>`).join('')}</div>`:'';
+  const hiddenItems=contactItems.filter(x=>!x.show);
+  const hiddenBtn=hiddenItems.length>0?`<div style="margin-top:8px">
+    <button onclick="toggleHiddenContact(this)" style="width:100%;padding:8px 14px;border-radius:8px;border:1px solid #E2E8F0;background:#F8FAFC;font-size:12px;color:#64748B;cursor:pointer;font-weight:600;text-align:left">🙈 무응답으로 숨겨진 인플루언서 ${hiddenItems.length}명 보기</button>
+    <div id="hidden-contact-list" style="display:none;margin-top:8px">${hiddenItems.map(item=>{
+      const _hci=data.find(x=>x.id===item.id);
+      const _hcl=_hci?getCL(_hci).contact:null;
+      const _hcks=_hcl?PM[1].checks.map(c=>({lbl:c.lbl,done:_hcl[c.k]})):[];
+      const _hnext=_hcks.find(c=>!c.done);
+      const _hckHTML=_hcks.length?`<div class="sc-checks" style="margin-top:5px">${_hcks.map(c=>`<div class="sc-ck${c.done?' is-done':''}"><div class="sc-ck-box${c.done?' done':''}">${c.done?'✓':''}</div><span class="sc-ck-lbl">${c.lbl}</span>${!c.done&&c===_hnext?'<span class="sc-ck-arrow">← 지금</span>':''}</div>`).join('')}</div>`:'';
+      return`<div class="cc" onclick="openEdit('${item.id}')" style="opacity:.75">
+        <div class="cc-ico" style="background:${CAT_META.contact.bg}">${CAT_META.contact.ico}</div>
+        <div class="cc-body">
+          <div class="cc-name">${item.name}${item.nickname?` <span style="color:#5B21B6;font-weight:800">(${item.nickname})</span>`:''}</div>
+          ${item.instagram?`<div style="font-size:11px;color:#6366F1;font-weight:600;margin-bottom:2px">@${item.instagram.replace('@','')}</div>`:''}
+          <div class="cc-product">${item.product}</div>
+          <div style="font-size:10px;color:#94A3B8;margin-top:2px">🙈 ${item.daysSince}일 경과 · 무응답 자동 숨김</div>
+          ${_hckHTML}
+        </div>
+        <span class="cc-days" style="color:#CBD5E1">${item.daysSince}일</span>
+      </div>`;}).join('')}
+    </div>
+  </div>`:'';
 
   /* ── S6: Personal ── */
   const personalItems=buildPersonal();
@@ -1650,7 +1675,8 @@ function rCal(){
 
   // 제품별 공구 건수 집계
   const t_leg=today();const prodCounts={};activeData().forEach(inf=>{const p=inf.negotiating_product||inf.product;if(p&&inf.scheduleDate&&(inf.scheduleEndDate?inf.scheduleEndDate>=t_leg:inf.scheduleDate>=t_leg)){prodCounts[p]=(prodCounts[p]||0)+1;}});
-  const prodLeg=calMode==='gonggu'?getProductLegend(activeData()).map(p=>`<div class="leg-it" onclick="showProductDetail('${encodeURIComponent(p.name)}')" style="cursor:pointer" title="${p.name} 클릭 시 상세보기"><div class="leg-dot" style="background:${p.color}"></div><span style="max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>${prodCounts[p]?`<span style="background:${p.color};color:#1E1B4B;font-size:9px;font-weight:800;padding:1px 4px;border-radius:6px;margin-left:2px">${prodCounts[p]}</span>`:''}</div>`).join(''):'';
+  const _prodFutureCnt=(pname)=>activeData().filter(d=>(d.negotiating_product||d.product||'')===pname&&d.scheduleDate&&d.scheduleDate>=today()).length;
+  const prodLeg=calMode==='gonggu'?getProductLegend(activeData()).map(p=>{const fcnt=_prodFutureCnt(p.name);return`<div class="leg-it" onclick="showProductDetail('${encodeURIComponent(p.name)}')" style="cursor:pointer" title="${p.name} 클릭 시 상세보기"><div class="leg-dot" style="background:${p.color}"></div><span style="max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>${fcnt?`<span style="background:${p.color};color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:10px;margin-left:3px">${fcnt}</span>`:''}</div>`;}).join(''):'';
   // 업무 캘린더 범례: 카테고리별 미완료 건수
   const t_work=today();const e_work=addDays(30);
   const taskCatCounts={};
@@ -1840,13 +1866,13 @@ function buildInfListHTML(){
   const filtered=activeData().filter(inf=>{
     const ms=(inf.name||'').includes(srch)||(inf.instagram||'').includes(srch)||(inf.negotiating_product||inf.product||'').includes(srch)||(inf.nickname||'').includes(srch)||(inf.category||'').includes(srch);
     return ms&&(phFilter==='all'||inf.phase===parseInt(phFilter));
-  });
+  }).sort((a,b)=>(b.priority||0)-(a.priority||0));
   const chips=`<div class="chip-row"><button class="chip${phFilter==='all'?' on':''}" onclick="setFilter('all')">전체 ${activeData().length}</button>${PHASES.map(ph=>{const cnt=activeData().filter(d=>d.phase===ph.id).length;return cnt?`<button class="chip${phFilter==ph.id?' on':''}" onclick="setFilter(${ph.id})" style="${phFilter==ph.id?'':'border-left:3px solid '+ph.color+';padding-left:8px'}">${ph.ico} ${ph.label} ${cnt}</button>`:''}).join('')}</div>`;
   const cards=filtered.length?buildInfCards(filtered):`<div class="empty-s"><div class="empty-s-ico">👥</div><div class="empty-s-txt">인플루언서가 없어요</div></div>`;
   return chips+cards;
 }
 function buildInfCards(filtered){return`<div class="inf-grid-wrap">${filtered.map(inf=>{
-  const ph=PM[inf.phase||1];const prog=getTotalProg(inf);const na=getNextAct(inf);const cm2=na?CAT_META[na.cat]:null;const cl=getCL(inf);
+  const ph=PM[inf.phase||1];const prog=getTotalProg(inf);const na=getNextAct(inf);const cm2=na?CAT_META[na.cat]:null;const starBadge=inf.priority?`<span style="font-size:10px;color:#F59E0B;font-weight:800">${'⭐'.repeat(inf.priority)}</span>`:'';;const cl=getCL(inf);
   const sd=calcSettleDate(inf);
   const iLink=inf.instagramUrl||inf.channel_url?`<a href="${inf.instagramUrl||inf.channel_url}" target="_blank" style="color:#E1306C;font-weight:700;font-size:11px;text-decoration:none" onclick="event.stopPropagation()">${inf.instagram||'인스타'} ↗</a>`:`<span>${inf.instagram||''}</span>`;
   const dTags=[inf.scheduleDate?`<span class="dtag" style="background:#EFF6FF;color:#2563EB">📅 ${fmtDate(inf.scheduleDate)}${inf.scheduleEndDate?`~${fmtDate(inf.scheduleEndDate)}`:''}</span>`:'',sd&&!getCL(inf).closing.settled&&inf.phase===4?`<span class="dtag" style="background:#ECFDF5;color:#059669">💰 ${fmtDate(sd)}</span>`:''].filter(Boolean).join('');
@@ -1908,7 +1934,7 @@ function showInfModal(){
   const s1=`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">1</div><div><div class="fsec-lbl">기본 정보</div><div class="fsec-sub">채널 및 연락처</div></div></div>
     <div class="field-row"><div class="field"><label>이름 *</label><input id="f-name" value="${inf.name||''}" placeholder="홍길동"></div><div class="field"><label>별명/채널명</label><input id="f-nick" value="${inf.nickname||''}"></div></div>
     <div class="field-row"><div class="field"><label>인스타그램 아이디</label><input id="f-insta" value="${inf.instagram||''}" placeholder="@username"></div><div class="field"><label>팔로워 수</label><input id="f-flw" type="number" value="${inf.followers||''}"></div></div>
-    <div class="field"><label>인스타그램 채널 URL</label><input id="f-url" value="${inf.instagramUrl||inf.channel_url||''}" placeholder="https://www.instagram.com/username/"></div>
+    <div class="field"><label>인스타그램 채널 URL</label><input id="f-url" value="${inf.instagramUrl||inf.channel_url||''}" placeholder="https://www.instagram.com/username/"><button type="button" onclick="const u=document.getElementById('f-url').value;if(u)window.open(u,'_blank')" style="padding:5px 10px;border-radius:7px;border:1.5px solid #6366F1;background:#EEF2FF;color:#4F46E5;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">🔗 열기</button></div>
     <div class="field-row"><div class="field"><label>카카오톡 ID</label><input id="f-kakao" value="${inf.kakaoId||''}"></div><div class="field"><label>이메일/연락처</label><input id="f-email" value="${inf.kakao_email||inf.phone||''}"></div></div>
     <div class="field"><label>협의 중인 제품</label><input id="f-prod" value="${inf.negotiating_product||inf.product||''}" placeholder="코닥 미니샷 ERA"></div>
     <div class="field"><label>카테고리 (복수 선택 가능)</label>
@@ -1938,7 +1964,17 @@ function showInfModal(){
   const s4=`<div class="fsec"><div class="fsec-hd"><div class="fsec-num">4</div><div><div class="fsec-lbl">정산</div></div></div>
     <div class="field-row"><div class="field"><label>정산 예정일 <span style="color:#059669;font-size:10px">(종료+30일 자동)</span></label><input type="date" id="f-settle" value="${inf.settlement_date||sdAuto}"></div><div class="field"><label>정산 금액 (원)</label><input type="number" id="f-samount" value="${inf.settlementAmount||''}"></div></div>
   </div>`;
-  const sm=`<div class="fsec" style="border-color:#F1F5F9"><div class="field"><label>📝 메모</label><textarea id="f-notes">${inf.notes||''}</textarea></div></div>`;
+  const sm=`<div class="fsec" style="border-color:#F1F5F9">
+    <div class="field">
+      <label>⭐ 중요도</label>
+      <div class="inf-star">
+        ${[1,2,3].map(n=>`<button type="button" class="star-btn${(inf.priority||0)>=n?' on':''}" onclick="setInfPriority(${n})" id="star-btn-${n}">⭐</button>`).join('')}
+        <span id="star-lbl" style="font-size:11px;color:#94A3B8;margin-left:6px">${['설정 안 함','보통','중요','최우선'][inf.priority||0]}</span>
+        <input type="hidden" id="f-priority" value="${inf.priority||0}">
+      </div>
+    </div>
+    <div class="field"><label>📝 메모</label><textarea id="f-notes">${inf.notes||''}</textarea></div>
+  </div>`;
   // 공구 이력 섹션
   const history=inf.gongguHistory||[];
   const histHTML=history.length?`<div class="fsec" style="border-color:#EDE9FE;background:#FAF8FF">
@@ -2103,7 +2139,7 @@ function collectInf(){
     sampleSentDate:gv('f-sdate'),trackingNumber:gv('f-track'),
     scheduleDate:gv('f-ss'),scheduleEndDate:seVal,paymentLink:gv('f-link'),
     settlement_date:gv('f-settle')||(seVal?addDays(30,seVal):''),
-    settlementAmount:gv('f-samount'),notes:gv('f-notes'),
+    settlementAmount:gv('f-samount'),notes:gv('f-notes'),priority:parseInt(gv('f-priority'))||0,
   };
 }
 
@@ -2455,6 +2491,15 @@ async function checkLinkSent(infId){
   const updated={...inf,checklist:cl,updatedAt:new Date().toISOString()};
   await dbPut(IS,updated);data=await dbAll(IS);
   gdSave();render();showToast('✅ 결제링크 전달 완료로 체크됐어요');
+}
+function setInfPriority(n){
+  const inp=document.getElementById('f-priority');
+  const lbl=document.getElementById('star-lbl');
+  const cur=parseInt(inp?.value||0);
+  const val=cur===n?0:n; // 같은 별 클릭 시 해제
+  if(inp)inp.value=val;
+  if(lbl)lbl.textContent=['','보통','중요','최우선'][val]||'설정 안 함';
+  [1,2,3].forEach(i=>{const b=document.getElementById('star-btn-'+i);if(b)b.classList.toggle('on',val>=i);});
 }
 async function dismissAlert(infId,alertKey){
   const inf=data.find(x=>x.id===infId);if(!inf)return;
