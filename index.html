@@ -1048,7 +1048,7 @@ function buildContact(){
       return{id:inf.id,name:inf.name,nickname:inf.nickname||'',instagram:inf.instagram||'',chat_history:inf.chat_history||'',product:inf.negotiating_product||inf.product||'',
         phase:PM[inf.phase||1],na:getNextAct(inf),daysSince,remindLabel,show};
     })
-    .filter(x=>x.show);
+    ; // show=false 포함 유지 — rDash에서 숨김버튼으로 표시
 }
 
 /* Section 6: Personal — incomplete, within 30 days */
@@ -1448,8 +1448,8 @@ function rDash(){
   /* ── S5: Contact ── */
   const contactItems=buildContact();
   const hiddenCount=contactItems.filter(x=>!x.show).length;
-  const s5Body=contactItems.length
-    ?contactItems.map(item=>{
+  const s5Body=contactItems.filter(x=>x.show).length
+    ?contactItems.filter(x=>x.show).map(item=>{
       const ph=item.phase;
       // contact 체크리스트
       const _ci=data.find(x=>x.id===item.id);
