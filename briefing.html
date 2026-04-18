@@ -79,7 +79,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .hbtn:hover{border-color:var(--blue);color:var(--blue)}
 .hbtn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
 .hbtn.pri:hover{background:#2B5FD8}
-.pc-content{flex:1;overflow-y:auto;padding:14px 22px 40px}
+.pc-content{flex:1;overflow-y:auto;padding:14px 22px 40px;min-height:0}
+.pc-content.cal-view{padding:0;display:flex;flex-direction:column;overflow:hidden}
 
 /* ─ USER MODE BADGE ─ */
 .user-badge{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .15s}
@@ -161,7 +162,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .sec-body{padding:8px 12px 12px;display:flex;flex-direction:column;gap:5px}
 
 /* ─ CALENDAR (풀스크린) ─ */
-.cal-wrap{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.cal-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
 .cal-top-bar{padding:10px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;border-bottom:1px solid var(--bd);background:var(--bg2)}
 .cal-mode-btns{display:flex;gap:5px}
 .cal-mode-btn{padding:6px 14px;border-radius:20px;border:1.5px solid var(--bd);background:var(--bg3);font-size:12px;font-weight:700;color:var(--tx2);cursor:pointer;font-family:inherit;transition:all .15s}
@@ -170,32 +171,36 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .cal-arr{width:28px;height:28px;border-radius:var(--rsm);border:1px solid var(--bd);background:var(--bg3);cursor:pointer;font-size:15px;color:var(--blue);display:flex;align-items:center;justify-content:center}
 .cal-arr:hover{background:#EEF4FF}
 .cal-title{font-size:15px;font-weight:800;min-width:120px;text-align:center}
-.cal-body{flex:1;display:flex;flex-direction:column;min-height:0;padding:8px 10px 10px}
-.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;flex-shrink:0}
+/* 캘린더 바디: 남은 공간 전부 flex:1 */
+.cal-body{flex:1;display:flex;flex-direction:column;min-height:0;padding:8px 12px 6px}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);flex-shrink:0;margin-bottom:4px}
 .cal-dow div{text-align:center;font-size:11px;font-weight:700;color:var(--tx3);padding:4px 0}
 .cal-dow div:first-child{color:var(--red)}.cal-dow div:last-child{color:var(--blue)}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;flex:1}
-.cal-cell{border-radius:var(--rsm);display:flex;flex-direction:column;align-items:center;padding-top:5px;cursor:pointer;transition:all .15s;border:1px solid transparent;min-height:0}
+/* 월간 그리드: flex:1로 남은 높이 전부 균등 분배 */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;flex:1;min-height:0;
+  /* 행 개수는 JS에서 grid-template-rows 동적 설정 */
+}
+.cal-cell{border-radius:var(--rsm);display:flex;flex-direction:column;align-items:center;padding-top:6px;cursor:pointer;transition:all .15s;border:1px solid transparent;overflow:hidden;background:var(--bg2)}
 .cal-cell:hover{background:var(--bg3)}.cal-cell.sel{background:#EEF4FF;border-color:#C7D8FF}
-.cal-cell.dim .cal-num{color:var(--tx3)!important}
+.cal-cell.dim{background:var(--bg)}.cal-cell.dim .cal-num{color:var(--tx3)!important}
 .cal-cell:nth-child(7n+1) .cal-num{color:var(--red)}
 .cal-cell:nth-child(7n) .cal-num{color:var(--blue)}
 .cal-cell.td-c .cal-num{background:linear-gradient(135deg,var(--blue),var(--pur));color:#fff!important;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
 .cal-num{font-size:13px;font-weight:700;color:var(--tx);line-height:1}
-.cal-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:3px;max-width:36px}
+.cal-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:4px;max-width:36px}
 .cal-dot{width:6px;height:6px;border-radius:50%}
-/* 주간 캘린더 */
-.cal-wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;flex:1}
-.cal-wk-col{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+/* 주간 캘린더: flex:1로 전체 채우기 */
+.cal-wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;flex:1;min-height:0}
+.cal-wk-col{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
 .cal-wk-col.twk{border-color:var(--blue);background:#EEF4FF}
-.cal-wk-hdr{padding:6px 5px 5px;text-align:center;border-bottom:1px solid var(--bd);background:rgba(255,255,255,.5);flex-shrink:0}
-.cal-wk-dow{font-size:9px;font-weight:700;color:var(--tx3)}.cal-wk-col.twk .cal-wk-dow{color:var(--blue)}
-.cal-wk-num{font-size:14px;font-weight:800;color:var(--tx)}.cal-wk-col.twk .cal-wk-num{color:var(--blue)}
-.cal-wk-body{padding:4px 5px;display:flex;flex-direction:column;gap:3px;flex:1;overflow-y:auto}
+.cal-wk-hdr{padding:8px 5px 6px;text-align:center;border-bottom:1px solid var(--bd);background:rgba(255,255,255,.5);flex-shrink:0}
+.cal-wk-dow{font-size:10px;font-weight:700;color:var(--tx3)}.cal-wk-col.twk .cal-wk-dow{color:var(--blue)}
+.cal-wk-num{font-size:16px;font-weight:800;color:var(--tx)}.cal-wk-col.twk .cal-wk-num{color:var(--blue)}
+.cal-wk-body{padding:5px;display:flex;flex-direction:column;gap:3px;flex:1;overflow-y:auto}
 .cal-wk-task{font-size:10px;font-weight:600;padding:3px 5px;border-radius:4px;cursor:pointer;line-height:1.3;color:var(--tx)}
 .cal-wk-task:hover{opacity:.8}
 /* 날짜 상세 패널 */
-.cal-detail-panel{flex-shrink:0;border-top:1px solid var(--bd);padding:10px 12px;background:var(--bg3);max-height:200px;overflow-y:auto}
+.cal-detail-panel{flex-shrink:0;border-top:1px solid var(--bd);padding:10px 14px;background:var(--bg3);max-height:220px;overflow-y:auto}
 .cal-detail-hd{font-size:13px;font-weight:800;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
 
 /* ─ GOALS / REVIEW ─ */
@@ -298,11 +303,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
     <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:10px">👤 두 명의 사용자 설정</div>
     <div class="frow">
       <div class="fg"><label class="fl">사용자1 이름</label><input type="text" class="fi" id="s_u1" value="태훈" placeholder="태훈"></div>
-      <div class="fg"><label class="fl">사용자1 비밀번호</label><input type="text" class="fi" id="s_p1" value="1234" placeholder="1234"></div>
+      <div class="fg"><label class="fl">사용자1 비밀번호</label><input type="text" class="fi" id="s_p1" value="5555" placeholder="5555"></div>
     </div>
     <div class="frow">
       <div class="fg"><label class="fl">사용자2 이름</label><input type="text" class="fi" id="s_u2" value="석민" placeholder="석민"></div>
-      <div class="fg"><label class="fl">사용자2 비밀번호</label><input type="text" class="fi" id="s_p2" value="5678" placeholder="5678"></div>
+      <div class="fg"><label class="fl">사용자2 비밀번호</label><input type="text" class="fi" id="s_p2" value="0000" placeholder="0000"></div>
     </div>
     <button class="pbtn" onclick="doSetup()">시작하기 →</button>
   </div>
@@ -787,7 +792,16 @@ function updProgress(){
   if(gm&&gm!==document.activeElement)gm.value=S.bData?.[`${cu2}MonthlyGoal`]||'';
 }
 
-function renderPC(){const el=document.getElementById('pc-content');if(el)el.innerHTML=buildView(S.pcView)}
+function renderPC(){
+  const el=document.getElementById('pc-content');
+  if(!el)return;
+  if(S.pcView==='cal'){
+    el.className='pc-content cal-view';
+  } else {
+    el.className='pc-content';
+  }
+  el.innerHTML=buildView(S.pcView);
+}
 function renderMob(){const el=document.getElementById('mob-content');if(el)el.innerHTML=buildTab(S.mobTab)}
 function buildView(v){
   if(v==='cal')return buildCal();
@@ -951,7 +965,7 @@ function buildOther(){
 // CALENDAR (풀스크린)
 // ══════════════════════════════
 function buildCal(){
-  let h=`<div class="cal-wrap">`;
+  let h=`<div class="cal-wrap" style="height:100%">`;
   h+=`<div class="cal-top-bar">
     <div class="cal-mode-btns">
       <button class="cal-mode-btn${S.calMode==='month'?' on':''}" onclick="setCalMode('month')">🗓 월간</button>
@@ -992,14 +1006,15 @@ function fillMonthCal(titleEl,bodyEl){
   for(let i=dow-1;i>=0;i--)cells.push({d:new Date(y,m,0).getDate()-i,dim:true,date:null});
   for(let d=1;d<=lastD;d++)cells.push({d,dim:false,date:`${y}-${pad(m+1)}-${pad(d)}`});
   while(cells.length%7)cells.push({d:cells.length-dow-lastD+1,dim:true,date:null});
+  const rows=cells.length/7;
   const td=today();
   bodyEl.innerHTML=`
     <div class="cal-dow">${['일','월','화','수','목','금','토'].map(d=>`<div>${d}</div>`).join('')}</div>
-    <div class="cal-grid" style="grid-template-rows:repeat(${cells.length/7},1fr)">
+    <div class="cal-grid" style="grid-template-rows:repeat(${rows},1fr)">
       ${cells.map(c=>{
         const isTd=c.date===td,isSel=c.date===S.selDate;
         const dt=c.date?tasks.filter(t=>onDate(t,c.date)):[];
-        const dots=dt.slice(0,6).map(t=>`<div class="cal-dot" style="background:${CLR[t.color||'']||'#94A3B8'}"></div>`).join('');
+        const dots=dt.slice(0,7).map(t=>`<div class="cal-dot" style="background:${CLR[t.color||'']||'#94A3B8'}"></div>`).join('');
         return`<div class="cal-cell${isTd?' td-c':''}${isSel&&!isTd?' sel':''}${c.dim?' dim':''}" onclick="${c.date?`selD('${c.date}')`:''}" ><div class="cal-num">${c.d}</div>${dots?`<div class="cal-dots">${dots}</div>`:''}</div>`;
       }).join('')}
     </div>`;
