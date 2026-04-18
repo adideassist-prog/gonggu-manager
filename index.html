@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v14.0.1</title>
+<title>공구 매니저 v14.0.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -459,7 +459,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v14.0.1</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v14.0.2</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -489,7 +489,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v14.0.1</div>
+      <div class="mob-title">🛍️ 공구 매니저 v14.0.2</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -1099,7 +1099,7 @@ function rChrome(){
     if(!d.scheduleDate)return false;
     const dv=diffDays(d.scheduleDate);return dv!==null&&dv>=0&&dv<=3;
   }).length;
-  const cntClose=activeData().filter(d=>d.phase===4).length;
+  const cntClose=activeData().filter(d=>d.phase===4&&!getCL(d).closing.settled).length;
   const t0=today();const e30=addDays(30);
   const ongoing=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0&&e>=t0;}).length;
   const upcoming=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0&&s<=e30;}).length;
@@ -2407,7 +2407,7 @@ function showBadgeModal(type){
   else if(type==='sample'||type==='operation')filtered=activeData().filter(d=>d.phase===2);
   
   else if(type==='imminent'){filtered=activeData().filter(d=>{if(!d.scheduleDate)return false;const dv=diffDays(d.scheduleDate);return dv!==null&&dv>=0&&dv<=3;});filtered.sort((a,b)=>a.scheduleDate.localeCompare(b.scheduleDate));}
-  else if(type==='closing'){filtered=activeData().filter(d=>d.phase===4);filtered.sort((a,b)=>(calcSettleDate(a)||'').localeCompare(calcSettleDate(b)||''));}
+  else if(type==='closing'){filtered=activeData().filter(d=>d.phase===4&&!getCL(d).closing.settled);filtered.sort((a,b)=>(calcSettleDate(a)||'').localeCompare(calcSettleDate(b)||''));}
   else if(type==='ongoing')filtered=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0b&&e>=t0b;});
   else if(type==='upcoming'){filtered=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0b&&s<=e30b;});filtered.sort((a,b)=>a.scheduleDate.localeCompare(b.scheduleDate));}
   else if(type==='settle'){
