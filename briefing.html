@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.1.0</title>
+<title>📋 데일리 브리핑 v1.1.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -266,7 +266,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 
 <!-- ② SETUP -->
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.1.0</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.1.1</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -445,7 +445,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.1.0';
+const APP_VER='v1.1.1';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -1001,7 +1001,15 @@ function carriedCard(t){
 }
 
 // ── TASK ACTIONS ──
-async function togTask(id){const t=S.bData.tasks.find(x=>x.id===id);if(!t)return;if(!canEdit(t)){showToast('본인 할일만 수정할 수 있어요');return}t.done=!t.done;t.doneDate=t.done?today():null;t.updatedAt=new Date().toISOString();render();await save()}
+async function togTask(id){
+  const t=S.bData.tasks.find(x=>x.id===id);if(!t)return;
+  if(!canEdit(t)){showToast('본인 할일만 수정할 수 있어요');return}
+  // 공동 업무는 완료 시 확인
+  if(t.assignee==='shared'&&!t.done){
+    if(!confirm(`👥 "${t.title}"\n공동 업무를 완료로 표시할까요?`))return;
+  }
+  t.done=!t.done;t.doneDate=t.done?today():null;t.updatedAt=new Date().toISOString();render();await save();
+}
 async function carryOver(id){const t=S.bData.tasks.find(x=>x.id===id);if(!t||!canEdit(t))return;t.startDate=today();t.endDate=null;t.priority='today';t.updatedAt=new Date().toISOString();render();await save();showToast('✅ 오늘로 이월했어요')}
 async function dismissTask(id){if(!canAdd())return;if(!S.bData.dismissed)S.bData.dismissed=[];S.bData.dismissed.push(id);render();await save()}
 async function confirmDel(id){const t=S.bData.tasks.find(x=>x.id===id);if(!t||!canEdit(t))return;if(!confirm('삭제할까요?'))return;S.bData.tasks=S.bData.tasks.filter(t=>t.id!==id);render();await save();showToast('🗑 삭제됐어요')}
