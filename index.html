@@ -1103,7 +1103,7 @@ function rChrome(){
   const t0=today();const e30=addDays(30);
   const ongoing=activeData().filter(d=>{const s=d.scheduleDate,e=d.scheduleEndDate;return s&&e&&s<=t0&&e>=t0;}).length;
   const upcoming=activeData().filter(d=>{const s=d.scheduleDate;return s&&s>t0&&s<=e30;}).length;
-  // 30일 내 정산 예정
+  // 7일 이내 정산 예정
   const settleN=activeData().filter(d=>{const sd=calcSettleDate(d);if(!sd||getCL(d).closing.settled)return false;return sd<t0||sd<=addDays(7);}).length;
   // 이달 공구 완료 (scheduleEndDate가 이번달 내)
   const now2=new Date();const ym=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
@@ -1443,7 +1443,7 @@ function rDash(){
           </div>
         </div>`;
       }).join('')
-      :`<div class="empty-s"><div class="empty-s-ico">💰</div><div class="empty-s-txt">30일 내 정산 예정 없음</div></div>`);
+      :`<div class="empty-s"><div class="empty-s-ico">💰</div><div class="empty-s-txt">7일 이내 정산 예정 없음</div></div>`);
 
   /* ── S5: Contact ── */
   const contactItems=buildContact();
@@ -1555,7 +1555,7 @@ function rDash(){
     <div class="ds" id="sec-settle">
       <div class="ds-hdr h-settle">
         <div class="ds-hdr-ico">💰</div>
-        <div class="ds-hdr-info"><div class="ds-hdr-title" style="color:#065F46">정산 관리</div><div class="ds-hdr-sub c-green">30일 내 정산 예정 · ${counts.settle}건</div></div>
+        <div class="ds-hdr-info"><div class="ds-hdr-title" style="color:#065F46">정산 관리</div><div class="ds-hdr-sub c-green">7일 이내 정산 예정 · ${counts.settle}건</div></div>
       </div>
       <div class="ds-body">${s4Body}</div>
     </div>
@@ -2401,7 +2401,7 @@ async function delPTask(id){if(!confirm('삭제할까요?'))return;await dbDel(T
 function showBadgeModal(type){
   closeId('bm-modal'); // 기존 모달 먼저 닫기
   const t0=today();const e30=addDays(30);
-  const t0b=today();const e30b=addDays(30);const now3=new Date();const ymb=`${now3.getFullYear()}-${String(now3.getMonth()+1).padStart(2,'0')}`;const cfg={contact:{title:'📨 컨택 단계',color:'#6366F1',desc:'현재 컨택 진행 중'},sample:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},operation:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},gonggu:{title:'🛍️ 공구 진행 중',color:'#2563EB',desc:'현재 공구 진행 중'},imminent:{title:'⏰ 공구임박',color:'#DC2626',desc:'결제링크 전달 필요'},closing:{title:'💰 마감/정산',color:'#059669',desc:'정산 진행 중'},ongoing:{title:'🛍️ 공구 진행중',color:'#2563EB',desc:'오늘 기준 판매 중'},upcoming:{title:'📅 공구 예정',color:'#7C3AED',desc:'30일 내 공구 예정'},settle:{title:'💰 정산 예정',color:'#059669',desc:'30일 내 정산 예정'},done:{title:'✅ 이달 완료',color:'#0369A1',desc:'이번 달 공구 완료'},urgent:{title:'🚨 오늘 처리 필요',color:'#DC2626',desc:'긴급 업무 + 3일내 정산'}};
+  const t0b=today();const e30b=addDays(30);const now3=new Date();const ymb=`${now3.getFullYear()}-${String(now3.getMonth()+1).padStart(2,'0')}`;const cfg={contact:{title:'📨 컨택 단계',color:'#6366F1',desc:'현재 컨택 진행 중'},sample:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},operation:{title:'📦 샘플 단계',color:'#D97706',desc:'샘플 진행 중'},gonggu:{title:'🛍️ 공구 진행 중',color:'#2563EB',desc:'현재 공구 진행 중'},imminent:{title:'⏰ 공구임박',color:'#DC2626',desc:'결제링크 전달 필요'},closing:{title:'💰 마감/정산',color:'#059669',desc:'정산 진행 중'},ongoing:{title:'🛍️ 공구 진행중',color:'#2563EB',desc:'오늘 기준 판매 중'},upcoming:{title:'📅 공구 예정',color:'#7C3AED',desc:'30일 내 공구 예정'},settle:{title:'💰 정산 예정',color:'#059669',desc:'7일 이내 정산 예정'},done:{title:'✅ 이달 완료',color:'#0369A1',desc:'이번 달 공구 완료'},urgent:{title:'🚨 오늘 처리 필요',color:'#DC2626',desc:'긴급 업무 + 3일내 정산'}};
   const c=cfg[type]||cfg.urgent;let filtered=[];
   if(type==='contact')filtered=activeData().filter(d=>d.phase===1);
   else if(type==='sample'||type==='operation')filtered=activeData().filter(d=>d.phase===2);
