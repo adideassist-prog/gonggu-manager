@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.2.5</title>
+<title>📋 데일리 브리핑 v1.2.6</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -322,7 +322,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div id="scrLoad" class="scr on"><div class="cw"><div class="logo">📋</div><div class="spin"></div><div class="ltxt" id="ltxt">초기화 중...</div></div></div>
 
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.5</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.6</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -524,7 +524,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.2.5';
+const APP_VER='v1.2.6';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -574,7 +574,7 @@ const fmtTime=m=>{if(!m)return'';return m<60?`${m}분`:m%60===0?`${m/60}시간`:
 const getDomain=url=>{try{return new URL(url).hostname.replace('www.','')}catch{return url}};
 const initData=()=>({version:3,tasks:[],
   sourcingItems:[],
-  workLog:[],
+  u1WorkLog:[],u2WorkLog:[],
   u1Memos:[],u2Memos:[],sharedMemos:[],
   u1QuickNotes:[],u2QuickNotes:[],
   u1WeeklyGoal:'',u1MonthlyGoal:'',u2WeeklyGoal:'',u2MonthlyGoal:'',
@@ -680,7 +680,8 @@ function migrate(){
   if(!S.bData.u2WeeklyReview)S.bData.u2WeeklyReview='';
   if(!S.bData.dismissed)S.bData.dismissed=[];
   if(!S.bData.sourcingItems)S.bData.sourcingItems=[];
-  if(!S.bData.workLog)S.bData.workLog=[];
+  if(!S.bData.u1WorkLog){S.bData.u1WorkLog=S.bData.workLog||[];delete S.bData.workLog}
+  if(!S.bData.u2WorkLog)S.bData.u2WorkLog=[];
   // 기존 done 필드 → stage 마이그레이션
   S.bData.sourcingItems.forEach(s=>{
     if(!s.stage)s.stage=s.done?'done':'new';
@@ -1026,22 +1027,19 @@ async function setSrcStage(id,stage){
 async function delSrc(id){if(!canAdd())return;if(!confirm('삭제할까요?'))return;S.bData.sourcingItems=S.bData.sourcingItems.filter(s=>s.id!==id);render();await save();showToast('🗑 삭제됐어요')}
 
 // ── 업무일지 ──
+const getWLKey=()=>S.curUser==='u2'?'u2WorkLog':'u1WorkLog';
 function buildWorkLog(){
-  const td=today();
-  // 현재 조회 날짜 (S.wlDate 없으면 오늘)
+  const td=today();const cu=S.curUser||'u1';
   if(!S.wlDate)S.wlDate=td;
-  const wl=S.bData?.workLog||[];
+  const wl=S.bData?.[`${cu}WorkLog`]||[];
   const allDates=[...new Set([td,...wl.map(w=>w.date)])].sort((a,b)=>b.localeCompare(a));
+  const curIdx=allDates.indexOf(S.wlDate);
+  const prevDate=allDates[curIdx+1]||null;const nextDate=allDates[curIdx-1]||null;
   const curItems=wl.filter(w=>w.date===S.wlDate);
   const isToday=S.wlDate===td;
   const d=new Date(S.wlDate+'T00:00:00');
   const dateLabel=isToday?`오늘 · ${fmtDate(td)}`:`${d.getMonth()+1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일`;
-  // 이전/다음 날짜 네비
-  const curIdx=allDates.indexOf(S.wlDate);
-  const prevDate=allDates[curIdx+1]||null;
-  const nextDate=allDates[curIdx-1]||null;
-  let h=`<div class="sec"><div class="sechd"><div class="sec-ico">📋</div><div class="sec-info"><div class="sec-title">업무일지</div><div class="sec-sub" style="color:var(--blue)">${dateLabel}</div></div><span class="sec-cnt">${curItems.length}</span></div>`;
-  // 날짜 네비바
+  let h=`<div class="sec"><div class="sechd"><div class="sec-ico">📋</div><div class="sec-info"><div class="sec-title">${uName(cu)}의 업무일지</div><div class="sec-sub" style="color:var(--blue)">${dateLabel}</div></div><span class="sec-cnt">${curItems.length}</span></div>`;
   h+=`<div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--bd);background:var(--bg3)">
     <button onclick="wlNav('${prevDate}')" ${!prevDate?'disabled':''} style="width:28px;height:28px;border-radius:var(--rsm);border:1px solid var(--bd);background:${prevDate?'var(--bg2)':'var(--bg)'};color:${prevDate?'var(--blue)':'var(--tx3)'};cursor:${prevDate?'pointer':'default'};font-size:14px;display:flex;align-items:center;justify-content:center">‹</button>
     <select onchange="wlNav(this.value)" style="flex:1;border:1px solid var(--bd);border-radius:var(--rsm);padding:5px 8px;font-size:12px;font-family:inherit;background:var(--bg2);color:var(--tx);outline:none;cursor:pointer">
@@ -1052,7 +1050,7 @@ function buildWorkLog(){
   </div>`;
   h+=`<div class="sec-body">`;
   if(isToday&&canAdd())h+=`<div class="wl-add-row"><input class="wl-input" id="wl-input" placeholder="오늘 처리한 업무를 추가로 기록..." onkeydown="if(event.key==='Enter')addWLEntry()"><button class="wl-add-btn" onclick="addWLEntry()">기록</button></div>`;
-  if(!curItems.length)h+=`<div class="empty" style="padding:12px 0;font-size:12px">${isToday?'완료한 할일이 없어요<br><span style="font-size:11px;color:var(--tx3)">할일을 완료하면 자동으로 기록돼요</span>':'이 날 업무 기록이 없어요'}</div>`;
+  if(!curItems.length)h+=`<div class="empty" style="padding:12px 0;font-size:12px">${isToday?`완료한 할일이 없어요<br><span style="font-size:11px;color:var(--tx3)">할일을 완료하면 자동으로 기록돼요</span>`:'이 날 업무 기록이 없어요'}</div>`;
   else{
     curItems.filter(w=>w.type==='manual').forEach(w=>h+=`<div class="wl-item manual"><span class="wl-ico">📝</span><span class="wl-txt">${w.text}</span>${isToday&&canAdd()?`<button class="wl-del" onclick="delWLEntry('${w.id}')">✕</button>`:''}</div>`);
     curItems.filter(w=>w.type==='auto').forEach(w=>h+=`<div class="wl-item auto"><span class="wl-ico">✅</span><span class="wl-txt">${w.text}</span></div>`);
@@ -1063,11 +1061,11 @@ function wlNav(date){if(!date)return;S.wlDate=date;render()}
 async function addWLEntry(){
   if(!canAdd())return;
   const el=document.getElementById('wl-input');const text=el?.value.trim();if(!text)return;
-  if(!S.bData.workLog)S.bData.workLog=[];
-  S.bData.workLog.push({id:genId(),date:today(),text,type:'manual',userId:S.curUser,createdAt:new Date().toISOString()});
+  const k=getWLKey();if(!S.bData[k])S.bData[k]=[];
+  S.bData[k].push({id:genId(),date:today(),text,type:'manual',userId:S.curUser,createdAt:new Date().toISOString()});
   el.value='';render();await save();
 }
-async function delWLEntry(id){if(!canAdd())return;S.bData.workLog=S.bData.workLog.filter(w=>w.id!==id);render();await save()}
+async function delWLEntry(id){if(!canAdd())return;const k=getWLKey();S.bData[k]=S.bData[k].filter(w=>w.id!==id);render();await save()}
 
 // ── 상대방 할일 ──
 function buildOther(){
@@ -1262,10 +1260,10 @@ async function togTask(id){
   if(!canEdit(t)){showToast('본인 할일만 수정할 수 있어요');return}
   if(t.assignee==='shared'&&!t.done){if(!confirm(`👥 "${t.title}"\n공동 업무를 완료로 표시할까요?`))return}
   t.done=!t.done;t.doneDate=t.done?today():null;t.updatedAt=new Date().toISOString();
-  // 완료 시 업무일지 자동 기록
+  // 완료 시 해당 유저 업무일지에 자동 기록
   if(t.done&&S.curUser){
-    if(!S.bData.workLog)S.bData.workLog=[];
-    S.bData.workLog.push({id:genId(),date:today(),text:t.title,type:'auto',taskId:t.id,userId:S.curUser,createdAt:new Date().toISOString()});
+    const k=getWLKey();if(!S.bData[k])S.bData[k]=[];
+    S.bData[k].push({id:genId(),date:today(),text:t.title,type:'auto',taskId:t.id,userId:S.curUser,createdAt:new Date().toISOString()});
   }
   render();await save();
 }
