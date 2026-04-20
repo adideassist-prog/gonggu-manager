@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.2.2</title>
+<title>📋 데일리 브리핑 v1.2.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -153,9 +153,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .empty{text-align:center;padding:20px 0;color:var(--tx3);font-size:13px}
 .empty-ico{font-size:28px;margin-bottom:5px}
 /* SOURCING */
+.src-group-lbl{font-size:11px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;padding:6px 2px 5px;display:flex;align-items:center;gap:6px}
 .src-item{border-radius:var(--r);padding:11px 13px;border:1px solid var(--bd);background:var(--bg3);margin-bottom:6px;transition:all .15s}
 .src-item:hover{border-color:var(--bd2);box-shadow:0 2px 8px rgba(30,50,100,.06)}
-.src-item.done-src{opacity:.45}
+.src-item.hold{opacity:.55}
 .src-top{display:flex;align-items:flex-start;gap:8px}
 .src-favicon{width:18px;height:18px;border-radius:3px;flex-shrink:0;margin-top:2px;background:var(--bd);object-fit:cover}
 .src-body{flex:1;min-width:0}
@@ -165,10 +166,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .src-note{font-size:12px;color:var(--tx2);line-height:1.5;margin-bottom:5px}
 .src-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
 .src-by{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
+/* 단계 진행바 */
+.src-flow{display:flex;align-items:center;gap:3px;margin:7px 0 5px}
+.src-flow-dot{width:10px;height:10px;border-radius:50%;background:var(--bd2);flex-shrink:0}
+.src-flow-dot.done{background:var(--green)}.src-flow-dot.cur{background:var(--blue);box-shadow:0 0 0 2px rgba(59,111,232,.3)}
+.src-flow-line{flex:1;height:2px;background:var(--bd2);border-radius:1px}
+.src-flow-line.done{background:var(--green)}
+.src-stage-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;display:inline-flex;align-items:center;gap:4px}
 .src-acts{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap}
 .src-btn{padding:4px 10px;border-radius:5px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx2);cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s}
 .src-btn:hover{border-color:var(--blue);color:var(--blue)}
+.src-btn.next{background:#EFF6FF;border-color:var(--blue);color:var(--blue)}
+.src-btn.edit{background:var(--bg3);border-color:var(--bd2);color:var(--tx2)}
 .src-btn.done-btn{background:#ECFDF5;border-color:#6EE7B7;color:#065F46}
+.src-btn.hold-btn{background:#FFFBEB;border-color:#FCD34D;color:#92400E}
+.src-btn.rej-btn{background:#FEF2F2;border-color:#FCA5A5;color:var(--red)}
 .src-btn.del-btn{color:var(--red);border-color:#FCA5A5;background:#FEF2F2}
 .src-add-form{background:var(--bg3);border:1.5px dashed var(--bd2);border-radius:var(--r);padding:12px}
 .src-add-form.open{border-color:var(--blue);background:#EEF4FF}
@@ -308,7 +320,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div id="scrLoad" class="scr on"><div class="cw"><div class="logo">📋</div><div class="spin"></div><div class="ltxt" id="ltxt">초기화 중...</div></div></div>
 
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.2</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.3</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -474,14 +486,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div class="ov" id="mSrc" onclick="if(event.target===this)cm('mSrc')">
 <div class="mod" style="max-width:480px">
   <div class="mhnd"></div>
-  <div class="mtit">소싱 아이템 추가<button class="mclose" onclick="cm('mSrc')">✕</button></div>
+  <div class="mtit"><span id="src-modal-title">소싱 아이템 추가</span><button class="mclose" onclick="cm('mSrc')">✕</button></div>
+  <input type="hidden" id="src_id">
   <div class="fg"><label class="fl">상품명 / 제목 *</label><input type="text" class="fi" id="src_title" placeholder="예) 어묵 세트 10팩 - 홈플러스 PB"></div>
   <div class="fg"><label class="fl">링크 (선택)</label><input type="url" class="fi" id="src_url" placeholder="https://..."></div>
   <div class="fg"><label class="fl">메모</label><textarea class="fta" id="src_note" placeholder="단가, 특이사항, 소싱 이유 등..." rows="3"></textarea></div>
   <div class="fg"><label class="fl">담당자 배정 (선택)</label>
     <div class="chips" id="src-assign-chips"></div>
   </div>
-  <button class="pbtn" onclick="saveSrcItem()">추가</button>
+  <button class="pbtn" onclick="saveSrcItem()">저장</button>
   <button class="sbtn" onclick="cm('mSrc')">취소</button>
 </div></div>
 
@@ -509,11 +522,23 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.2.2';
+const APP_VER='v1.2.3';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const CLR={'':'#94A3B8','red':'#EF4444','orange':'#F59E0B','green':'#22C55E','blue':'#3B6FE8','purple':'#8B5CF6','pink':'#EC4899'};
+const STAGES=[
+  {key:'new',    label:'신규',     icon:'🆕', color:'#94A3B8', group:'active'},
+  {key:'call1',  label:'1차 전화', icon:'📞', color:'#3B6FE8', group:'active'},
+  {key:'mail1',  label:'1차 메일', icon:'📧', color:'#3B6FE8', group:'active'},
+  {key:'call2',  label:'2차 전화', icon:'📞', color:'#8B5CF6', group:'active'},
+  {key:'mail2',  label:'2차 메일', icon:'📧', color:'#8B5CF6', group:'active'},
+  {key:'done',   label:'소싱 완료',icon:'✅', color:'#22C55E', group:'done'},
+  {key:'no_res', label:'답변없음', icon:'😶', color:'#F59E0B', group:'hold'},
+  {key:'reject', label:'거절',     icon:'❌', color:'#EF4444', group:'hold'},
+];
+const FLOW=['new','call1','mail1','call2','mail2','done'];
+const stageInfo=k=>STAGES.find(s=>s.key===k)||STAGES[0];
 const isPC=()=>window.innerWidth>=768;
 
 const S={
@@ -653,6 +678,8 @@ function migrate(){
   if(!S.bData.dismissed)S.bData.dismissed=[];
   if(!S.bData.sourcingItems)S.bData.sourcingItems=[];
   if(!S.bData.workLog)S.bData.workLog=[];
+  // 기존 done 필드 → stage 마이그레이션
+  S.bData.sourcingItems.forEach(s=>{if(!s.stage)s.stage=s.done?'done':'new'});
   S.bData.tasks.forEach(t=>{
     if(t.date&&!t.startDate){t.startDate=t.date;delete t.date}
     if(!t.assignee)t.assignee='u1';
@@ -704,7 +731,7 @@ function render(){
   const on=S.curUser==='u1'?S.u2:S.curUser==='u2'?S.u1:'상대방';
   const ol=document.getElementById('other-lbl');if(ol)ol.textContent=`${on} 할일`;
   const cntSrc=document.getElementById('cnt-src');
-  if(cntSrc){const n=(S.bData?.sourcingItems||[]).filter(s=>!s.done).length;cntSrc.textContent=n;cntSrc.style.display=n>0?'':'none'}
+  if(cntSrc){const n=(S.bData?.sourcingItems||[]).filter(s=>stageInfo(s.stage).group==='active').length;cntSrc.textContent=n;cntSrc.style.display=n>0?'':'none'}
   if(isPC())renderPC();else renderMob();
 }
 function updDate(){
@@ -850,58 +877,137 @@ function buildDash(){
 // ── 소싱 게시판 ──
 function buildSrcBoard(){
   const items=S.bData?.sourcingItems||[];
-  const active=items.filter(s=>!s.done);const done=items.filter(s=>s.done);
+  const active=items.filter(s=>stageInfo(s.stage).group==='active');
+  const done=items.filter(s=>s.stage==='done');
+  const hold=items.filter(s=>stageInfo(s.stage).group==='hold');
   let h=`<div class="sec"><div class="sechd"><div class="sec-ico">🛍</div><div class="sec-info"><div class="sec-title">소싱 게시판</div><div class="sec-sub" style="color:var(--org)">${S.u1} + ${S.u2} 공유 · 누구나 소싱 아이템 제안</div></div><span class="sec-cnt">${active.length}</span>${canAdd()?`<button class="sec-add" onclick="openSrcModal()">+ 추가</button>`:''}</div><div class="sec-body">`;
-  if(!items.length)h+=`<div class="empty"><div class="empty-ico">🛍</div>소싱 아이템을 추가해보세요!</div>`;
+  if(!items.length){h+=`<div class="empty"><div class="empty-ico">🛍</div>소싱 아이템을 추가해보세요!</div>`}
   else{
-    active.forEach(s=>h+=srcCard(s));
-    if(done.length){h+=`<button class="done-tog" onclick="togSec('src-done')">▸ 소싱 완료 (${done.length})</button><div id="src-done" style="display:none">`;done.forEach(s=>h+=srcCard(s));h+=`</div>`}
+    // ① 진행 중
+    if(active.length){
+      h+=`<div class="src-group-lbl">📋 진행 중 <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--bd);padding:1px 6px;border-radius:8px">${active.length}</span></div>`;
+      active.forEach(s=>h+=srcCard(s));
+    }
+    // ② 소싱 완료
+    if(done.length){
+      h+=`<button class="done-tog" onclick="togSec('src-done')" style="margin-top:4px">▸ ✅ 소싱 완료 (${done.length})</button><div id="src-done" style="display:none">`;
+      done.forEach(s=>h+=srcCard(s));h+=`</div>`;
+    }
+    // ③ 보류 (답변없음/거절)
+    if(hold.length){
+      h+=`<button class="done-tog" onclick="togSec('src-hold')" style="margin-top:4px">▸ 😶 보류 (${hold.length})</button><div id="src-hold" style="display:none">`;
+      hold.forEach(s=>h+=srcCard(s));h+=`</div>`;
+    }
   }
   return h+`</div></div>`;
 }
+
 function srcCard(s){
+  const st=stageInfo(s.stage||'new');
+  const grp=st.group;
   const by=s.addedBy?`<span class="src-by ${uColor(s.addedBy)}">${uName(s.addedBy)}이 추가</span>`:'';
   const assigned=s.assignedTo&&s.assignedTo!=='none'?`<span class="src-by ${uColor(s.assignedTo)}">→ ${uName(s.assignedTo)} 담당</span>`:'';
   const favicon=s.url?`<img class="src-favicon" src="https://www.google.com/s2/favicons?domain=${getDomain(s.url)}&sz=32" onerror="this.style.display='none'">`:'<span style="font-size:16px">📦</span>';
-  const acts=canAdd()?`<div class="src-acts">
-    ${!s.done?`<button class="src-btn done-btn" onclick="toggleSrcDone('${s.id}')">✅ 소싱 완료</button>`:`<button class="src-btn" onclick="toggleSrcDone('${s.id}')">↩ 되돌리기</button>`}
-    <button class="src-btn del-btn" onclick="delSrc('${s.id}')">삭제</button>
-  </div>`:'';
-  return`<div class="src-item${s.done?' done-src':''}">
+  // 단계 진행바 (진행 중인 경우만)
+  let flowHtml='';
+  if(grp==='active'){
+    const curIdx=FLOW.indexOf(s.stage||'new');
+    flowHtml=`<div class="src-flow">`;
+    FLOW.forEach((fk,fi)=>{
+      if(fi>0)flowHtml+=`<div class="src-flow-line${fi<=curIdx?' done':''}"></div>`;
+      flowHtml+=`<div class="src-flow-dot${fi<curIdx?' done':fi===curIdx?' cur':''}"></div>`;
+    });
+    flowHtml+=`</div>`;
+  }
+  // 단계 뱃지
+  const badge=`<span class="src-stage-badge" style="background:${st.color}18;color:${st.color};border:1px solid ${st.color}40">${st.icon} ${st.label}</span>`;
+  // 버튼
+  let acts='';
+  if(canAdd()){
+    acts=`<div class="src-acts">`;
+    if(grp==='active'){
+      // 다음 단계 버튼
+      const nextIdx=FLOW.indexOf(s.stage||'new')+1;
+      const nextStage=FLOW[nextIdx];
+      if(nextStage){
+        const nst=stageInfo(nextStage);
+        acts+=`<button class="src-btn next" onclick="setSrcStage('${s.id}','${nextStage}')">→ ${nst.icon} ${nst.label}</button>`;
+      } else {
+        acts+=`<button class="src-btn done-btn" onclick="setSrcStage('${s.id}','done')">✅ 소싱 완료</button>`;
+      }
+      acts+=`<button class="src-btn hold-btn" onclick="setSrcStage('${s.id}','no_res')">😶 답변없음</button>`;
+      acts+=`<button class="src-btn rej-btn" onclick="setSrcStage('${s.id}','reject')">❌ 거절</button>`;
+    } else {
+      acts+=`<button class="src-btn" onclick="setSrcStage('${s.id}','new')">↩ 다시 진행</button>`;
+    }
+    acts+=`<button class="src-btn edit" onclick="openSrcEdit('${s.id}')">✏ 수정</button>`;
+    acts+=`<button class="src-btn del-btn" onclick="delSrc('${s.id}')">삭제</button>`;
+    acts+=`</div>`;
+  }
+  return`<div class="src-item${grp==='hold'?' hold':''}">
     <div class="src-top">${favicon}<div class="src-body">
-      <div class="src-title">${s.title}${s.done?'<span style="font-size:11px;color:var(--green);font-weight:700">✓ 완료</span>':''}</div>
+      <div class="src-title">${s.title} ${badge}</div>
       ${s.url?`<a class="src-url" href="${s.url}" target="_blank">🔗 ${getDomain(s.url)}</a>`:''}
+      ${flowHtml}
       ${s.note?`<div class="src-note">💬 ${s.note}</div>`:''}
       <div class="src-meta">${by}${assigned}</div>
     </div></div>
     ${acts}
   </div>`;
 }
+
 function openSrcModal(){
   if(!canAdd()){showToast('로그인 후 추가할 수 있어요');return}
+  document.getElementById('src-modal-title').textContent='소싱 아이템 추가';
+  document.getElementById('src_id').value='';
   document.getElementById('src_title').value='';
   document.getElementById('src_url').value='';
   document.getElementById('src_note').value='';
   S.srcAssign='none';
-  const el=document.getElementById('src-assign-chips');
-  if(el)el.innerHTML=`<button class="chip on" id="sa-none" onclick="selSrcAssign('none',this)">미배정</button>
-    <button class="chip" id="sa-u1" onclick="selSrcAssign('u1',this)">${S.u1}</button>
-    <button class="chip" id="sa-u2" onclick="selSrcAssign('u2',this)">${S.u2}</button>`;
+  buildSrcAssignChips();
   om('mSrc');setTimeout(()=>document.getElementById('src_title').focus(),300);
+}
+function openSrcEdit(id){
+  if(!canAdd()){showToast('로그인 후 수정할 수 있어요');return}
+  const s=S.bData.sourcingItems?.find(x=>x.id===id);if(!s)return;
+  document.getElementById('src-modal-title').textContent='소싱 아이템 수정';
+  document.getElementById('src_id').value=id;
+  document.getElementById('src_title').value=s.title;
+  document.getElementById('src_url').value=s.url||'';
+  document.getElementById('src_note').value=s.note||'';
+  S.srcAssign=s.assignedTo||'none';
+  buildSrcAssignChips();
+  om('mSrc');setTimeout(()=>document.getElementById('src_title').focus(),300);
+}
+function buildSrcAssignChips(){
+  const el=document.getElementById('src-assign-chips');if(!el)return;
+  const opts=[{v:'none',l:'미배정'},{v:'u1',l:S.u1},{v:'u2',l:S.u2}];
+  el.innerHTML=opts.map(o=>`<button class="chip${S.srcAssign===o.v?' on':''}" onclick="selSrcAssign('${o.v}',this)">${o.l}</button>`).join('');
 }
 function selSrcAssign(v,el){S.srcAssign=v;document.querySelectorAll('#src-assign-chips .chip').forEach(c=>c.className='chip');el.className='chip on'}
 async function saveSrcItem(){
   const title=document.getElementById('src_title').value.trim();if(!title){showToast('상품명을 입력해주세요');return}
-  const item={id:genId(),title,url:document.getElementById('src_url').value.trim(),note:document.getElementById('src_note').value.trim(),addedBy:S.curUser,assignedTo:S.srcAssign,done:false,createdAt:new Date().toISOString()};
-  if(!S.bData.sourcingItems)S.bData.sourcingItems=[];
-  S.bData.sourcingItems.unshift(item);
-  cm('mSrc');render();await save();showToast('✅ 소싱 아이템 추가됐어요');
+  const editId=document.getElementById('src_id').value;
+  if(editId){
+    // 수정
+    const s=S.bData.sourcingItems?.find(x=>x.id===editId);if(!s)return;
+    s.title=title;s.url=document.getElementById('src_url').value.trim();
+    s.note=document.getElementById('src_note').value.trim();s.assignedTo=S.srcAssign;
+    cm('mSrc');render();await save();showToast('✅ 수정됐어요');
+  } else {
+    // 추가
+    if(!S.bData.sourcingItems)S.bData.sourcingItems=[];
+    S.bData.sourcingItems.unshift({id:genId(),title,url:document.getElementById('src_url').value.trim(),note:document.getElementById('src_note').value.trim(),addedBy:S.curUser,assignedTo:S.srcAssign,stage:'new',done:false,createdAt:new Date().toISOString()});
+    cm('mSrc');render();await save();showToast('✅ 소싱 아이템 추가됐어요');
+  }
 }
-async function toggleSrcDone(id){
+async function setSrcStage(id,stage){
   if(!canAdd())return;
   const s=S.bData.sourcingItems?.find(x=>x.id===id);if(!s)return;
-  if(!s.done){if(!confirm(`🛍 "${s.title}"\n소싱 완료로 표시할까요?`))return}
-  s.done=!s.done;s.doneAt=s.done?new Date().toISOString():null;render();await save();
+  const st=stageInfo(stage);
+  if(stage==='done'){if(!confirm(`🛍 "${s.title}"\n소싱 완료로 표시할까요?`))return}
+  s.stage=stage;s.done=(stage==='done');s.updatedAt=new Date().toISOString();
+  render();await save();showToast(`${st.icon} ${st.label}로 변경됐어요`);
 }
 async function delSrc(id){if(!canAdd())return;if(!confirm('삭제할까요?'))return;S.bData.sourcingItems=S.bData.sourcingItems.filter(s=>s.id!==id);render();await save();showToast('🗑 삭제됐어요')}
 
