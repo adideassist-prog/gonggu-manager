@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.2.8</title>
+<title>📋 데일리 브리핑 v1.3.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -324,7 +324,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div id="scrLoad" class="scr on"><div class="cw"><div class="logo">📋</div><div class="spin"></div><div class="ltxt" id="ltxt">초기화 중...</div></div></div>
 
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.8</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.3.0</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -526,7 +526,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.2.8';
+const APP_VER='v1.3.0';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -614,12 +614,21 @@ let tokenExpiry=0; // 토큰 만료 시각 (ms)
 function initGSI(){
   if(!S.cid){showScr('scrSetup');return}
   gisTC=google.accounts.oauth2.initTokenClient({client_id:S.cid,scope:'https://www.googleapis.com/auth/drive.file',callback:async resp=>{
-    if(resp.error){showScr('scrAuth');return}
+    if(resp.error){
+      // 토큰 실패해도 IndexedDB 데이터 있으면 오프라인으로 작동
+      const localData=await idbLoad();
+      if(localData){S.bData=localData;migrate();genRepeat();chkLoginExpiry();showScr('scrMain');render();showToast('☁️ 오프라인 모드 (Drive 연결 안됨)');return}
+      showScr('scrAuth');return
+    }
     S.token=resp.access_token;
-    tokenExpiry=Date.now()+(55*60*1000); // 55분 후 만료로 설정 (여유 5분)
+    tokenExpiry=Date.now()+(55*60*1000);
     setLtxt('데이터 불러오는 중...');await loadAll();
   }});
   setLtxt('인증 확인 중...');
+  // IndexedDB 데이터 있으면 먼저 화면에 표시 (체감 속도 향상)
+  idbLoad().then(local=>{
+    if(local&&!S.bData){S.bData=local;migrate();showScr('scrMain');render()}
+  });
   try{gisTC.requestAccessToken({prompt:''})}catch{showScr('scrAuth')}
 }
 
@@ -754,25 +763,126 @@ function migrate(){
     if(!t.subtasks)t.subtasks=[];
   });
 }
-let svTimer=null;
-async function save(){
-  if(!S.curUser||!S.bFid)return;
-  // 변경사항 즉시 로컬에 백업 (Drive 저장 실패해도 보존)
-  try{localStorage.setItem('b_backup',JSON.stringify({data:S.bData,ts:Date.now()}))}catch(e){}
-  clearTimeout(svTimer);
-  svTimer=setTimeout(async()=>{
-    try{
-      const ok=await ensureToken();
-      if(!ok)return;
-      setSts('sy');S.bData.updatedAt=new Date().toISOString();
-      await driveWrite(S.bFid,S.bData);
-      setSts('ok');
-      // Drive 저장 성공 시 로컬 백업 제거
-      try{localStorage.removeItem('b_backup')}catch(e){}
-    }
-    catch(e){setSts('er');showToast('⚠️ 저장 실패 — 로컬에 백업됨')}
-  },1200);
+// ══════════════════════════════
+// IndexedDB
+// ══════════════════════════════
+const IDB_NAME='briefingDB',IDB_STORE='data',IDB_KEY='main';
+function openIDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(IDB_NAME,1);
+    req.onupgradeneeded=e=>e.target.result.createObjectStore(IDB_STORE);
+    req.onsuccess=e=>res(e.target.result);
+    req.onerror=e=>rej(e.target.error);
+  });
 }
+async function idbSave(data){
+  try{
+    const db=await openIDB();
+    return new Promise((res,rej)=>{
+      const tx=db.transaction(IDB_STORE,'readwrite');
+      tx.objectStore(IDB_STORE).put(data,IDB_KEY);
+      tx.oncomplete=()=>res(true);
+      tx.onerror=e=>rej(e.target.error);
+    });
+  }catch(e){console.error('IDB save error',e);return false}
+}
+async function idbLoad(){
+  try{
+    const db=await openIDB();
+    return new Promise((res,rej)=>{
+      const tx=db.transaction(IDB_STORE,'readonly');
+      const req=tx.objectStore(IDB_STORE).get(IDB_KEY);
+      req.onsuccess=e=>res(e.target.result||null);
+      req.onerror=e=>rej(e.target.error);
+    });
+  }catch(e){console.error('IDB load error',e);return null}
+}
+
+// ══════════════════════════════
+// 저장 큐
+// ══════════════════════════════
+let svQueue=[];let svRunning=false;let svTimer=null;
+
+async function save(){
+  if(!S.curUser)return;
+  // ① IndexedDB 즉시 저장 (항상 성공)
+  await idbSave(S.bData);
+  // ② Drive 동기화 큐에 추가 (딜레이 후)
+  clearTimeout(svTimer);
+  svTimer=setTimeout(()=>enqueueSync(),1200);
+}
+
+function enqueueSync(){
+  if(!S.bFid||!S.token)return;
+  // 이미 대기 중인 것 제거하고 최신 것만 유지
+  svQueue=[];
+  svQueue.push({data:JSON.parse(JSON.stringify(S.bData)),fid:S.bFid});
+  runQueue();
+}
+
+async function runQueue(){
+  if(svRunning||svQueue.length===0)return;
+  svRunning=true;
+  const job=svQueue.shift();
+  try{
+    setSts('sy');
+    const ok=await ensureToken();
+    if(!ok){setSts('er');svRunning=false;return}
+    job.data.updatedAt=new Date().toISOString();
+    await driveWrite(job.fid,job.data);
+    // Drive 저장 성공 시 bData updatedAt 동기화
+    S.bData.updatedAt=job.data.updatedAt;
+    setSts('ok');
+  }catch(e){
+    setSts('er');
+    // 실패해도 데이터는 IndexedDB에 안전하게 있음
+    showToast('☁️ 드라이브 동기화 실패 (기기엔 저장됨)');
+  }
+  svRunning=false;
+  if(svQueue.length>0)runQueue(); // 남은 작업 처리
+}
+
+async function loadAll(){
+  try{
+    setSts('sy');
+    // ① 먼저 IndexedDB에서 즉시 로드 (오프라인에서도 작동)
+    const localData=await idbLoad();
+    if(localData){
+      S.bData=localData;migrate();
+      genRepeat();chkLoginExpiry();
+      showScr('scrMain');render(); // 로컬 데이터로 즉시 화면 표시
+    }
+    // ② Drive에서 최신 데이터 가져오기
+    if(!S.token){setSts(localData?'ok':'er');return}
+    const fs=await driveList(BF);
+    if(fs.length){
+      S.bFid=fs[0].id;
+      const driveData=await driveRead(S.bFid);
+      // Drive vs 로컬 중 더 최신 것 사용
+      const driveTs=new Date(driveData.updatedAt||0).getTime();
+      const localTs=new Date(localData?.updatedAt||0).getTime();
+      if(driveTs>localTs){
+        S.bData=driveData;migrate();
+        await idbSave(S.bData); // Drive 최신 → IndexedDB에도 저장
+      }
+      // 로컬이 더 최신이면 Drive에 올리기
+      else if(localTs>driveTs+3000){
+        await driveWrite(S.bFid,S.bData);
+        showToast('✅ 로컬 변경사항 Drive에 동기화됨');
+      }
+    } else {
+      S.bData=localData||initData();
+      S.bFid=await driveCreate(BF,S.bData);
+      await idbSave(S.bData);
+    }
+    genRepeat();chkLoginExpiry();setSts('ok');showScr('scrMain');render();
+  }catch(e){
+    console.error(e);setSts('er');
+    if(S.bData){showScr('scrMain');render();showToast('☁️ Drive 동기화 실패 (로컬 데이터로 작동 중)')}
+    else showScr('scrAuth');
+  }
+}
+
 async function doSync(){showToast('🔄 동기화 중...');await loadAll()}
 
 // REPEAT
