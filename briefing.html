@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.2.0</title>
+<title>📋 데일리 브리핑 v1.2.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -306,7 +306,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div id="scrLoad" class="scr on"><div class="cw"><div class="logo">📋</div><div class="spin"></div><div class="ltxt" id="ltxt">초기화 중...</div></div></div>
 
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.0</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.1</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -507,7 +507,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.2.0';
+const APP_VER='v1.2.1';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -1186,8 +1186,8 @@ function openAddP(p,assignee,isTmrw=false){
   document.getElementById('t_time').value='';document.getElementById('t_repeat').value='none';
   document.getElementById('t_start').value=isTmrw?tomorrow():(p==='urgent'||p==='today')?today():'';
   document.getElementById('t_end').value='';document.getElementById('t_del').style.display='none';
-  buildAssignChips();setTChips();resetClr('');renderSubList();om('mTask');
-  setTimeout(()=>document.getElementById('t_title').focus(),300);
+  buildAssignChips();setTChips();resetClr('');om('mTask');
+  setTimeout(()=>{renderSubList();document.getElementById('t_title').focus()},50);
 }
 function openEdit(id){
   const t=S.bData.tasks.find(x=>x.id===id);if(!t)return;
@@ -1200,7 +1200,8 @@ function openEdit(id){
   document.getElementById('t_repeat').value=t.repeat||'none';document.getElementById('t_color').value=t.color||'';
   document.getElementById('t_start').value=t.startDate||t.date||'';document.getElementById('t_end').value=t.endDate||'';
   document.getElementById('t_del').style.display='block';
-  buildAssignChips();setTChips();resetClr(t.color||'');renderSubList();om('mTask');
+  buildAssignChips();setTChips();resetClr(t.color||'');om('mTask');
+  setTimeout(()=>{renderSubList();document.getElementById('t_title').focus()},50);
 }
 function buildAssignChips(){
   const el=document.getElementById('assign-chips');if(!el)return;
