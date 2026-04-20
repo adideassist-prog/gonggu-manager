@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.3.0</title>
+<title>📋 데일리 브리핑 v1.3.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -70,11 +70,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .user-badge.u1{background:#EFF6FF;border-color:var(--blue);color:var(--blue)}
 .user-badge.u2{background:#F5F3FF;border-color:var(--pur);color:var(--pur)}
 .mob-hdr{background:linear-gradient(135deg,#4F7EF5,#7C5CF6);color:#fff;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));position:sticky;top:0;z-index:100;flex-shrink:0}
-.mob-hdr-r1{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.mob-title{font-size:15px;font-weight:800}
-.mob-acts{display:flex;gap:5px;align-items:center}
-.mact{background:rgba(255,255,255,.2);border:none;border-radius:7px;padding:5px 9px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
-.mob-ubadge{padding:5px 10px;border-radius:15px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff}
+.mob-hdr-r1{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+.mob-title{font-size:15px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mob-acts{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.mact{background:rgba(255,255,255,.2);border:none;border-radius:7px;padding:5px 9px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0}
+.mob-ubadge{padding:5px 9px;border-radius:15px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis}
 .mob-ubadge.u1{background:rgba(255,255,255,.3);border-color:rgba(255,255,255,.7)}
 .mob-ubadge.u2{background:rgba(220,190,255,.3);border-color:rgba(220,190,255,.7)}
 .mob-prog{background:rgba(255,255,255,.15);border-radius:var(--rsm);padding:7px 10px}
@@ -98,6 +98,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .goal-top-label{font-size:11px;font-weight:700;color:var(--blue);margin-bottom:5px;display:flex;align-items:center;gap:4px}
 .goal-top-input{width:100%;background:rgba(255,255,255,.75);border:1px solid #BFD3FF;border-radius:var(--rsm);padding:8px 10px;font-size:13px;color:var(--tx);font-family:inherit;resize:none;outline:none;line-height:1.6;min-height:56px}
 .goal-top-input:focus{border-color:var(--blue)}.goal-top-input::placeholder{color:var(--tx3)}.goal-top-input[readonly]{cursor:default;background:rgba(255,255,255,.4)}
+/* 모바일에서 목표 카드 세로 배치 */
+@media(max-width:767px){
+  .goal-top-row{grid-template-columns:1fr;gap:10px}
+  .goal-top-input{min-height:48px;font-size:14px}
+}
 /* SECTION */
 .sec{background:var(--bg2);border-radius:var(--rlg);overflow:hidden;border:1px solid var(--bd);margin-bottom:12px;box-shadow:0 1px 6px rgba(30,50,100,.04)}
 .sechd{padding:11px 14px 9px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px}
@@ -324,7 +329,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div id="scrLoad" class="scr on"><div class="cw"><div class="logo">📋</div><div class="spin"></div><div class="ltxt" id="ltxt">초기화 중...</div></div></div>
 
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.3.0</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.3.1</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -387,9 +392,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
     <div class="mob-hdr-r1">
       <div class="mob-title" id="mob-title">📋 오늘의 브리핑</div>
       <div class="mob-acts">
-        <span class="sdot" id="sdot-mob" style="margin-right:2px;vertical-align:middle"></span>
-        <button class="mact" onclick="doSync()">⟳</button>
+        <span class="sdot" id="sdot-mob" style="flex-shrink:0;vertical-align:middle"></span>
         <div class="mob-ubadge none" id="mob-ubadge" onclick="showLoginModal()">로그인</div>
+        <button class="mact" onclick="doSync()">⟳</button>
         <button class="mact" onclick="openSettings()">⚙</button>
       </div>
     </div>
@@ -526,7 +531,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.3.0';
+const APP_VER='v1.3.1';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -923,10 +928,20 @@ function render(){
   if(isPC())renderPC();else renderMob();
 }
 function updDate(){
-  const d=new Date();const ds=`${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${DOW[d.getDay()]}요일`;
+  const d=new Date();
+  const ds=`${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${DOW[d.getDay()]}요일`;
   const sb=document.getElementById('sb-date');if(sb)sb.textContent=`${APP_VER} · ${ds}`;
   const pc=document.getElementById('pc-date');if(pc)pc.textContent=ds;
-  const ml=document.getElementById('mob-title');if(ml){const d2=new Date();ml.textContent=`📋 ${d2.getMonth()+1}월 ${d2.getDate()}일 ${DOW[d2.getDay()]}요일`}
+  const ml=document.getElementById('mob-title');
+  if(ml){
+    const tab=S.mobTab;
+    if(tab==='dash'||!tab){
+      ml.textContent=`${d.getMonth()+1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일`;
+    } else {
+      const labels={cal:'📅 캘린더',src:'🛍 소싱',goals:'🎯 목표/메모',more:'⋯ 더보기',other:'👤 상대방'};
+      ml.textContent=labels[tab]||`${d.getMonth()+1}월 ${d.getDate()}일`;
+    }
+  }
 }
 function updUserUI(){
   const cu=S.curUser;const cls=cu===null?'none':cu==='u1'?'u1':'u2';
