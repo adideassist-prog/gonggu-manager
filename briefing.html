@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.2.7</title>
+<title>📋 데일리 브리핑 v1.2.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -324,7 +324,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div id="scrLoad" class="scr on"><div class="cw"><div class="logo">📋</div><div class="spin"></div><div class="ltxt" id="ltxt">초기화 중...</div></div></div>
 
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.7</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.8</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -526,7 +526,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.2.7';
+const APP_VER='v1.2.8';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -609,14 +609,44 @@ async function driveCreate(n,data){const m=await fetch('https://www.googleapis.c
 
 // AUTH
 let gisTC=null;
+let tokenExpiry=0; // 토큰 만료 시각 (ms)
+
 function initGSI(){
   if(!S.cid){showScr('scrSetup');return}
   gisTC=google.accounts.oauth2.initTokenClient({client_id:S.cid,scope:'https://www.googleapis.com/auth/drive.file',callback:async resp=>{
     if(resp.error){showScr('scrAuth');return}
-    S.token=resp.access_token;setLtxt('데이터 불러오는 중...');await loadAll();
+    S.token=resp.access_token;
+    tokenExpiry=Date.now()+(55*60*1000); // 55분 후 만료로 설정 (여유 5분)
+    setLtxt('데이터 불러오는 중...');await loadAll();
   }});
   setLtxt('인증 확인 중...');
   try{gisTC.requestAccessToken({prompt:''})}catch{showScr('scrAuth')}
+}
+
+// 토큰 조용히 갱신 (팝업 없이)
+function refreshTokenSilent(){
+  return new Promise(resolve=>{
+    if(!gisTC){resolve(false);return}
+    const prev=gisTC.callback;
+    gisTC.callback=resp=>{
+      gisTC.callback=prev;
+      if(resp.error){resolve(false);return}
+      S.token=resp.access_token;
+      tokenExpiry=Date.now()+(55*60*1000);
+      resolve(true);
+    };
+    try{gisTC.requestAccessToken({prompt:''})}catch{gisTC.callback=prev;resolve(false)}
+  });
+}
+
+// 저장 전 토큰 유효성 확인 후 필요시 갱신
+async function ensureToken(){
+  if(!S.token)return false;
+  if(Date.now()>tokenExpiry-2*60*1000){ // 2분 전이면 갱신
+    const ok=await refreshTokenSilent();
+    if(!ok){showToast('⚠️ 인증이 만료됐어요. 페이지를 새로고침해주세요.');return false}
+  }
+  return true;
 }
 function requestAuth(){if(!gisTC)return;gisTC.requestAccessToken({prompt:'consent'})}
 function doSignOut(){if(S.token)google.accounts.oauth2.revoke(S.token);S.token=null;S.curUser=null;cm('mSettings');showScr('scrAuth')}
@@ -663,7 +693,36 @@ async function loadAll(){
   try{
     setSts('sy');
     const fs=await driveList(BF);
-    if(fs.length){S.bFid=fs[0].id;S.bData=await driveRead(S.bFid);migrate()}
+    if(fs.length){
+      S.bFid=fs[0].id;
+      const driveData=await driveRead(S.bFid);
+      // 로컬 백업이 Drive보다 최신인지 확인
+      try{
+        const bk=localStorage.getItem('b_backup');
+        if(bk){
+          const {data:localData,ts}=JSON.parse(bk);
+          const driveTs=new Date(driveData.updatedAt||0).getTime();
+          if(ts>driveTs+5000){ // 로컬이 5초 이상 최신이면 복구 묻기
+            const diffMin=Math.round((ts-driveTs)/60000);
+            if(confirm(`💾 저장되지 않은 변경사항이 있어요 (약 ${diffMin}분 전).\n복구할까요?\n\n[확인] 로컬 백업 복구\n[취소] Drive 데이터 사용`)){
+              S.bData=localData;
+              await driveWrite(S.bFid,S.bData); // 바로 Drive에 저장
+              localStorage.removeItem('b_backup');
+              showToast('✅ 백업 복구 완료!');
+            } else {
+              S.bData=driveData;
+              localStorage.removeItem('b_backup');
+            }
+          } else {
+            S.bData=driveData;
+            localStorage.removeItem('b_backup');
+          }
+        } else {
+          S.bData=driveData;
+        }
+      }catch{S.bData=driveData}
+      migrate();
+    }
     else{S.bData=initData();S.bFid=await driveCreate(BF,S.bData)}
     genRepeat();chkLoginExpiry();setSts('ok');showScr('scrMain');render();
   }catch(e){console.error(e);setSts('er');if(S.bData){showScr('scrMain');render();showToast('⚠️ 동기화 실패')}else showScr('scrAuth')}
@@ -698,10 +757,20 @@ function migrate(){
 let svTimer=null;
 async function save(){
   if(!S.curUser||!S.bFid)return;
+  // 변경사항 즉시 로컬에 백업 (Drive 저장 실패해도 보존)
+  try{localStorage.setItem('b_backup',JSON.stringify({data:S.bData,ts:Date.now()}))}catch(e){}
   clearTimeout(svTimer);
   svTimer=setTimeout(async()=>{
-    try{setSts('sy');S.bData.updatedAt=new Date().toISOString();await driveWrite(S.bFid,S.bData);setSts('ok')}
-    catch(e){setSts('er');showToast('저장 실패')}
+    try{
+      const ok=await ensureToken();
+      if(!ok)return;
+      setSts('sy');S.bData.updatedAt=new Date().toISOString();
+      await driveWrite(S.bFid,S.bData);
+      setSts('ok');
+      // Drive 저장 성공 시 로컬 백업 제거
+      try{localStorage.removeItem('b_backup')}catch(e){}
+    }
+    catch(e){setSts('er');showToast('⚠️ 저장 실패 — 로컬에 백업됨')}
   },1200);
 }
 async function doSync(){showToast('🔄 동기화 중...');await loadAll()}
@@ -1414,8 +1483,14 @@ window.addEventListener('load',()=>{
   },100);
   setTimeout(()=>{if(document.getElementById('scrLoad')?.classList.contains('on'))showScr(S.cid?'scrAuth':'scrSetup')},9000);
 });
-setInterval(()=>{if(S.token)doSync()},30*60*1000);
+setInterval(()=>{if(S.token)doSync()},25*60*1000); // 25분마다 동기화
 setInterval(()=>{chkLoginExpiry()},60*1000);
+// 50분마다 토큰 조용히 갱신
+setInterval(async()=>{
+  if(S.token&&Date.now()>tokenExpiry-5*60*1000){
+    await refreshTokenSilent();
+  }
+},5*60*1000);
 </script>
 </body>
 </html>
