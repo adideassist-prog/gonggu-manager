@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.2.1</title>
+<title>📋 데일리 브리핑 v1.2.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -282,6 +282,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .sub-mod-item span{flex:1}
 .sub-mod-del{border:none;background:none;color:var(--tx3);cursor:pointer;font-size:14px;padding:0 3px}
 .sub-mod-del:hover{color:var(--red)}
+.sub-mod-edit{flex:1;border:none;background:transparent;font-size:13px;font-family:inherit;color:var(--tx);outline:none;padding:1px 4px;border-radius:4px;min-width:0}
+.sub-mod-edit:focus{background:var(--bg);outline:1px solid var(--blue)}
 .sub-add-row{display:flex;gap:6px}
 .sub-add-input{flex:1;background:var(--bg3);border:1.5px solid var(--bd);border-radius:var(--rsm);padding:9px 11px;font-size:13px;font-family:inherit;outline:none;color:var(--tx)}
 .sub-add-input:focus{border-color:var(--blue)}.sub-add-input::placeholder{color:var(--tx3)}
@@ -306,7 +308,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div id="scrLoad" class="scr on"><div class="cw"><div class="logo">📋</div><div class="spin"></div><div class="ltxt" id="ltxt">초기화 중...</div></div></div>
 
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.1</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.2</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -507,7 +509,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.2.1';
+const APP_VER='v1.2.2';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -905,33 +907,39 @@ async function delSrc(id){if(!canAdd())return;if(!confirm('삭제할까요?'))re
 
 // ── 업무일지 ──
 function buildWorkLog(){
-  const td=today();const wl=S.bData?.workLog||[];
-  const todayAuto=wl.filter(w=>w.date===td&&w.type==='auto');
-  const todayManual=wl.filter(w=>w.date===td&&w.type==='manual');
-  const totalToday=todayAuto.length+todayManual.length;
-  let h=`<div class="sec"><div class="sechd"><div class="sec-ico">📋</div><div class="sec-info"><div class="sec-title">오늘의 업무일지</div><div class="sec-sub" style="color:var(--blue)">${fmtDate(td)}</div></div><span class="sec-cnt">${totalToday}</span></div><div class="sec-body">`;
-  if(canAdd())h+=`<div class="wl-add-row"><input class="wl-input" id="wl-input" placeholder="오늘 처리한 업무를 추가로 기록..." onkeydown="if(event.key==='Enter')addWLEntry()"><button class="wl-add-btn" onclick="addWLEntry()">기록</button></div>`;
-  if(!totalToday)h+=`<div class="empty" style="padding:12px 0;font-size:12px">완료한 할일이 없어요<br><span style="font-size:11px;color:var(--tx3)">할일을 완료하면 자동으로 기록돼요</span></div>`;
+  const td=today();
+  // 현재 조회 날짜 (S.wlDate 없으면 오늘)
+  if(!S.wlDate)S.wlDate=td;
+  const wl=S.bData?.workLog||[];
+  const allDates=[...new Set([td,...wl.map(w=>w.date)])].sort((a,b)=>b.localeCompare(a));
+  const curItems=wl.filter(w=>w.date===S.wlDate);
+  const isToday=S.wlDate===td;
+  const d=new Date(S.wlDate+'T00:00:00');
+  const dateLabel=isToday?`오늘 · ${fmtDate(td)}`:`${d.getMonth()+1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일`;
+  // 이전/다음 날짜 네비
+  const curIdx=allDates.indexOf(S.wlDate);
+  const prevDate=allDates[curIdx+1]||null;
+  const nextDate=allDates[curIdx-1]||null;
+  let h=`<div class="sec"><div class="sechd"><div class="sec-ico">📋</div><div class="sec-info"><div class="sec-title">업무일지</div><div class="sec-sub" style="color:var(--blue)">${dateLabel}</div></div><span class="sec-cnt">${curItems.length}</span></div>`;
+  // 날짜 네비바
+  h+=`<div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--bd);background:var(--bg3)">
+    <button onclick="wlNav('${prevDate}')" ${!prevDate?'disabled':''} style="width:28px;height:28px;border-radius:var(--rsm);border:1px solid var(--bd);background:${prevDate?'var(--bg2)':'var(--bg)'};color:${prevDate?'var(--blue)':'var(--tx3)'};cursor:${prevDate?'pointer':'default'};font-size:14px;display:flex;align-items:center;justify-content:center">‹</button>
+    <select onchange="wlNav(this.value)" style="flex:1;border:1px solid var(--bd);border-radius:var(--rsm);padding:5px 8px;font-size:12px;font-family:inherit;background:var(--bg2);color:var(--tx);outline:none;cursor:pointer">
+      ${allDates.map(date=>{const dd=new Date(date+'T00:00:00');const lbl=date===td?`오늘 (${dd.getMonth()+1}/${dd.getDate()})`:` ${dd.getMonth()+1}월 ${dd.getDate()}일 ${DOW[dd.getDay()]}요일`;const cnt=wl.filter(w=>w.date===date).length;return`<option value="${date}" ${date===S.wlDate?'selected':''}>${lbl} · ${cnt}건</option>`}).join('')}
+    </select>
+    <button onclick="wlNav('${nextDate}')" ${!nextDate?'disabled':''} style="width:28px;height:28px;border-radius:var(--rsm);border:1px solid var(--bd);background:${nextDate?'var(--bg2)':'var(--bg)'};color:${nextDate?'var(--blue)':'var(--tx3)'};cursor:${nextDate?'pointer':'default'};font-size:14px;display:flex;align-items:center;justify-content:center">›</button>
+    ${!isToday?`<button onclick="wlNav('${td}')" style="padding:5px 10px;border-radius:var(--rsm);border:1px solid var(--blue);background:#EEF4FF;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">오늘</button>`:''}
+  </div>`;
+  h+=`<div class="sec-body">`;
+  if(isToday&&canAdd())h+=`<div class="wl-add-row"><input class="wl-input" id="wl-input" placeholder="오늘 처리한 업무를 추가로 기록..." onkeydown="if(event.key==='Enter')addWLEntry()"><button class="wl-add-btn" onclick="addWLEntry()">기록</button></div>`;
+  if(!curItems.length)h+=`<div class="empty" style="padding:12px 0;font-size:12px">${isToday?'완료한 할일이 없어요<br><span style="font-size:11px;color:var(--tx3)">할일을 완료하면 자동으로 기록돼요</span>':'이 날 업무 기록이 없어요'}</div>`;
   else{
-    todayManual.forEach(w=>h+=`<div class="wl-item manual"><span class="wl-ico">📝</span><span class="wl-txt">${w.text}</span>${canAdd()?`<button class="wl-del" onclick="delWLEntry('${w.id}')">✕</button>`:''}</div>`);
-    todayAuto.forEach(w=>h+=`<div class="wl-item auto"><span class="wl-ico">✅</span><span class="wl-txt">${w.text}</span></div>`);
-  }
-  // 이전 날짜 기록 보기
-  const past=wl.filter(w=>w.date!==td);
-  const pastDates=[...new Set(past.map(w=>w.date))].sort((a,b)=>b.localeCompare(a)).slice(0,5);
-  if(pastDates.length){
-    h+=`<button class="done-tog" onclick="togSec('wl-past')">▸ 이전 업무일지 (${pastDates.length}일)</button><div id="wl-past" style="display:none">`;
-    pastDates.forEach(date=>{
-      const dayItems=wl.filter(w=>w.date===date);
-      const d=new Date(date+'T00:00:00');
-      h+=`<div class="wl-day"><div class="wl-day-hdr">${d.getMonth()+1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일<span class="wl-day-cnt">${dayItems.length}건</span></div>`;
-      dayItems.forEach(w=>h+=`<div class="wl-item ${w.type}"><span class="wl-ico">${w.type==='auto'?'✅':'📝'}</span><span class="wl-txt">${w.text}</span></div>`);
-      h+=`</div>`;
-    });
-    h+=`</div>`;
+    curItems.filter(w=>w.type==='manual').forEach(w=>h+=`<div class="wl-item manual"><span class="wl-ico">📝</span><span class="wl-txt">${w.text}</span>${isToday&&canAdd()?`<button class="wl-del" onclick="delWLEntry('${w.id}')">✕</button>`:''}</div>`);
+    curItems.filter(w=>w.type==='auto').forEach(w=>h+=`<div class="wl-item auto"><span class="wl-ico">✅</span><span class="wl-txt">${w.text}</span></div>`);
   }
   return h+`</div></div>`;
 }
+function wlNav(date){if(!date)return;S.wlDate=date;render()}
 async function addWLEntry(){
   if(!canAdd())return;
   const el=document.getElementById('wl-input');const text=el?.value.trim();if(!text)return;
@@ -939,10 +947,7 @@ async function addWLEntry(){
   S.bData.workLog.push({id:genId(),date:today(),text,type:'manual',userId:S.curUser,createdAt:new Date().toISOString()});
   el.value='';render();await save();
 }
-async function delWLEntry(id){
-  if(!canAdd())return;
-  S.bData.workLog=S.bData.workLog.filter(w=>w.id!==id);render();await save();
-}
+async function delWLEntry(id){if(!canAdd())return;S.bData.workLog=S.bData.workLog.filter(w=>w.id!==id);render();await save()}
 
 // ── 상대방 할일 ──
 function buildOther(){
@@ -1166,7 +1171,12 @@ async function saveReview(){if(!S.curUser)return;const v=document.getElementById
 function renderSubList(){
   const el=document.getElementById('sub-mod-list');if(!el)return;
   if(!S.tSubtasks.length){el.innerHTML='';return}
-  el.innerHTML=S.tSubtasks.map((sub,i)=>`<div class="sub-mod-item"><div class="sub-chk${sub.done?' ck':''}" onclick="togModSub(${i})"></div><span>${sub.title}</span><button class="sub-mod-del" onclick="delModSub(${i})">✕</button></div>`).join('');
+  el.innerHTML=S.tSubtasks.map((sub,i)=>`
+    <div class="sub-mod-item">
+      <div class="sub-chk${sub.done?' ck':''}" onclick="togModSub(${i})"></div>
+      <input type="text" class="sub-mod-edit" value="${sub.title.replace(/"/g,'&quot;')}" onblur="editModSub(${i},this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+      <button class="sub-mod-del" onclick="delModSub(${i})">✕</button>
+    </div>`).join('');
 }
 function addSubtask(){
   const el=document.getElementById('sub-add-input');const text=el?.value.trim();if(!text)return;
@@ -1174,6 +1184,7 @@ function addSubtask(){
 }
 function delModSub(i){S.tSubtasks.splice(i,1);renderSubList()}
 function togModSub(i){S.tSubtasks[i].done=!S.tSubtasks[i].done;renderSubList()}
+function editModSub(i,val){const v=val.trim();if(v)S.tSubtasks[i].title=v;else{S.tSubtasks.splice(i,1);renderSubList()}}
 
 // ── ADD / EDIT ──
 function openAdd(){openAddP('urgent',S.curUser||'u1')}
