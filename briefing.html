@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.2.3</title>
+<title>📋 데일리 브리핑 v1.2.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -166,13 +166,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .src-note{font-size:12px;color:var(--tx2);line-height:1.5;margin-bottom:5px}
 .src-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
 .src-by{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
-/* 단계 진행바 */
-.src-flow{display:flex;align-items:center;gap:3px;margin:7px 0 5px}
-.src-flow-dot{width:10px;height:10px;border-radius:50%;background:var(--bd2);flex-shrink:0}
-.src-flow-dot.done{background:var(--green)}.src-flow-dot.cur{background:var(--blue);box-shadow:0 0 0 2px rgba(59,111,232,.3)}
-.src-flow-line{flex:1;height:2px;background:var(--bd2);border-radius:1px}
-.src-flow-line.done{background:var(--green)}
 .src-stage-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;display:inline-flex;align-items:center;gap:4px}
+/* 소싱 체크리스트 */
+.src-checklist{display:flex;flex-direction:column;gap:4px;margin:7px 0 6px;padding:8px 10px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rsm)}
+.src-chk-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--tx2);cursor:pointer;padding:2px 0;user-select:none}
+.src-chk-item:hover{color:var(--tx)}
+.src-chk-box{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--bd2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;background:transparent}
+.src-chk-box.ck{background:var(--green);border-color:var(--green)}
+.src-chk-box.ck::after{content:'✓';color:#fff;font-size:9px;font-weight:800}
+.src-chk-lbl{flex:1}.src-chk-lbl.done{text-decoration:line-through;color:var(--tx3)}
 .src-acts{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap}
 .src-btn{padding:4px 10px;border-radius:5px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx2);cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s}
 .src-btn:hover{border-color:var(--blue);color:var(--blue)}
@@ -320,7 +322,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div id="scrLoad" class="scr on"><div class="cw"><div class="logo">📋</div><div class="spin"></div><div class="ltxt" id="ltxt">초기화 중...</div></div></div>
 
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.3</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.4</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -522,7 +524,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.2.3';
+const APP_VER='v1.2.4';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -679,7 +681,10 @@ function migrate(){
   if(!S.bData.sourcingItems)S.bData.sourcingItems=[];
   if(!S.bData.workLog)S.bData.workLog=[];
   // 기존 done 필드 → stage 마이그레이션
-  S.bData.sourcingItems.forEach(s=>{if(!s.stage)s.stage=s.done?'done':'new'});
+  S.bData.sourcingItems.forEach(s=>{
+    if(!s.stage)s.stage=s.done?'done':'new';
+    if(!s.checkedStages)s.checkedStages=[];
+  });
   S.bData.tasks.forEach(t=>{
     if(t.date&&!t.startDate){t.startDate=t.date;delete t.date}
     if(!t.assignee)t.assignee='u1';
@@ -908,33 +913,31 @@ function srcCard(s){
   const by=s.addedBy?`<span class="src-by ${uColor(s.addedBy)}">${uName(s.addedBy)}이 추가</span>`:'';
   const assigned=s.assignedTo&&s.assignedTo!=='none'?`<span class="src-by ${uColor(s.assignedTo)}">→ ${uName(s.assignedTo)} 담당</span>`:'';
   const favicon=s.url?`<img class="src-favicon" src="https://www.google.com/s2/favicons?domain=${getDomain(s.url)}&sz=32" onerror="this.style.display='none'">`:'<span style="font-size:16px">📦</span>';
-  // 단계 진행바 (진행 중인 경우만)
-  let flowHtml='';
+  const checked=s.checkedStages||[];
+  // 체크리스트 (진행 중인 경우만)
+  let checkHtml='';
   if(grp==='active'){
-    const curIdx=FLOW.indexOf(s.stage||'new');
-    flowHtml=`<div class="src-flow">`;
-    FLOW.forEach((fk,fi)=>{
-      if(fi>0)flowHtml+=`<div class="src-flow-line${fi<=curIdx?' done':''}"></div>`;
-      flowHtml+=`<div class="src-flow-dot${fi<curIdx?' done':fi===curIdx?' cur':''}"></div>`;
+    const canChk=canAdd();
+    checkHtml=`<div class="src-checklist">`;
+    FLOW.filter(k=>k!=='done').forEach(fk=>{
+      const fi=stageInfo(fk);const isDone=checked.includes(fk);
+      checkHtml+=`<div class="src-chk-item" onclick="${canChk?`togSrcCheck('${s.id}','${fk}')`:''}" style="${!canChk?'cursor:default':''}">
+        <div class="src-chk-box${isDone?' ck':''}"></div>
+        <span class="src-chk-lbl${isDone?' done':''}">${fi.icon} ${fi.label}</span>
+      </div>`;
     });
-    flowHtml+=`</div>`;
+    checkHtml+=`</div>`;
   }
-  // 단계 뱃지
-  const badge=`<span class="src-stage-badge" style="background:${st.color}18;color:${st.color};border:1px solid ${st.color}40">${st.icon} ${st.label}</span>`;
-  // 버튼
+  // 단계 뱃지 (done/hold만 표시)
+  const badge=(grp!=='active')?`<span class="src-stage-badge" style="background:${st.color}18;color:${st.color};border:1px solid ${st.color}40">${st.icon} ${st.label}</span>`:'';
+  // 진행 중 요약 뱃지 (active)
+  const progressBadge=(grp==='active')?`<span class="src-stage-badge" style="background:#EEF4FF;color:var(--blue);border:1px solid #C7D8FF">${checked.length}/4 완료</span>`:'';
+  // 액션 버튼
   let acts='';
   if(canAdd()){
     acts=`<div class="src-acts">`;
     if(grp==='active'){
-      // 다음 단계 버튼
-      const nextIdx=FLOW.indexOf(s.stage||'new')+1;
-      const nextStage=FLOW[nextIdx];
-      if(nextStage){
-        const nst=stageInfo(nextStage);
-        acts+=`<button class="src-btn next" onclick="setSrcStage('${s.id}','${nextStage}')">→ ${nst.icon} ${nst.label}</button>`;
-      } else {
-        acts+=`<button class="src-btn done-btn" onclick="setSrcStage('${s.id}','done')">✅ 소싱 완료</button>`;
-      }
+      acts+=`<button class="src-btn done-btn" onclick="setSrcStage('${s.id}','done')">✅ 소싱 완료</button>`;
       acts+=`<button class="src-btn hold-btn" onclick="setSrcStage('${s.id}','no_res')">😶 답변없음</button>`;
       acts+=`<button class="src-btn rej-btn" onclick="setSrcStage('${s.id}','reject')">❌ 거절</button>`;
     } else {
@@ -946,9 +949,9 @@ function srcCard(s){
   }
   return`<div class="src-item${grp==='hold'?' hold':''}">
     <div class="src-top">${favicon}<div class="src-body">
-      <div class="src-title">${s.title} ${badge}</div>
+      <div class="src-title">${s.title} ${badge}${progressBadge}</div>
       ${s.url?`<a class="src-url" href="${s.url}" target="_blank">🔗 ${getDomain(s.url)}</a>`:''}
-      ${flowHtml}
+      ${checkHtml}
       ${s.note?`<div class="src-note">💬 ${s.note}</div>`:''}
       <div class="src-meta">${by}${assigned}</div>
     </div></div>
@@ -1000,6 +1003,16 @@ async function saveSrcItem(){
     S.bData.sourcingItems.unshift({id:genId(),title,url:document.getElementById('src_url').value.trim(),note:document.getElementById('src_note').value.trim(),addedBy:S.curUser,assignedTo:S.srcAssign,stage:'new',done:false,createdAt:new Date().toISOString()});
     cm('mSrc');render();await save();showToast('✅ 소싱 아이템 추가됐어요');
   }
+}
+async function togSrcCheck(id,stageKey){
+  if(!canAdd())return;
+  const s=S.bData.sourcingItems?.find(x=>x.id===id);if(!s)return;
+  if(!s.checkedStages)s.checkedStages=[];
+  const idx=s.checkedStages.indexOf(stageKey);
+  if(idx>=0)s.checkedStages.splice(idx,1);
+  else s.checkedStages.push(stageKey);
+  s.updatedAt=new Date().toISOString();
+  render();await save();
 }
 async function setSrcStage(id,stage){
   if(!canAdd())return;
