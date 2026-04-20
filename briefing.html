@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.2.6</title>
+<title>📋 데일리 브리핑 v1.2.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -200,6 +200,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .wl-add-row{display:flex;gap:6px;margin-bottom:8px}
 .wl-input{flex:1;background:var(--bg3);border:1px solid var(--bd);border-radius:var(--rsm);padding:8px 10px;font-size:13px;color:var(--tx);font-family:inherit;outline:none}
 .wl-input:focus{border-color:var(--blue)}.wl-input::placeholder{color:var(--tx3)}
+.wl-edit-input{flex:1;border:none;background:transparent;font-size:13px;font-family:inherit;color:var(--tx);outline:none;padding:1px 4px;border-radius:4px;min-width:0}
+.wl-edit-input:focus{background:var(--bg);outline:1px solid var(--blue)}
 .wl-add-btn{padding:8px 12px;border-radius:var(--rsm);border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
 /* CALENDAR */
 .cal-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
@@ -322,7 +324,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div id="scrLoad" class="scr on"><div class="cw"><div class="logo">📋</div><div class="spin"></div><div class="ltxt" id="ltxt">초기화 중...</div></div></div>
 
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.6</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.7</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -524,7 +526,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.2.6';
+const APP_VER='v1.2.7';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -1052,8 +1054,8 @@ function buildWorkLog(){
   if(isToday&&canAdd())h+=`<div class="wl-add-row"><input class="wl-input" id="wl-input" placeholder="오늘 처리한 업무를 추가로 기록..." onkeydown="if(event.key==='Enter')addWLEntry()"><button class="wl-add-btn" onclick="addWLEntry()">기록</button></div>`;
   if(!curItems.length)h+=`<div class="empty" style="padding:12px 0;font-size:12px">${isToday?`완료한 할일이 없어요<br><span style="font-size:11px;color:var(--tx3)">할일을 완료하면 자동으로 기록돼요</span>`:'이 날 업무 기록이 없어요'}</div>`;
   else{
-    curItems.filter(w=>w.type==='manual').forEach(w=>h+=`<div class="wl-item manual"><span class="wl-ico">📝</span><span class="wl-txt">${w.text}</span>${isToday&&canAdd()?`<button class="wl-del" onclick="delWLEntry('${w.id}')">✕</button>`:''}</div>`);
-    curItems.filter(w=>w.type==='auto').forEach(w=>h+=`<div class="wl-item auto"><span class="wl-ico">✅</span><span class="wl-txt">${w.text}</span></div>`);
+    curItems.filter(w=>w.type==='manual').forEach(w=>h+=`<div class="wl-item manual"><span class="wl-ico">📝</span>${canAdd()?`<input type="text" class="wl-edit-input" value="${w.text.replace(/"/g,'&quot;')}" onblur="saveWLEdit('${w.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span class="wl-txt">${w.text}</span>`}${isToday&&canAdd()?`<button class="wl-del" onclick="delWLEntry('${w.id}')">✕</button>`:''}</div>`);
+    curItems.filter(w=>w.type==='auto').forEach(w=>h+=`<div class="wl-item auto"><span class="wl-ico">✅</span>${canAdd()?`<input type="text" class="wl-edit-input" value="${w.text.replace(/"/g,'&quot;')}" onblur="saveWLEdit('${w.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span class="wl-txt">${w.text}</span>`}</div>`);
   }
   return h+`</div></div>`;
 }
@@ -1066,6 +1068,14 @@ async function addWLEntry(){
   el.value='';render();await save();
 }
 async function delWLEntry(id){if(!canAdd())return;const k=getWLKey();S.bData[k]=S.bData[k].filter(w=>w.id!==id);render();await save()}
+async function saveWLEdit(id,val){
+  if(!canAdd())return;
+  const v=val.trim();if(!v)return;
+  const k=getWLKey();const w=S.bData[k]?.find(x=>x.id===id);
+  if(!w||w.text===v)return;
+  w.text=v;w.updatedAt=new Date().toISOString();
+  await save();
+}
 
 // ── 상대방 할일 ──
 function buildOther(){
