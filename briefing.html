@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.2.4</title>
+<title>📋 데일리 브리핑 v1.2.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -322,7 +322,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div id="scrLoad" class="scr on"><div class="cw"><div class="logo">📋</div><div class="spin"></div><div class="ltxt" id="ltxt">초기화 중...</div></div></div>
 
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.4</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.2.5</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -524,7 +524,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.2.4';
+const APP_VER='v1.2.5';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -548,7 +548,7 @@ const S={
   u1:ls('b_u1','태훈'),u2:ls('b_u2','석민'),
   p1:ls('b_p1','5555'),p2:ls('b_p2','0000'),
   token:null,bData:null,bFid:null,
-  curUser:null,
+  curUser:ls('b_curUser',null)||null,
   pcView:'dash',mobTab:'dash',
   calMode:'month',calY:new Date().getFullYear(),calM:new Date().getMonth(),
   calWk:0,selDate:null,
@@ -635,6 +635,7 @@ function doLogin(){
   const correct=S.loginTarget==='u1'?S.p1:S.p2;
   if(pw===correct){
     S.curUser=S.loginTarget;
+    lss('b_curUser',S.curUser);
     if(S.bData){
       if(S.curUser==='u1')S.bData.u1LoginExpiry=new Date(Date.now()+MEX).toISOString();
       else S.bData.u2LoginExpiry=new Date(Date.now()+MEX).toISOString();
@@ -646,11 +647,11 @@ function doLogin(){
     document.getElementById('login-pw').value='';document.getElementById('login-pw').focus();
   }
 }
-function doLogout(){S.curUser=null;cm('mLogin');render();showToast('로그아웃됐어요')}
+function doLogout(){S.curUser=null;lss('b_curUser','');cm('mLogin');render();showToast('로그아웃됐어요')}
 function chkLoginExpiry(){
   if(!S.bData||!S.curUser)return;
   const ex=S.bData[S.curUser==='u1'?'u1LoginExpiry':'u2LoginExpiry'];
-  if(ex&&new Date(ex)<new Date()){S.curUser=null;render();showToast('로그인 시간이 만료됐어요')}
+  if(ex&&new Date(ex)<new Date()){S.curUser=null;lss('b_curUser','');render();showToast('로그인 시간이 만료됐어요')}
 }
 const canEdit=t=>{if(!S.curUser)return false;if(t.assignee==='shared')return true;return t.assignee===S.curUser};
 const canAdd=()=>S.curUser!==null;
