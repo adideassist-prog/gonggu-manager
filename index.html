@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v14.0.2</title>
+<title>공구 매니저 v14.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -459,7 +459,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v14.0.2</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v14.2</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -489,7 +489,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v14.0.2</div>
+      <div class="mob-title">🛍️ 공구 매니저 v14.2</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -944,19 +944,7 @@ function buildUrgent(){
       suggest:'정산을 완료하고 체크리스트를 업데이트하세요'});
   });
 
-  /* ── ③ 오래 방치된 것 (14일/21일 무응답) ── */
-  activeData().filter(inf=>(inf.phase||1)===1).forEach(inf=>{
-    const ref=new Date(inf.updatedAt||inf.createdAt||Date.now());
-    const daysSince=Math.floor((new Date()-ref)/86400000);
-    if(daysSince>=14&&daysSince<=16)
-      items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
-        product:inf.negotiating_product||inf.product||'',
-        issue:`🚨 1차 재연락 필요 (${daysSince}일 경과)`,suggest:'한 번 더 연락해보세요'});
-    else if(daysSince>=21&&daysSince<=23)
-      items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
-        product:inf.negotiating_product||inf.product||'',
-        issue:`⚠️ 최종 확인 필요 (${daysSince}일 경과)`,suggest:'마지막으로 연락 후 미응답 시 보류 고려'});
-  });
+  /* ── ③ 14/21일 무응답 알림은 소통관리 섹션에서만 표시 ── */
 
   // 중요도 순 정렬: 오늘 > D-1 > D-2 > D-3
   return items.sort((a,b)=>{
