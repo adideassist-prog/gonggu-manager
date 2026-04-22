@@ -1031,8 +1031,9 @@ function buildContact(){
     .map(inf=>{
       const ref=new Date(inf.updatedAt||inf.createdAt||Date.now());
       const daysSince=Math.floor((new Date()-ref)/86400000);
-      // 7일 미만만 표시 (이후는 무응답 숨김 처리)
-      const show=daysSince<7;const remindLabel='';
+      // 7일 미만: 정상 / 14-16일: 1차 재연락 / 21-23일: 최종 확인 / 나머지: 숨김
+      const show=daysSince<7||(daysSince>=14&&daysSince<=16)||(daysSince>=21&&daysSince<=23);
+      const remindLabel=daysSince>=21&&daysSince<=23?'remind21':daysSince>=14&&daysSince<=16?'remind14':'';
       return{id:inf.id,name:inf.name,nickname:inf.nickname||'',instagram:inf.instagram||'',chat_history:inf.chat_history||'',product:inf.negotiating_product||inf.product||'',
         phase:PM[inf.phase||1],na:getNextAct(inf),daysSince,remindLabel,show};
     })
