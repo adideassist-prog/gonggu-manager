@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공구 매니저 v14.2</title>
+<title>공구 매니저 v14.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════ BASE ════════════════════════════════════════ */
@@ -459,7 +459,7 @@ a{text-decoration:none}
 <!-- ══════ SIDEBAR ══════ -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-title">🛍️ 공구 매니저 v14.2</div>
+    <div class="sb-logo-title">🛍️ 공구 매니저 v14.3</div>
     <div class="sb-logo-sub" id="sb-date"></div>
   </div>
   <div class="sb-kpis" id="sb-kpis"></div>
@@ -489,7 +489,7 @@ a{text-decoration:none}
   <div class="mob-hdr">
     <!-- Row 1: 타이틀 + 버튼 -->
     <div class="mob-row">
-      <div class="mob-title">🛍️ 공구 매니저 v14.2</div>
+      <div class="mob-title">🛍️ 공구 매니저 v14.3</div>
       <div class="mob-acts">
         <button class="mob-act mob-gd" id="m-gd" onclick="gdConnect()">☁️</button>
         <button class="mob-act mob-master" id="m-master" onclick="toggleMasterMode()">👁️</button>
@@ -907,12 +907,12 @@ function buildUrgent(){
     const cl=getCL(inf);const ph=inf.phase||1;
     const dv=inf.scheduleDate?diffDays(inf.scheduleDate):null;
     // 공구임박(D-3) + 결제링크 미전달 → 긴급 (link_sent 체크 시 자동 해제)
-    if(inf.scheduleDate&&dv!==null&&dv>=0&&dv<=3&&!cl.imminent.link_sent){
+    if(inf.scheduleDate&&dv!==null&&dv>=0&&dv<=5&&!cl.imminent.link_sent){
       const lk=`link_missing_${inf.id}_${inf.scheduleDate}`;
       if(!(inf.dismissedAlerts||[]).includes(lk))
         items.push({type:'warn',id:inf.id,name:inf.name,nickname:inf.nickname||'',
           product:inf.negotiating_product||inf.product||'',alertKey:lk,
-          issue:`⏰ 공구 D-${dv}, 결제링크 미전달`,suggest:'공구임박 단계에서 결제링크를 전달하고 체크하세요',
+          issue:`⏰ 공구 D-${dv}, 결제링크 미전달`,suggest:'공구 5일 전! 결제링크를 전달하고 체크하세요',
           linkCheckId:inf.id, phaseId:3});
     }
     // 샘플단계인데 샘플 미발송
