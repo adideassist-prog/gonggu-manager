@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>📋 데일리 브리핑 v1.3.1</title>
+<title>📋 데일리 브리핑 v1.3.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -329,7 +329,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div id="scrLoad" class="scr on"><div class="cw"><div class="logo">📋</div><div class="spin"></div><div class="ltxt" id="ltxt">초기화 중...</div></div></div>
 
 <div id="scrSetup" class="scr"><div class="cw">
-  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.3.1</div>
+  <div class="logo">📋</div><div class="stitle">데일리 브리핑 v1.3.3</div>
   <div class="sdesc">처음 한 번만 설정하면 돼요</div>
   <div class="setup-box">
     <div class="ibox">💡 공구매니저와 동일한 Google Client ID를 입력하세요.<br>브라우저 개발자도구 → Application → Local Storage → <code>gd_client_id</code></div>
@@ -531,7 +531,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div></div>
 
 <script>
-const APP_VER='v1.3.1';
+const APP_VER='v1.3.3';
 const BF='브리핑_데이터.json',MEX=8*60*60*1000;
 const DOW=['일','월','화','수','목','금','토'];
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -1023,7 +1023,10 @@ function buildDash(){
   const todayMine=tasks.filter(t=>isTodayTask(t)&&t.assignee===mu&&t.priority!=='someday'&&t.priority!=='week'&&t.priority!=='month');
   const todayMineDone=tasks.filter(t=>t.done&&t.doneDate===td&&t.assignee===mu);
   const tmrwMine=tasks.filter(t=>isTmrwTask(t)&&(t.assignee===mu||t.assignee==='shared')&&t.priority!=='someday'&&t.priority!=='week'&&t.priority!=='month');
-  const sharedToday=tasks.filter(t=>isTodayTask(t)&&t.assignee==='shared'&&t.priority!=='someday'&&t.priority!=='week'&&t.priority!=='month');
+  // 공동업무는 날짜 상관없이 완료 전까지 항상 표시
+  const sharedToday=tasks.filter(t=>!t.done&&t.assignee==='shared'
+    &&t.priority!=='someday'&&t.priority!=='week'&&t.priority!=='month'
+    &&(!(t.startDate||t.date)||(t.startDate||t.date)<=td));
   const sharedWeek=tasks.filter(t=>!t.done&&t.assignee==='shared'&&(t.priority==='week'||((t.startDate||t.date)&&(t.startDate||t.date)>td&&(t.startDate||t.date)<=we&&t.priority!=='month'&&t.priority!=='someday')));
   const sharedMonth=tasks.filter(t=>!t.done&&t.assignee==='shared'&&(t.priority==='month'||((t.startDate||t.date)&&(t.startDate||t.date)>we&&(t.startDate||t.date)<=me&&t.priority!=='someday')));
   const sharedSomeday=tasks.filter(t=>!t.done&&t.assignee==='shared'&&t.priority==='someday');
@@ -1249,7 +1252,22 @@ function buildWorkLog(){
   if(!curItems.length)h+=`<div class="empty" style="padding:12px 0;font-size:12px">${isToday?`완료한 할일이 없어요<br><span style="font-size:11px;color:var(--tx3)">할일을 완료하면 자동으로 기록돼요</span>`:'이 날 업무 기록이 없어요'}</div>`;
   else{
     curItems.filter(w=>w.type==='manual').forEach(w=>h+=`<div class="wl-item manual"><span class="wl-ico">📝</span>${canAdd()?`<input type="text" class="wl-edit-input" value="${w.text.replace(/"/g,'&quot;')}" onblur="saveWLEdit('${w.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span class="wl-txt">${w.text}</span>`}${isToday&&canAdd()?`<button class="wl-del" onclick="delWLEntry('${w.id}')">✕</button>`:''}</div>`);
-    curItems.filter(w=>w.type==='auto').forEach(w=>h+=`<div class="wl-item auto"><span class="wl-ico">✅</span>${canAdd()?`<input type="text" class="wl-edit-input" value="${w.text.replace(/"/g,'&quot;')}" onblur="saveWLEdit('${w.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span class="wl-txt">${w.text}</span>`}</div>`);
+    curItems.filter(w=>w.type==='auto').forEach(w=>{
+      let subs='';
+      if(w.subtasks&&w.subtasks.length){
+        // 신규 형식 (객체 배열) / 구버전 호환 (문자열 배열)
+        const items=typeof w.subtasks[0]==='string'
+          ?w.subtasks.map(s=>({title:s,done:true}))
+          :w.subtasks;
+        subs=`<div style="margin-top:5px;padding-left:4px;display:flex;flex-direction:column;gap:3px">
+          ${items.map(s=>`<div style="font-size:11px;color:${s.done?'var(--tx3)':'var(--tx2)'};display:flex;align-items:center;gap:5px">
+            <span style="color:${s.done?'var(--green)':'var(--bd2)'};font-size:10px;font-weight:800">${s.done?'✓':'○'}</span>
+            <span style="${s.done?'text-decoration:line-through':''}">${s.title}</span>
+          </div>`).join('')}
+        </div>`;
+      }
+      h+=`<div class="wl-item auto" style="flex-direction:column;align-items:flex-start"><div style="display:flex;align-items:center;gap:7px;width:100%"><span class="wl-ico">✅</span>${canAdd()?`<input type="text" class="wl-edit-input" value="${w.text.replace(/"/g,'&quot;')}" onblur="saveWLEdit('${w.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="flex:1">`:`<span class="wl-txt" style="flex:1">${w.text}</span>`}</div>${subs}</div>`;
+    });
   }
   return h+`</div></div>`;
 }
@@ -1467,7 +1485,9 @@ async function togTask(id){
   // 완료 시 해당 유저 업무일지에 자동 기록
   if(t.done&&S.curUser){
     const k=getWLKey();if(!S.bData[k])S.bData[k]=[];
-    S.bData[k].push({id:genId(),date:today(),text:t.title,type:'auto',taskId:t.id,userId:S.curUser,createdAt:new Date().toISOString()});
+    const doneSubTitles=(t.subtasks||[]).filter(s=>s.done).map(s=>s.title);
+    const allSubTitles=(t.subtasks||[]).map(s=>({title:s.title,done:s.done}));
+    S.bData[k].push({id:genId(),date:today(),text:t.title,subtasks:allSubTitles,type:'auto',taskId:t.id,userId:S.curUser,createdAt:new Date().toISOString()});
   }
   render();await save();
 }
